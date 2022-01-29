@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %} Добавить секции {% endblock %}
+
+{% block content %}
+
+<form action="/many_categs" method = 'POST'>
+    <fieldset>
+        <legend><h2><b>Добавить секции</b></h2></legend>
+            <span>Значения, разделенные табуляциями:</span><br>
+                    Название секции, короткое название, русек, tg-канал, направление, конкурс<br>
+        <textarea cols="120" rows="10" name="text"></textarea><br><br>
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+{% endblock %}

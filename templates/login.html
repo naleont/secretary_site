@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %} Вход на сайт {% endblock %}
+
+{% block content %}
+<!--Страница авторизации.
+Переменная wrong может принимать значения user (неверный телефон или email),
+password (неверный пароль) или False (ошибка не выводится).
+Отправка формы вызывает функцию logging.
+-->
+{% if wrong == 'user' %}
+<div class="alarm">
+  <br>Неверный e-mail или номер телефона
+</div>
+{% elif wrong == 'password' %}
+<div class="alarm">
+  <br>Неверный пароль
+</div>
+{% endif %}
+
+  <form action="/logging" method = 'GET' id="login">
+    <fieldset>
+      <legend><h2><b>Вход на сайт</b></h2></legend>
+    e-mail или номер телефона<br>
+        <input size="30" name="user" type="text" required><br><br>
+    <span class="required">Пароль</span><br>
+        <input size="30" name="password" type="password" placeholder="*********"
+               pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+    </fieldset>
+  </form>
+
+    <button type="submit" value="submit" form="login">Поехали!</button><br><br>
+    <button type="button" value="forgot">Ничего не помню спасите</button><br><br>
+    <a href="/register"><button type="button">Регистрация</button></a>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %} Секции {% endblock %}
+
+{% block content %}
+<h2>Профиль руководителя секции</h2>
+ФИО: {{ supervisor['name'] }}<br>
+e-mail: <a href="mailto:{{ supervisor['email'] }}">{{ supervisor['email'] }}</a><br>
+Телефон: <a href="tel:{{ supervisor['tel'] }}">{{ supervisor['tel'] }}</a><br>
+Секция: {{ supervisor['categories'] }}<br>
+{% endblock %}

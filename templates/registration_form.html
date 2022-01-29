@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %} Регистрация на сайте {% endblock %}
+
+{% block content %}
+<!--
+Форма регистрации на сайте.
+Переменная exists сообщает, если пользователь ввел уже зарегистрированный email или телефон.
+Отправка формы вызывает функцию registration_res
+-->
+<div class="alarm">
+    {% if exists == 'email' %}
+    <br>Пользователь с таким e-mail уже существует.
+    {% elif exists == 'tel' %}
+    <br>Пользователь с таким телефоном уже существует.
+    {% endif %}
+</div>
+
+<div  class="grid-container">
+  <form action="/registration_res" method = 'POST'>
+    <fieldset>
+      <legend><h2><b>Регистрация на сайте</b></h2></legend>
+        <table width="800px">
+            <tr><td border-spacing="10px">
+                <span class="required">Контактный e-mail</span><br>
+                    <input size="30" name="email" type="email" placeholder="example@example.com" required><br><br>
+                <span class="required">Номер телефона</span><br>
+                    <input size="30" name="tel" type="tel" placeholder="+79908378209"
+                           pattern="\+?\d+-?\(?\d+\)?\d+-?\d+-?\d+-?\d+" required><br><br>
+                <span class="required">Пароль</span><br>
+                    <input size="30" name="password" type="password" placeholder="*********"
+                           pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+            </td>
+            <td>
+                <span class="required">Фамилия</span><br>
+                    <input size="30" name="last_name" type="text" placeholder="Иванов"
+                           pattern="[А-ЯЁ][а-яё]+(-?[А-ЯЁ][а-яё]+)?" required><br><br>
+                <span class="required">Имя</span><br>
+                    <input size="30" name="first_name" type="text" placeholder="Иван"
+                           pattern="[А-ЯЁ][а-яё]+(-? ?[А-ЯЁ][а-яё]+)?" required><br><br>
+                <span class="required">Отчество</span><br>
+                    <input size="30" name="patronymic" type="text" placeholder="Иванович"
+                           pattern="[А-ЯЁ][а-яё]+" required><br><br>
+                <span class="required">Дата рождения</span><br>
+                    <input size="30" name="born" type="date" required><br><br>
+            </td></tr>
+
+            <tr><td colspan="2">
+
+                <input class="button" type="submit" value="Отправить">
+                <input class="button" type="reset" value="Сбросить данные формы">
+            </td></tr>
+        </table>
+    </fieldset>
+  </form>
+</div>
+{% endblock %}

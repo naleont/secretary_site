@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %} Русеки {% endblock %}
+
+{% block content %}
+<h2>Руководители секций</h2>
+
+{% if session['type'] == 'admin' %}
+<a href="/add_supervisor"><button>Добавить русека</button></a><br><br>
+<a href="/add_supervisors"><button>Добавить много русеков</button></a><br><br>
+
+<!--<form action="/add_supervisors" method = 'GET'>-->
+<!--    <fieldset>-->
+<!--        Добавить много русеков<br>-->
+<!--        <input type="file" id="file" name="file" accept=".txt" enctype="multipart/form-data"><br>-->
+<!--        <input class="button" type="submit" value="Загрузить"><br>-->
+<!--    </fieldset>-->
+<!--</form>-->
+
+Редактировать русека<br>
+{% endif %}
+
+{% if access >= 3 %}
+<table frame="void" border="2px" bordercolor="#4962A4">
+{% for key in supervisors %}
+    <tr bgcolor="#C5E3F3">
+        <td>
+            <a href="/supervisor_profile/{{supervisors[key]['id']}}">{{supervisors[key]['name']}}</a>
+        </td>
+        <td>
+            <a href="mailto:{{supervisors[key]['email']}}">{{supervisors[key]['email']}}</a>
+        </td>
+        <td>
+            <a href="tel:{{supervisors[key]['tel']}}">{{supervisors[key]['tel']}}</a>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% endif %}
+
+{% if access < 3 %}
+<table frame="void" border="2px" bordercolor="#4962A4">
+{% for key in supervisors %}
+    <tr bgcolor="#C5E3F3">
+        <td>
+            {{supervisors[key]['name']}}
+        </td>
+    </tr>
+{% endfor %}
+</table><br><br>
+{% endif %}
+
+{% endblock %}

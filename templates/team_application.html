@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %} Редактирование профиля {% endblock %}
+
+{% block content %}
+
+<form action="/application_process" method = 'POST'>
+    <fieldset>
+        <legend><h2><b>Заявка в команду</b></h2><span align="right">Полный список секций можно посмотреть в низу страницы</span></legend>
+                <span class="required">Хочу в команду в роли</span><br>
+                    <input type="radio" name="role" value="secretary" {% if application['role'] == "secretary" %} checked
+                            {% endif %}> Секретаря<br>
+                    <input type="radio" name="role" value="volunteer" {% if application['role'] == "volunteer" %} checked
+                            {% endif %}> Волонтера<br>
+                    <input type="radio" name="role" value="other" {% if application['role'] == "other" %} checked
+                            {% endif %}> Другое<br>
+                    <input type="radio" name="role" value="not_sure" {% if application['role'] == "not_sure" %} checked
+                            {% endif %}> Пока не знаю<br><br>
+                <span>Хочу быть секретарем секции (только для секретарей)</span><br>
+                    <span class="comment">Первый приоритет</span>
+                <p><select name="category_1">
+                    <option class="container-fluid bg-2" {% if application['category_1_id'] == None %} selected="true" {% endif %}
+                            disabled>Первый приоритет</option>
+                    {% for key in categories %}
+                    <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_1_id'] %}
+                            selected="true" {% endif %} value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
+                    {% endfor %}
+                </select></p>
+                    <span class="comment">Второй приоритет</span>
+                <p><select name="category_2">
+                    <option class="container-fluid bg-2" {% if application['category_2_id'] == None %}
+                            selected="true" {% endif %} disabled>Второй приоритет</option>
+                    {% for key in categories %}
+                    <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_2_id'] %} selected="true" {% endif %}
+                            value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
+                    {% endfor %}
+                </select></p>
+                    <span class="comment">Третий приоритет</span>
+                <p><select name="category_3">
+                    <option class="container-fluid bg-2" {% if application['category_3_id'] == None %} selected="true"
+                            {% endif %} disabled>Третий приоритет</option>
+                    {% for key in categories %}
+                    <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_3_id'] %}
+                            selected="true" {% endif %} value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
+                    {% endfor %}
+                </select></p>
+                <input type="checkbox" name="any_category" value=True {% if application['any_category'] == True %}
+                        checked {% endif %}> Годится любая секция<br><br>
+                <span class="required">Я уже работал на чтениях</span><br>
+                    <p><select name="taken_part" required>
+                    <option class="container-fluid bg-2" {% if application['taken_part'] == None %} selected="true" {% endif %}
+                            disabled>Выберите вариант</option>
+                    <option class="container-fluid bg-2" {% if application['taken_part'] == "not" %} selected="true" {% endif %}
+                            value="not">Нет</option>
+                    <option class="container-fluid bg-2" {% if application['taken_part'] == "secretary" %} selected="true" {% endif %}
+                            value="secretary">Был секретарем</option>
+                    <option class="container-fluid bg-2" {% if application['taken_part'] == "volunteer" %} selected="true" {% endif %}
+                            value="volunteer">Был волонтером</option>
+                    </select></p><br>
+            <input class="button" type="submit" value="Сохранить">
+            <input class="button" type="reset" value="Сбросить данные формы">
+    </fieldset>
+</form>
+
+<h3>Полный список секций</h3>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+{% for key in categories %}
+    <tr bgcolor="#C5E3F3">
+        <td width="45%">
+            {{ categories[key]['name'] }}
+        </td>
+        <td>
+            <a href="/supervisor_profile/{{ categories[key]['supervisor_id'] }}">{{ categories[key]['supervisor'] }}</a>
+        </td>
+        <td>
+            {{ categories[key]['contest'] }}
+        </td>
+    </tr>
+{% endfor %}
+</table><br>
+{% endblock %}

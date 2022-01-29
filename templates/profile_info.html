@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %} Профиль {% endblock %}
+
+{% block content %}
+<!--Страница с информацией профиля текущего пользователя.
+Переменные:
+last_name, first_name, patronymic
+born
+email
+tel
+vk
+tg
+username
+occupation
+place_of_work
+grade
+year
+Можно дополнить или исправить информацию пользователя или профиля или поменять пароль.
+-->
+<h2>Профиль</h2>
+{% if message == 'fill profile first' %}
+<p class="alarm">Для подачи заявки в команду сначала <a href="/edit_profile">заполните информацию профиля</a>.</p>
+{% endif %}
+<table class="profile" cellspacing="5px">
+    <tr>
+        <td align="left" valign="bottom">
+            {% if session['application'] != True %}
+            <a href="/team_application"><button>Подать заявку в команду</button></a>
+            {% endif %}
+        </td><td align="left" valign="bottom">
+            <a href="/my_applications"><button>Мои заявки в команду</button></a>
+        </td><td align="right" valign="bottom">
+            <br>
+            <a href="/change_pwd"><button class="blue">Поменять пароль</button></a>
+            <br>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            ФИО
+        </td><td>
+        {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
+        </td>
+        <td rowspan="4" align="right" width="30%">
+            <a href="/edit_user"><button class="blue">Дополнить или исправить информацию пользователя</button></a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Дата рождения
+        </td><td>
+        {{ user['born'] }}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            e-mail
+        </td><td>
+        <a href="mailto:{{ user['email'] }}">{{ user['email'] }}</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Телефон
+        </td><td>
+        <a href="tel:{{ user['tel'] }}">{{ user['tel'] }}</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            VK
+        </td><td>
+        {% if profile['vk'] != None %}
+        <a href="https://vk.com/{{ profile['vk'] }}">vk.com/{{ profile['vk'] }}</a>
+        {% endif %}
+        </td>
+        <td rowspan="7" align="right">
+            <a href="/edit_profile"><button class="blue">Дополнить или исправить информацию профиля</button></a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Telegram
+        </td><td>
+        {% if profile['tg'] != None %}
+        <a href="https://t.me/{{ profile['tg'] }}">@{{ profile['tg'] }}</a>
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Имя пользователя на <a href="https://vernadsky.info/">vernadsky.info</a>
+        </td><td>
+        {% if profile['username'] != None %}
+        {{ profile['username'] }}
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Вид деятельности
+        </td><td>
+        {% if profile['occupation'] == 'scholar' %}
+        Школьник
+        {% elif profile['occupation'] == 'student' %}
+        Студент
+        {% elif profile['occupation'] == 'worker' %}
+        Работаю
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Место учебы/работы
+        </td><td>
+        {% if profile['place_of_work'] == 'MSU_School' %}
+        Университетская гимназия МГУ
+        {% elif profile['place_of_work'] == '1553' %}
+        Лицей №1553 им. В. И. Вернадского
+        {% elif profile['place_of_work'] == None %}
+        {% else %}
+        {{ profile['place_of_work'] }}
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Класс/курс
+        </td><td>
+        {% if profile['grade'] %}
+        {{ profile['grade'] }}
+        {% elif profile['year'] %}
+        {{ profile['year'] }}
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Знаю о Чтениях от
+        </td><td>
+        {% if profile['involved'] == 'MSU_School' %}
+        Университетская гимназия МГУ
+        {% elif profile['involved'] == '1553' %}
+        Лицей №1553 им. В. И. Вернадского
+        {% elif profile['involved'] == None %}
+        {% else %}
+        {{ profile['involved'] }}
+        {% endif %}
+        </td>
+    </tr>
+</table>
+{% endblock %}

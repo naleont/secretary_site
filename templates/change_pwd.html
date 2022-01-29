@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %} Смена пароля {% endblock %}
+
+{% block content %}
+<!--Страница смены пароля. Переменная success = True / unmatched / wrong_old-->
+
+<div class="alarm">
+    {% if success == 'unmatched' %}
+    <br>Новый пароль не совпадает с подтверждением пароля.
+    {% elif success == 'wrong_old' %}
+    <br>Неправильный старый пароль
+    {% endif %}
+</div>
+
+<div class="success">
+    {% if success == True %}
+    <br>Пароль успешно изменен
+    {% endif %}
+</div>
+
+<form action="/new_pwd" method = 'GET'>
+    <fieldset>
+        <legend><h2><b>Смена пароля</b></h2></legend>
+        <p>Пароль должен быть длиной от 6 до 14 символов, может содержать латинские символы,
+            цифры и пунктуационные знаки.</p>
+        <span class="required">Старый пароль</span><br>
+            <input size="30" name="old_password" type="password" placeholder="*********"
+                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+        <span class="required">Новый пароль</span><br>
+            <input size="30" name="new_password" type="password" placeholder="*********"
+                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+        <span class="required">Подтверждение пароля</span><br>
+            <input size="30" name="confirm_password" type="password" placeholder="*********"
+                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+        <input class="button" type="submit" value="Поменять пароль">
+    </fieldset>
+</form>
+
+{% endblock %}

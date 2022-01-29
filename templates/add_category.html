@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %} Добавить секцию {% endblock %}
+
+{% block content %}
+
+  <form action="/edited_cat" method = 'POST'>
+    <fieldset>
+      <legend><h2><b>Добавление секции</b></h2></legend>
+    <span class="required">Название секции</span><br>
+        <input size="100" name="category_name" type="text" required><br><br>
+    <span class="required">Короткое название</span><br>
+        <input size="50" name="short_name" type="text" required><br><br>
+    <span class="required">Направление</span><br>
+        {% for key in directions %}
+        <input size="30" name="direction" type="radio" value={{ directions[key]['id'] }}> {{ directions[key]['name'] }}<br>
+        {% endfor %}<br><br>
+    <span class="required">Конкурс</span><br>
+        {% for key in contests %}
+        <input size="30" name="contest" type="radio" value={{ contests[key]['id'] }}> {{ contests[key]['name'] }}<br>
+        {% endfor %}<br><br>
+
+    <span>Руководитель секции</span><br>
+        <p><select name="supervisor">
+            <option class="container-fluid bg-2" selected="true" disabled>Руководитель секции</option>
+            {% for key in supervisors %}
+            <option class="container-fluid bg-2" value={{ supervisors[key]['id'] }}>
+                {{ supervisors[key]['name'] }}</option>
+            {% endfor %}</select></p>
+
+    <span class="required">Telegram-канал</span><br>
+        <input size="30" name="tg_channel" type="text"><br><br>
+    <span>ID секции</span><br>
+        <input size="30" name="cat_id" type="text" value="{{ cat_id }}"><br><br>
+    <input class="button" type="submit" value="Добавить">
+    </fieldset>
+  </form>
+
+{% endblock %}

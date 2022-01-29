@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %} Редактирование профиля {% endblock %}
+
+{% block content %}
+
+<!--Редактирование информации профиля: VK, Tg, имя пользователя, место учебы и пр.
+Отправка формы вызывает функцию write_profile
+Переменные:
+filled - профиль заполнен
+vk
+tg
+username
+involved
+place_of_work
+-->
+
+<form action="/write_profile" method = 'POST'>
+    <fieldset>
+        <legend><h2><b>Информация профиля</b></h2></legend>
+            <table width="800px">
+                <tr><td>
+                <span class="required">Ссылка на страницу VK</span><br>
+                    <input size="30" {% if profile['filled'] == True %} value = "vk.com/{{ profile['vk'] }}" {% endif %}}
+                           name="vk" type="text" placeholder="vk.com/myname"
+                           pattern="(https://)?vk.com/[A-Za-z0-9-]+" required><br><br>
+                Имя пользователя в Telegram<br>
+                    <input size="30" {% if profile['filled'] == True %} value = "@{{ profile['tg'] }}" {% endif %}}
+                           name="telegram" type="text" placeholder="@my_name"
+                           pattern="@[a-z_-]+"><br><br>
+                Имя пользователя <a href="http://vernadsky.info/">на сайте Чтений</a><br>
+                    <input size="30" {% if profile['filled'] == True %} value = "{{ profile['username'] }}" {% endif %}}
+                           name="vernadsky_username" type="text" placeholder="user_name"
+                           pattern="[A-Za-z0-9_]{4-12}"><br><br>
+            </td><td>
+                <span class="required">Вид деятельности</span><br>
+                <p><select name="occupation" required>
+                    <option class="container-fluid bg-2" {% if profile['occupation'] == None %} selected="true" {% endif %}
+                            disabled>Выберите вариант</option>
+                    <option class="container-fluid bg-2" {% if profile['occupation'] == "scholar" %} selected="true" {% endif %}
+                            value="scholar">Школьник</option>
+                    <option class="container-fluid bg-2" {% if profile['occupation'] == "student" %} selected="true" {% endif %}
+                            value="student">Студент</option>
+                    <option class="container-fluid bg-2" {% if profile['occupation'] == "worker" %} selected="true" {% endif %}
+                            value="worker">Работаю</option>
+                </select></p><br>
+            </td></tr>
+            <tr><td>
+                <span class="required">Я знаю о Чтениях, потому что учусь или выпустился из</span><br>
+                    <input type="radio" name="involved" {% if profile['involved'] == "MSU_School" %} checked {% endif %}
+                           value="MSU_School"> Университетской гимназии МГУ<br>
+                    <input type="radio" name="involved" {% if profile['involved'] == "1553" %} checked {% endif %}
+                           value="1553"> Лицея №1553 им. В. И. Вернадского<br><br>
+            </td><td>
+                <span class="required">Место учебы/работы</span><br>
+                    <input type="radio" name="place_of_work" {% if profile['place_of_work'] == "MSU_School" %} checked {% endif %}
+                           value="MSU_School"> Университетская гимназия МГУ<br>
+                    <input type="radio" name="place_of_work" {% if profile['place_of_work'] == "1553" %} checked {% endif %}
+                           value="1553"> Лицей №1553 им. В. И. Вернадского<br>
+                    <input size="30" name="place_of_work" type="text" placeholder="Московская школа №1543 на Юго-Западе"
+                           pattern=("[\w\s\+\(\)\.\,\"\«\»\“\”\–\:№-]+") {% if profile['filled'] == True and profile['place_of_work'] !="1553"
+                           and profile['place_of_work'] !="MSU_School" %}
+                           value = "{{ profile['place_of_work'] }}" {% endif %}}><br><br>
+            </td><tr>
+            <td colspan="2">
+                <span class="required">Если вы не имеете отношения к этим школам, укажите, как вы узнали о Конкурсе</span><br>
+                    <input size="30" {% if profile['filled'] == True and profile['involved'] !="1553"
+                        and profile['involved'] !="MSU_School" %}
+                           value = "{{ profile['involved'] }}" {% endif %}}
+                           name="involved" type="text" placeholder="Я друг лицеиста"
+                           pattern=("[\w\s\+\(\)\.\,\"\«\»\“\”\–\:№-]+")><br><br>
+            </td></tr>
+            <tr><td>
+                <span class="required">Для школьников - класс</span><br>
+                    <p><select name="grade">
+                        <option class="container-fluid bg-2" {% if profile['grade'] == None %} selected="true" {% endif %}
+                                disabled>Класс</option>
+                        <option class="container-fluid bg-2" {% if profile['grade'] == 5 %} selected="true" {% endif %}
+                                value="5">5</option>
+                        <option class="container-fluid bg-2" {% if profile['grade'] == 6 %} selected="true" {% endif %}
+                                value="6">6</option>
+                        <option class="container-fluid bg-2" {% if profile['grade'] == 7 %} selected="true" {% endif %}
+                                value="7">7</option>
+                        <option class="container-fluid bg-2" {% if profile['grade'] == 8 %} selected="true" {% endif %}
+                                value="8">8</option>
+                        <option class="container-fluid bg-2" {% if profile['grade'] == 9 %} selected="true" {% endif %}
+                                value="9">9</option>
+                        <option class="container-fluid bg-2" {% if profile['grade'] == 10 %} selected="true" {% endif %}
+                                value="10">10</option>
+                        <option class="container-fluid bg-2" {% if profile['grade'] == 11 %} selected="true" {% endif %}
+                                value="11">11</option>
+                    </select></p><br>
+            </td><td>
+                <span class="required">Для студентов - курс</span><br>
+                    <p><select name="year">
+                        <option class="container-fluid bg-2" {% if profile['year'] == None %} selected="true" {% endif %}
+                                disabled>Курс</option>
+                        <option class="container-fluid bg-2" {% if profile['year'] == 1 %} selected="true" {% endif %}
+                                value="1">1</option>
+                        <option class="container-fluid bg-2" {% if profile['year'] == 2 %} selected="true" {% endif %}
+                                value="2">2</option>
+                        <option class="container-fluid bg-2" {% if profile['year'] == 3 %} selected="true" {% endif %}
+                                value="3">3</option>
+                        <option class="container-fluid bg-2" {% if profile['year'] == 4 %} selected="true" {% endif %}
+                                value="4">4</option>
+                        <option class="container-fluid bg-2" {% if profile['year'] == 5 %} selected="true" {% endif %}
+                                value="5">5</option>
+                        <option class="container-fluid bg-2" {% if profile['year'] == 6 %} selected="true" {% endif %}
+                                value="6">6</option>
+                    </select></p><br>
+            </td></tr>
+            <tr><td colspan="2">
+                <input class="button" type="submit" value="Сохранить">
+                <input class="button" type="reset" value="Сбросить данные формы">
+            </td></tr>
+        </table>
+    </fieldset>
+</form>
+{% endblock %}

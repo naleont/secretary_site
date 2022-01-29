@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %} Добавление русека {% endblock %}
+
+{% block content %}
+
+<div  class="grid-container">
+  <form action="/adding_supervisor" method = 'POST'>
+    <fieldset>
+      <legend><h2><b>Добавление русека</b></h2></legend>
+        <table width="800px">
+            <tr><td border-spacing="10px">
+                <span class="required">Контактный e-mail</span><br>
+                    <input size="30" name="email" type="email" placeholder="example@example.com"><br><br>
+                <span class="required">Номер телефона</span><br>
+                    <input size="30" name="tel" type="tel" placeholder="+79908378209"
+                           pattern="\+?\d+-?\(?\d+\)?\d+-?\d+-?\d+-?\d+"><br><br>
+            </td>
+            <td>
+                <span class="required">Фамилия</span><br>
+                    <input size="30" name="last_name" type="text" placeholder="Иванов"
+                           pattern="[А-ЯЁ][а-яё]+(-?[А-ЯЁ][а-яё]+)?" required><br><br>
+                <span class="required">Имя</span><br>
+                    <input size="30" name="first_name" type="text" placeholder="Иван"
+                           pattern="[А-ЯЁ][а-яё]+(-? ?[А-ЯЁ][а-яё]+)?" required><br><br>
+                <span class="required">Отчество</span><br>
+                    <input size="30" name="patronymic" type="text" placeholder="Иванович"
+                           pattern="[А-ЯЁ][а-яё]+" required><br><br>
+            </td></tr>
+            <tr><td>
+                <span>Информация о русеке</span><br>
+                    <input size="70" name="supervisor_info" type="text"><br><br>
+                <span>ID русека</span><br>
+                    <input size="30" name="supervisor_id" type="int"><br><br>
+            </td></tr>
+
+            <tr><td colspan="2">
+
+                <input class="button" type="submit" value="Отправить">
+                <input class="button" type="reset" value="Сбросить данные формы">
+            </td></tr>
+        </table>
+    </fieldset>
+  </form>
+</div>
+{% endblock %}

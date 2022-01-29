@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %} Заявка в команду {% endblock %}
+
+{% block content %}
+
+<h3>{{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}</h3>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    <tr>
+        <td width="45%">
+            ID
+        </td><td colspan="2">
+        {{ user['user_id'] }}
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>
+            ФИО
+        </td><td colspan="2">
+        {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
+        </td>
+    </tr>
+    {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    <tr>
+        <td>
+            Тип пользователя
+        </td><td width="20%">
+        {% if user['type'] == 'admin' %}
+        Админ
+        {% elif user['type'] == 'manager' %}
+        Координатор
+        {% elif user['type'] == 'team' %}
+        В команде
+        {% elif user['type'] == 'user' %}
+        Пользователь
+        {% endif %}
+        </td>
+        <td width="35%">
+            <div align="right">
+                <form action="/assign_user_type/{{ user['user_id'] }}" method = 'GET'>
+                    <fieldset>
+                        <select name="assign_type">
+                            <option class="container-fluid bg-2" value="user" {% if user['type'] == 'user' %}
+                            selected="true" {% endif %}>Пользователь</option>
+                            <option class="container-fluid bg-2" value="team"{% if user['type'] == 'team' %}
+                            selected="true" {% endif %}>В команде</option>
+                            <option class="container-fluid bg-2" value="manager"{% if user['type'] == 'manager' %}
+                            selected="true" {% endif %}>Координатор</option>
+                            <option class="container-fluid bg-2" value="admin"{% if user['type'] == 'admin' %}
+                            selected="true" {% endif %}>Админ</option>
+                        </select>
+                        <button class="blue_no_border" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+  <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+</svg></button>
+                    </fieldset>
+                </form></div>
+        </td>
+    </tr>
+    {% endif %}
+    {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    <tr>
+        <td>
+            Секция
+        </td>
+        <td colspan="2">
+            {{ categories[session['cat_id']]['name'] }}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Статус аккаунта
+        </td><td {% if user['approved'] == True %} colspan="2" {% endif %}>
+        {% if user['approved'] == True %}
+        Подтвержден
+        {% else %}
+        Не подтвержден
+        {% endif %}
+        </td>
+        {% if user['approved'] == False %}
+        <td>
+            <a href="/approve/{{ user['user_id'] }}/adm"><button class="blue" type="button">Подтвердить</button></a>
+        </td>
+        {% endif %}
+    </tr>
+    {% endif %}
+    {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    <tr>
+        <td>
+            Зарегистрирован
+        </td><td colspan="2">
+        {{ user['created_on'] }}
+        </td>
+    </tr>
+    {% endif %}
+    {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    <tr>
+        <td>
+            Последний вход
+        </td><td colspan="2">
+        {{ user['last_login'] }}
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>
+            Дата рождения
+        </td><td colspan="2">
+        {{ user['born'] }}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            e-mail
+        </td><td colspan="2">
+        <a href="mailto:{{ user['email'] }}">{{ user['email'] }}</a>
+        </td>
+    </tr>
+    <tr>
+        <td colspan>
+            Телефон
+        </td><td colspan="2">
+        <a href="tel:{{ user['tel'] }}">{{ user['tel'] }}</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            VK
+        </td><td colspan="2">
+        {% if profile['vk'] != None %}
+        <a href="https://vk.com/{{ profile['vk'] }}">vk.com/{{ profile['vk'] }}</a>
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Telegram
+        </td><td colspan="2">
+        {% if profile['tg'] != None %}
+        <a href="https://t.me/{{ profile['tg'] }}">@{{ profile['tg'] }}</a>
+        {% endif %}
+        </td>
+    </tr>
+    {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    <tr>
+        <td>
+            Имя пользователя на <a href="https://vernadsky.info/">сайте</a>
+        </td><td colspan="2">
+        {% if profile['username'] != None %}
+        {{ profile['username'] }}
+        {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td>
+            Вид деятельности
+        </td><td colspan="2">
+        {% if profile['occupation'] == 'scholar' %}
+        Школьник
+        {% elif profile['occupation'] == 'student' %}
+        Студент
+        {% elif profile['occupation'] == 'worker' %}
+        Работаю
+        {% else %}
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Место учебы/работы
+        </td><td colspan="2">
+        {% if profile['place_of_work'] == 'MSU_School' %}
+        Университетская гимназия МГУ
+        {% elif profile['place_of_work'] == '1553' %}
+        Лицей №1553 им. В. И. Вернадского
+        {% elif profile['place_of_work'] == None %}
+        {% else %}
+        {{ profile['place_of_work'] }}
+        {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Класс/курс
+        </td><td colspan="2">
+        {% if profile['grade'] %}
+        {{ profile['grade'] }}
+        {% elif profile['year'] %}
+        {{ profile['year'] }}
+        {% else %}
+        {% endif %}
+        </td>
+    </tr>
+    {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    <tr>
+        <td>
+            Знаю о Чтениях от
+        </td><td colspan="2">
+        {% if profile['involved'] == 'MSU_School' %}
+        Университетская гимназия МГУ
+        {% elif profile['involved'] == '1553' %}
+        Лицей №1553 им. В. И. Вернадского
+        {% elif profile['involved'] == None %}
+        {% else %}
+        {{ profile['involved'] }}
+        {% endif %}
+        </td>
+    </tr>
+    {% endif %}
+</table>
+{% endblock %}

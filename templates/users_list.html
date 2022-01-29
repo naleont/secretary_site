@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<div align="right">
+<form action="/search_user" method = 'GET'>
+    <fieldset>
+        <input size="30" type="text" name="query">
+        <button class="blue_no_border" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+</svg></button>
+    </fieldset>
+</form>
+<span class="comment">Доступен поиск по ID, e-mail, номеру телефона и фамилии.</span></div>
+
+<div align="right">
+<form action="/search_user" method = 'GET'>
+    <fieldset>
+        <select name="query">
+            <option class="container-fluid bg-2" value="user">Пользователь</option>
+            <option class="container-fluid bg-2" value="team">В команде</option>
+            <option class="container-fluid bg-2" value="secretary">Секретарь</option>
+            <option class="container-fluid bg-2" value="manager">Координатор</option>
+            <option class="container-fluid bg-2" value="admin">Админ</option>
+        </select>
+        <button class="blue_no_border" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+</svg></button>
+    </fieldset>
+</form></div><br>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center"><b>ID</b></td>
+        <td align="center"><b>Фамилия, имя</b></td>
+        <td align="center"><b>e-mail</b></td>
+        <td align="center"><b>Телефон</b></td>
+        <td align="center"><b>Дата рождения</b></td>
+        <td align="center"><b>Создан</b></td>
+        <td align="center"><b>Последний вход</b></td>
+    </tr>
+{% for key in users %}
+    <tr>
+        <td align="center">
+            {{ users[key]['user_id'] }}
+        </td>
+        <td>
+            <a href="/user_page/{{ users[key]['user_id'] }}">{{ users[key]['last_name'] }} {{ users[key]['first_name']
+                }}</a>
+        </td>
+        <td>
+            <a href="mailto:{{ users[key]['email'] }}">{{ users[key]['email'] }}</a>
+        </td>
+        <td>
+            <a href="tel:{{ users[key]['tel'] }}">{{ users[key]['tel'] }}</a>
+        </td>
+        <td align="center">
+            {{ users[key]['born'] }}
+        </td>
+        <td>
+            {{ users[key]['created_on'] }}
+        </td>
+        <td align="center">
+            {{ users[key]['last_login'] }}
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+{% endblock %}

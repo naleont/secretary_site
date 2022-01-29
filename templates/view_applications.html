@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %} Заявки {% endblock %}
+
+{% block content %}
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td rowspan="2" align="center"></td>
+        <td rowspan="2" align="center"><b>Роль</b></td>
+        <td colspan="3" align="center"><b>Секция</b></td>
+        <td rowspan="2" align="center"><b>Любая</b></td>
+        <td rowspan="2" align="center"><b>Участвовал</b></td>
+        <td rowspan="2" align="center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-smile" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
+            </svg>
+        </td>
+    </tr><tr>
+        <td align="center"><b>1</b></td>
+        <td align="center"><b>2</b></td>
+        <td align="center"><b>3</b></td>
+    </tr>
+{% for key in applications %}
+    <tr>
+        <td width="20%">
+            <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
+        </td>
+        <td>
+            {% if applications[key]['role'] == 'secretary' %}
+            Секретарь
+            {% elif applications[key]['role'] == 'volunteer' %}
+            Волонтер
+            {% elif applications[key]['role'] == 'other' %}
+            Другое
+            {% elif applications[key]['role'] == 'not_sure' %}
+            Не знаю
+            {% elif applications[key]['role'] == None %}
+            {% endif %}
+        </td>
+        <td>
+            {% if applications[key]['category_1'] != None %}
+            {{ applications[key]['category_1_short'] }}
+            {% endif %}
+        </td>
+        <td>
+            {% if applications[key]['category_2'] != None %}
+            {{ applications[key]['category_2_short'] }}
+            {% endif %}
+        </td>
+        <td>
+            {% if applications[key]['category_3'] != None %}
+            {{ applications[key]['category_3_short'] }}
+            {% endif %}
+        </td>
+        <td align="center">
+            {% if applications[key]['any_category'] == True %}
+            Да
+            {% else %}
+            {% endif %}
+        </td>
+        <td align="center">
+            {% if applications[key]['taken_part'] == "volunteer" %}
+            волонтером
+            {% elif applications[key]['taken_part'] == "secretary" %}
+            секретарем
+            {% else %}
+            нет
+            {% endif %}
+        </td>
+        <td width="5%" align="center">
+            {% if applications[key]['considered'] == "True" %}
+            <div class="green-text" title="Принят в команду"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-heart-eyes" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M11.315 10.014a.5.5 0 0 1 .548.736A4.498 4.498 0 0 1 7.965 13a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .548-.736h.005l.017.005.067.015.252.055c.215.046.515.108.857.169.693.124 1.522.242 2.152.242.63 0 1.46-.118 2.152-.242a26.58 26.58 0 0 0 1.109-.224l.067-.015.017-.004.005-.002zM4.756 4.566c.763-1.424 4.02-.12.952 3.434-4.496-1.596-2.35-4.298-.952-3.434zm6.488 0c1.398-.864 3.544 1.838-.952 3.434-3.067-3.554.19-4.858.952-3.434z"/>
+            </svg></div>
+            {% elif applications[key]['considered'] == "False" %}
+            <a href="/manage_application/{{ applications[key]['year'] }}/{{ applications[key]['user_id'] }}/accept/all">
+                <div class="alarm" title="Пока что не принят в команду"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-frown" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M4.285 12.433a.5.5 0 0 0 .683-.183A3.498 3.498 0 0 1 8 10.5c1.295 0 2.426.703 3.032 1.75a.5.5 0 0 0 .866-.5A4.498 4.498 0 0 0 8 9.5a4.5 4.5 0 0 0-3.898 2.25.5.5 0 0 0 .183.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
+            </svg></div></a>
+            {% elif applications[key]['considered'] == 'in_process' %}
+            <div class="yellow-text" title="Заявка в ожидании"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-neutral" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M4 10.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5zm3-4C7 5.672 6.552 5 6 5s-1 .672-1 1.5S5.448 8 6 8s1-.672 1-1.5zm4 0c0-.828-.448-1.5-1-1.5s-1 .672-1 1.5S9.448 8 10 8s1-.672 1-1.5z"/>
+            </svg></div>
+            {% endif %}
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+{% endblock %}

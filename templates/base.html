@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Команда Конкурса им. В. И. Вернадского</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    /* Remove the navbar's default margin-bottom and rounded borders */
+    .navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
+
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 450px}
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      padding-top: 20px;
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+
+    /* Set black background color, white text and some padding */
+    footer {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+    .comment {
+        font-size: 16px;
+        color: dimgrey;
+      }
+    .required::after {
+          content: "*";
+          color: red;
+        }
+      .alarm {color:red;}
+      .success {color:green;}
+      .profile {
+        border: 10px #f1f1f1;
+        width: 750px;
+      }
+      button {
+        background-color: #67AB60;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #67AB60;
+      }
+      .button {
+        background-color: #67AB60;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #67AB60;
+      }
+      .red-button{
+        background-color: #B80000;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #B80000;
+      }
+      .dark-blue {
+        background-color: #363F5C;
+      }
+      .medium-blue {
+        background-color: #4962A4;
+      }
+      .light-blue {
+        background-color: #C5E3F3;
+      }
+      .green{
+        background-color: #67AB60;
+      }
+      .text-blue {
+        color: #C5E3F3;
+      }
+      td{
+        padding: 3px 7px;
+      }
+      .blue {
+        background-color: white;
+        border: inset #363F5C;
+        color: #363F5C;
+      }
+      .blue_no_border {
+        background-color: white;
+        border: solid white;
+        color: #363F5C;
+      }
+      .comment{
+        font-size: 90%;
+      }
+      .full-height{
+        margin:0;
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+      }
+      .centered{
+         align: center;
+      }
+      .green-text{
+        color: #67AB60;
+      }
+      .yellow-text{
+        color: #D2CD00;
+      }
+      .dark-text{
+        color: #363F5C;
+      }
+      .white-text{
+        color: white;
+      }
+      .big-button{
+        padding: 0px 17px;
+        vertical-align: middle;
+      }
+
+    /* On small screens, set height to 'auto' for sidenav and grid */
+    @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        padding: 15px;
+      }
+      .row.content {height:auto;}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse dark-blue">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand active" href="/">Главная</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li><a href="/categories">Секции</a></li>
+        <li><a href="/supervisors">Русеки</a></li>
+<!--        <li><a href="#">Меню-3</a></li>-->
+<!--        <li><a href="#">Меню-4</a></li>-->
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {% if not session['user_id'] %}
+        <li>
+        <a href="/login"><span class="glyphicon glyphicon-log-in"></span> Войти</a>
+        </li>
+        {% else %}
+        <li>
+        <a href="/profile_info">Профиль</a></li>
+        </li>
+        {% if session['type'] == 'admin' %}
+        <li>
+        <a href="/admin">Админка</a></li>
+        </li>
+        {% endif %}
+        <li>
+        <a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Выйти</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid text-center full-height">
+  <div class="row content">
+    <div class="col-sm-2 sidenav light-blue">
+      <p>Здесь будет менюшка</p>
+<!--      <p><a href="/secretary_reminder">Памятка секретаря</a></p>-->
+<!--      <p><a href="#">Меню-2</a></p>-->
+<!--      <p><a href="#">Меню-3</a></p>-->
+    </div>
+    <div class="col-sm-8 text-left">
+      {% block content %} {% endblock %}
+    </div>
+    <div class="col-sm-2 sidenav light-blue">
+      <div class="well">
+        <p><a href="https://vernadsky.info/" target="_blank">Сайт Конкурса</a></p>
+      </div>
+      <div class="well">
+        <p><a href="">Canvas</a></p>
+      </div>
+      <div class="well">
+        <p><a href="https://vk.com/vernadsky_org_news">Группа VK</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <footer class="container-fluid text-center medium-blue">
+  <p>Footer Text</p>
+</footer>
+
+</body>
+</html>
