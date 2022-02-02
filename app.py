@@ -436,6 +436,11 @@ def secretary_reminder():
     return render_template('secretary_reminder.html')
 
 
+@app.route('/secretary_job')
+def secretary_job():
+    return render_template('secretary_job.html')
+
+
 # Страница авторизации
 @app.route('/login')
 def login():
