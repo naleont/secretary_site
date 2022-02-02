@@ -7,8 +7,10 @@
     <td>
         <h2>Профиль руководителя секции</h2>
     </td>
+{% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
     <td>
         <a href="/edit_supervisor/{{ supervisor['id'] }}"><button>Редактировать русека</button></a></td>
+{% endif %}
 </tr></table>
 ФИО: {{ supervisor['name'] }}<br>
 {% if access == 'partial' %}

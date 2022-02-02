@@ -3,7 +3,9 @@
 {% block content %}
 <table><tr>
     <td><h2>{{ category['name'] }}</h2></td>
+{% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
     <td><a href="/edit_category/{{ category['id'] }}"><button>Редактировать секцию</button></a></td>
+{% endif %}
 </tr></table>
 {{ category['contest'] }}<br>
 Направление: {{ category['direction'] }}<br>
