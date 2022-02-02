@@ -4,9 +4,9 @@
 
 {% block content %}
 <div class="alarm">
-    {% if exists == 'email' %}
+    {% if message == 'email' %}
     <br>Введенный e-mail занят другим пользователем.
-    {% elif exists == 'tel' %}
+    {% elif message == 'tel' %}
     <br>Введенный телефон занят другим пользователем.
     {% else %}
     {% endif %}
@@ -20,6 +20,7 @@
                 <span class="required">Контактный e-mail</span><br>
                     <input size="30" value = {{ user['email'] }} name="email" type="email" placeholder="example@example.com" required><br><br>
                 <span class="required">Номер телефона</span><br>
+                <span class="comment">Можно использовать +, скобки, дефисы</span><br>
                     <input size="30" value = {{ user['tel'] }} name="tel" type="tel" placeholder="+79908378209"
                            pattern="\+?\d+-?\(?\d+\)?\d+-?\d+-?\d+-?\d+" required><br><br>
                 <span class="required">Дата рождения</span><br>

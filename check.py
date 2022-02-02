@@ -25,4 +25,7 @@ db.create_all()
 # print(user.first().password)
 
 
-print(type(datetime.datetime.now()))
+cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == 2 and CatSecretaries.cat_id == 1).first()
+db.session.delete(cat_sec)
+db.session.commit()
+

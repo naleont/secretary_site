@@ -9,9 +9,9 @@
 <table frame="void" border="2px" bordercolor="#4962A4">
     {% if session['type'] == 'manager' or session['type'] == 'admin' %}
     <tr>
-        <td width="45%">
+        <td width="35%">
             ID
-        </td><td colspan="2">
+        </td><td colspan="3">
         {{ user['user_id'] }}
         </td>
     </tr>
@@ -19,7 +19,7 @@
     <tr>
         <td>
             ФИО
-        </td><td colspan="2">
+        </td><td colspan="3">
         {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
         </td>
     </tr>
@@ -38,7 +38,7 @@
         Пользователь
         {% endif %}
         </td>
-        <td width="35%">
+        <td colspan="2">
             <div align="right">
                 <form action="/assign_user_type/{{ user['user_id'] }}" method = 'GET'>
                     <fieldset>
@@ -61,18 +61,24 @@
     </tr>
     {% endif %}
     {% if session['type'] == 'manager' or session['type'] == 'admin' %}
+    {% if user['secretary'] == True %}
     <tr>
         <td>
             Секция
         </td>
         <td colspan="2">
-            {{ categories[session['cat_id']]['name'] }}
+            {{ categories[user['cat_id']]['name'] }}
+        </td>
+        <td width="10%">
+            <a href="/remove_secretary/{{ user['user_id'] }}/{{ user['cat_id'] }}">
+                <button class="blue" type="button">Снять</button></a>
         </td>
     </tr>
+    {% endif %}
     <tr>
         <td>
             Статус аккаунта
-        </td><td {% if user['approved'] == True %} colspan="2" {% endif %}>
+        </td><td {% if user['approved'] == True %} colspan="3" {% else %} colspan="2" {% endif %}>
         {% if user['approved'] == True %}
         Подтвержден
         {% else %}
@@ -80,7 +86,7 @@
         {% endif %}
         </td>
         {% if user['approved'] == False %}
-        <td>
+        <td colspan="2">
             <a href="/approve/{{ user['user_id'] }}/adm"><button class="blue" type="button">Подтвердить</button></a>
         </td>
         {% endif %}
@@ -90,7 +96,7 @@
     <tr>
         <td>
             Зарегистрирован
-        </td><td colspan="2">
+        </td><td colspan="3">
         {{ user['created_on'] }}
         </td>
     </tr>
@@ -99,7 +105,7 @@
     <tr>
         <td>
             Последний вход
-        </td><td colspan="2">
+        </td><td colspan="3">
         {{ user['last_login'] }}
         </td>
     </tr>
@@ -107,28 +113,28 @@
     <tr>
         <td>
             Дата рождения
-        </td><td colspan="2">
+        </td><td colspan="3">
         {{ user['born'] }}
         </td>
     </tr>
     <tr>
         <td>
             e-mail
-        </td><td colspan="2">
+        </td><td colspan="3">
         <a href="mailto:{{ user['email'] }}">{{ user['email'] }}</a>
         </td>
     </tr>
     <tr>
         <td colspan>
             Телефон
-        </td><td colspan="2">
+        </td><td colspan="3">
         <a href="tel:{{ user['tel'] }}">{{ user['tel'] }}</a>
         </td>
     </tr>
     <tr>
         <td>
             VK
-        </td><td colspan="2">
+        </td><td colspan="3">
         {% if profile['vk'] != None %}
         <a href="https://vk.com/{{ profile['vk'] }}">vk.com/{{ profile['vk'] }}</a>
         {% endif %}
@@ -137,7 +143,7 @@
     <tr>
         <td>
             Telegram
-        </td><td colspan="2">
+        </td><td colspan="3">
         {% if profile['tg'] != None %}
         <a href="https://t.me/{{ profile['tg'] }}">@{{ profile['tg'] }}</a>
         {% endif %}
@@ -147,7 +153,7 @@
     <tr>
         <td>
             Имя пользователя на <a href="https://vernadsky.info/">сайте</a>
-        </td><td colspan="2">
+        </td><td colspan="3">
         {% if profile['username'] != None %}
         {{ profile['username'] }}
         {% endif %}
@@ -157,7 +163,7 @@
     <tr>
         <td>
             Вид деятельности
-        </td><td colspan="2">
+        </td><td colspan="3">
         {% if profile['occupation'] == 'scholar' %}
         Школьник
         {% elif profile['occupation'] == 'student' %}
@@ -171,7 +177,7 @@
     <tr>
         <td>
             Место учебы/работы
-        </td><td colspan="2">
+        </td><td colspan="3">
         {% if profile['place_of_work'] == 'MSU_School' %}
         Университетская гимназия МГУ
         {% elif profile['place_of_work'] == '1553' %}
@@ -185,7 +191,7 @@
     <tr>
         <td>
             Класс/курс
-        </td><td colspan="2">
+        </td><td colspan="3">
         {% if profile['grade'] %}
         {{ profile['grade'] }}
         {% elif profile['year'] %}
@@ -198,7 +204,7 @@
     <tr>
         <td>
             Знаю о Чтениях от
-        </td><td colspan="2">
+        </td><td colspan="3">
         {% if profile['involved'] == 'MSU_School' %}
         Университетская гимназия МГУ
         {% elif profile['involved'] == '1553' %}
@@ -210,5 +216,5 @@
         </td>
     </tr>
     {% endif %}
-</table>
+</table><br>
 {% endblock %}

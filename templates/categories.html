@@ -43,7 +43,7 @@
             {{ categories[key]['name'] }}
         </td>
         <td>
-            {% if categories[key]['tg_channel'] != "" %}
+            {% if categories[key]['tg_channel'] %}
             <a href="https://t.me/{{ categories[key]['tg_channel'] }}">@{{ categories[key]['tg_channel'] }}</a>
             {% endif %}
         </td>
@@ -66,7 +66,9 @@
             {{ categories[key]['name'] }}
         </td>
         <td>
+            {% if categories[key]['tg_channel'] %}
             <a href="https://t.me/{{ categories[key]['tg_channel'] }}">@{{ categories[key]['tg_channel'] }}</a>
+            {% endif %}
         </td>
         <td>
             {{ categories[key]['supervisor'] }}

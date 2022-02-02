@@ -1,14 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint
-from flask_login import UserMixin
 import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 db_name = 'team_db.db'
 
 
-class Users(UserMixin, db.Model):
+class Users(db.Model):
     __tablename__ = 'users'
 
     user_id = db.Column('user_id', db.Integer, primary_key=True)

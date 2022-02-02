@@ -19,8 +19,9 @@
                 <span>Хочу быть секретарем секции (только для секретарей)</span><br>
                     <span class="comment">Первый приоритет</span>
                 <p><select name="category_1">
-                    <option class="container-fluid bg-2" {% if application['category_1_id'] == None %} selected="true" {% endif %}
-                            disabled>Первый приоритет</option>
+                    <option class="container-fluid bg-2" {% if not application['category_1_id'] or
+                    application['category_1_id'] == None %} selected="true" {% endif %}
+                            value="None">Выберите секцию</option>
                     {% for key in categories %}
                     <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_1_id'] %}
                             selected="true" {% endif %} value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
@@ -28,8 +29,9 @@
                 </select></p>
                     <span class="comment">Второй приоритет</span>
                 <p><select name="category_2">
-                    <option class="container-fluid bg-2" {% if application['category_2_id'] == None %}
-                            selected="true" {% endif %} disabled>Второй приоритет</option>
+                    <option class="container-fluid bg-2" {% if not application['category_2_id'] or
+                    application['category_2_id'] == None %}
+                            selected="true" {% endif %} value="None">Выберите секцию</option>
                     {% for key in categories %}
                     <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_2_id'] %} selected="true" {% endif %}
                             value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
@@ -37,16 +39,20 @@
                 </select></p>
                     <span class="comment">Третий приоритет</span>
                 <p><select name="category_3">
-                    <option class="container-fluid bg-2" {% if application['category_3_id'] == None %} selected="true"
-                            {% endif %} disabled>Третий приоритет</option>
+                    <option class="container-fluid bg-2" {% if not application['category_3_id'] or
+                    application['category_3_id'] == None %} selected="true"
+                            {% endif %} value="None">Выберите секцию</option>
                     {% for key in categories %}
                     <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_3_id'] %}
                             selected="true" {% endif %} value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
                     {% endfor %}
                 </select></p>
-                <input type="checkbox" name="any_category" value=True {% if application['any_category'] == True %}
-                        checked {% endif %}> Годится любая секция<br><br>
+                <input type="checkbox" name="any_category" value="True" {% if application['any_category'] == True %}
+                        checked {% endif %}> Годится любая секция<br>
+                <span class="comment">Отметьте, если вы согласны "спасти" любую секцию, если три выбранные
+                    очень нужно будет отдать кому-нибудь другому.</span><br><br>
                 <span class="required">Я уже работал на чтениях</span><br>
+                <span class="comment">Если вы уже работали и волонтером, и секретарем, отмечайте "секретарем"</span>
                     <p><select name="taken_part" required>
                     <option class="container-fluid bg-2" {% if application['taken_part'] == None %} selected="true" {% endif %}
                             disabled>Выберите вариант</option>
@@ -58,23 +64,38 @@
                             value="volunteer">Был волонтером</option>
                     </select></p><br>
             <input class="button" type="submit" value="Сохранить">
-            <input class="button" type="reset" value="Сбросить данные формы">
     </fieldset>
 </form>
 
 <h3>Полный список секций</h3>
 
 <table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td>
+            <b>Название секции</b>
+        </td>
+        <td>
+            <b>Руководитель секции</b>
+        </td>
+        <td>
+            <b>Возраст участников</b>
+        </td>
+    </tr>
 {% for key in categories %}
     <tr bgcolor="#C5E3F3">
         <td width="45%">
             {{ categories[key]['name'] }}
         </td>
         <td>
-            <a href="/supervisor_profile/{{ categories[key]['supervisor_id'] }}">{{ categories[key]['supervisor'] }}</a>
+            <a href="/supervisor_profile/{{ categories[key]['supervisor_id'] }}" target="_blank">
+                {{ categories[key]['supervisor'] }}</a>
         </td>
         <td>
-            {{ categories[key]['contest'] }}
+            {% if categories[key]['contest'] == 'Конкурс им. В. И. Вернадского' %}
+            8 - 11 класс
+            {% elif categories[key]['contest'] == 'Тропой открытий В. И. Вернадского' %}
+            5 - 7 класс
+            {% endif %}
         </td>
     </tr>
 {% endfor %}

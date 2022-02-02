@@ -184,54 +184,54 @@
         </td><td width="17%">
         первый приоритет
         </td>
+        {% if application['category_1'] %}
         <td>
             <a href="/assign_category/{{ user['user_id'] }}/{{ application['category_1_id'] }}"><button class="blue">
                 Одобрить</button></a>
         </td><td>
-        {% if application['category_1'] != None %}
         {{ application['category_1'] }}
-        {% endif %}
         {% if not categories[application['category_1_id']]['secretary'] %}
         (<span class="green-text">свободно</span>)
         {% else %}
         (<span class="alarm">занято {{ categories[application['category_1_id']]['secretary'] }}</span>)
         {% endif %}
         </td>
+        {% endif %}
     </tr>
     <tr><td>
         второй приоритет
         </td>
+        {% if application['category_2'] %}
         <td>
             <a href="/assign_category/{{ user['user_id'] }}/{{ application['category_2_id'] }}"><button class="blue">
                 Одобрить</button></a>
         </td><td>
-        {% if application['category_2'] != None %}
         {{ application['category_2'] }}
-        {% endif %}
         {% if not categories[application['category_2_id']]['secretary'] %}
         (<span class="green-text">свободно</span>)
         {% else %}
         (<span class="alarm">занято {{ categories[application['category_2_id']]['secretary'] }}</span>)
         {% endif %}
         </td>
+        {% endif %}
     </tr>
     <tr>
     </td><td>
         третий приоритет
         </td>
+        {% if application['category_3'] %}
         <td>
             <a href="/assign_category/{{ user['user_id'] }}/{{ application['category_3_id'] }}"><button class="blue">
                 Одобрить</button></a>
         </td><td>
-        {% if application['category_3'] != None %}
         {{ application['category_3'] }}
-        {% endif %}
         {% if not categories[application['category_3_id']]['secretary'] %}
         (<span class="green-text">свободно</span>)
         {% else %}
         (<span class="alarm">занято {{ categories[application['category_3_id']]['secretary'] }}</span>)
         {% endif %}
         </td>
+        {% endif %}
     </tr>
     <tr>
         <td colspan="2">

@@ -5,7 +5,9 @@
 {% block content %}
 <h2>Профиль руководителя секции</h2>
 ФИО: {{ supervisor['name'] }}<br>
+{% if access == 'partial' %}
 e-mail: <a href="mailto:{{ supervisor['email'] }}">{{ supervisor['email'] }}</a><br>
 Телефон: <a href="tel:{{ supervisor['tel'] }}">{{ supervisor['tel'] }}</a><br>
+{% endif %}
 Секция: {{ supervisor['categories'] }}<br>
 {% endblock %}

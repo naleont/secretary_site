@@ -4,8 +4,10 @@ from models import db, Users, Supervisors, Categories, Application, Profile, Cat
     Directions, Contests, CatDirs
 import re
 import datetime
+import os
 from cryptography.fernet import Fernet
 from flask_mail import Mail, Message
+from sqlalchemy import update, delete
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -51,24 +53,35 @@ def renew_session():
 
 def check_access():
     renew_session()
-    if session['type'] == 'admin':
-        return 10
-    elif session['type'] == 'manager':
-        return 9
-    elif 'secretary' in session.keys() and session['secretary'] is True:
-        return 7
-    elif session['type'] == 'team':
-        return 3
-    elif session['approved'] is True:
-        return 2
-    elif 'user_id' in session.keys():
-        return 1
+    if 'type' in session.keys():
+        if session['type'] == 'admin':
+            return 10
+        elif session['type'] == 'manager':
+            return 9
+        elif 'secretary' in session.keys() and session['secretary'] is True:
+            return 7
+        elif session['type'] == 'team':
+            return 3
+        elif session['approved'] is True:
+            return 2
+        elif 'user_id' in session.keys():
+            return 1
     else:
         return 0
 
 
+def create_key():
+    key = Fernet.generate_key()
+    file = open('secret.key', 'wb')
+    file.write(key)
+    file.close()
+    return key
+
+
 # Загрузка ключа шифрования
 def load_key():
+    if not os.path.isfile('secret.key'):
+        create_key()
     return open("secret.key", "rb").read()
 
 
@@ -115,6 +128,7 @@ def personal_info_form():
 
 # Загрузка информации пользователя из БД
 def get_user_info(user):
+    user = int(user)
     user_info = dict()
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
     user_info['user_id'] = user
@@ -130,10 +144,18 @@ def get_user_info(user):
     if user_db.last_login:
         user_info['last_login'] = user_db.last_login.date()
     if user in [u.secretary_id for u in CatSecretaries.query.all()]:
+        print(True)
         user_info['secretary'] = True
         user_info['cat_id'] = db.session.query(CatSecretaries).filter(
             CatSecretaries.secretary_id == user).first().cat_id
     return user_info
+
+
+def all_users():
+    users = dict()
+    for u in Users.query.all():
+        users[u.user_id] = get_user_info(u.user_id)
+    return users
 
 
 # Загрузка информации профиля из БД
@@ -180,10 +202,9 @@ def write_user(user_info):
             else:
                 return 'tel'
 
-        user_db.last_name = user_info['last_name']
-        user_db.first_name = user_info['first_name']
-        user_db.patronymic = user_info['patronymic']
-        user_db.born = user_info['born']
+        db.session.query(Users).filter(Users.user_id == session['user_id']).update(
+            {Users.last_name: user_info['last_name'], Users.first_name: user_info['first_name'],
+             Users.patronymic: user_info['patronymic'], Users.born: user_info['born']})
     else:
         user = Users(user_info['email'], user_info['tel'], user_info['password'], user_info['last_name'],
                      user_info['first_name'], user_info['patronymic'], user_info['born'], user_info['user_type'],
@@ -328,18 +349,21 @@ def one_application(application):
     one['user'] = user.last_name + ' ' + user.first_name
     one['year'] = application.year
     one['role'] = application.role
-    cat_1 = categories.filter(Categories.cat_id == application.category_1).first()
-    cat_2 = categories.filter(Categories.cat_id == application.category_2).first()
-    cat_3 = categories.filter(Categories.cat_id == application.category_3).first()
-    one['category_1_id'] = cat_1.cat_id
-    one['category_2_id'] = cat_2.cat_id
-    one['category_3_id'] = cat_3.cat_id
-    one['category_1'] = cat_1.cat_name
-    one['category_2'] = cat_2.cat_name
-    one['category_3'] = cat_3.cat_name
-    one['category_1_short'] = cat_1.short_name
-    one['category_2_short'] = cat_2.short_name
-    one['category_3_short'] = cat_3.short_name
+    if application.category_1 != 'None':
+        cat_1 = categories.filter(Categories.cat_id == application.category_1).first()
+        one['category_1_id'] = cat_1.cat_id
+        one['category_1'] = cat_1.cat_name
+        one['category_1_short'] = cat_1.short_name
+    if application.category_2 != 'None':
+        cat_2 = categories.filter(Categories.cat_id == application.category_2).first()
+        one['category_2_id'] = cat_2.cat_id
+        one['category_2'] = cat_2.cat_name
+        one['category_2_short'] = cat_2.short_name
+    if application.category_3 != 'None':
+        cat_3 = categories.filter(Categories.cat_id == application.category_3).first()
+        one['category_3_id'] = cat_3.cat_id
+        one['category_3'] = cat_3.cat_name
+        one['category_3_short'] = cat_3.short_name
     one['any_category'] = application.any_category
     one['taken_part'] = application.taken_part
     one['considered'] = application.considered
@@ -357,7 +381,7 @@ def application_info(info_type, user, year=curr_year):
     else:
         applications = None
     appl = dict()
-    if applications.first():
+    if applications is not None:
         if info_type == 'user-year':
             appl = one_application(applications.first())
         else:
@@ -372,9 +396,8 @@ def application_info(info_type, user, year=curr_year):
     else:
         appl[curr_year] = dict()
         appl[curr_year]['role'], appl[curr_year]['category_1'], appl[curr_year]['category_2'], \
-        appl[curr_year]['category_3'], appl[curr_year]['any_category'], appl[curr_year]['taken_part'], \
-        appl[curr_year]['considered'] = None, None, None, None, None, None, None
-        print(appl)
+            appl[curr_year]['category_3'], appl[curr_year]['any_category'], appl[curr_year]['taken_part'], \
+            appl[curr_year]['considered'] = None, None, None, None, None, None, None
     return appl
 
 
@@ -385,9 +408,10 @@ def main_page():
     return render_template('main.html')
 
 
-@app.route('/no_access')
-def no_access():
-    return render_template('no_access.html', access=check_access())
+@app.route('/no_access', defaults={'message': None})
+@app.route('/no_access/<message>')
+def no_access(message):
+    return render_template('no_access.html', access=check_access(), message=message)
 
 
 @app.route('/secretary_reminder')
@@ -406,10 +430,10 @@ def login():
 
 
 # Страница регистрации на сайте
-@app.route('/register')
-def register():
-    renew_session()
-    return render_template('registration_form.html')
+@app.route('/register', defaults={'message': None})
+@app.route('/register/<message>')
+def register(message):
+    return render_template('registration_form.html', message=message)
 
 
 # Обработка данных формы регистрации на сайте
@@ -420,9 +444,9 @@ def registration_res():
     # Проверка существования email и номера телефона в уже зарегистрированных пользователях.
     # При наличии пользователя с такими данными выводится ошибка через переменную exists.
     if user['email'] in [user.email for user in Users.query.all()]:
-        return render_template('registration_form.html', exists='email')
+        return redirect(url_for('.register', message='email'))
     elif user['tel'] in [user.tel for user in Users.query.all()]:
-        return render_template('registration_form.html', exists='tel')
+        return redirect(url_for('.register', message='tel'))
     # Извлечение из формы и шифрование пароля
     user['password'] = encrypt(request.form['password'])
     user['user_type'] = 'user'
@@ -434,7 +458,7 @@ def registration_res():
     # Запись сессии пользователя
     session['user_id'] = db.session.query(Users).filter(Users.email == user['email']).first().user_id
     # Вывод страницы с информацией профиля
-    return redirect(url_for('.profile_info'))
+    return redirect(url_for('.profile_info', message='first_time'))
 
 
 # Обработка данных формы авторизации
@@ -464,7 +488,7 @@ def logging():
     user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
     user.last_login = datetime.datetime.now()
     db.session.commit()
-    return redirect(url_for('.profile_info'))
+    return redirect(url_for('.main_page'))
 
 
 # Выход из учетной записи
@@ -477,6 +501,7 @@ def logout():
     session.pop('secretary', None)
     session.pop('cat_id', None)
     session.pop('approved', None)
+    session.pop('application', None)
     # Перенаправление на главную страницу
     return redirect(url_for('main_page'))
 
@@ -511,15 +536,16 @@ def profile_info(message):
 
 
 # Форма изменения информации пользователя (email, телефон, ФИО, дата рождения)
-@app.route('/edit_user')
-def edit_user():
+@app.route('/edit_user', defaults={'message': None})
+@app.route('/edit_user/<message>')
+def edit_user(message):
     if check_access() < 2:
         return redirect(url_for('.no_access'))
     # Получение информации текущего пользователя из БД
     user = get_user_info(session['user_id'])
     renew_session()
     # Вывод формы изменения информации пользователя с предзаполненными из БД полями
-    return render_template('edit_user.html', user=user)
+    return render_template('edit_user.html', user=user, message=message)
 
 
 # Обработка информации из формы изменения информации пользователя
@@ -529,7 +555,9 @@ def edited_user():
         return redirect(url_for('.no_access'))
     # Получение новых данных пользователя из формы и запись их в БД
     user_info = personal_info_form()
-    write_user(user_info)
+    message = write_user(user_info)
+    if message == 'email' or message == 'tel':
+        return redirect(url_for('.edit_user', message=message))
     return redirect(url_for('.profile_info'))
 
 
@@ -584,15 +612,10 @@ def write_profile():
         prof = Profile(session['user_id'], occupation, place_of_work, involved, grade, year, vk, tg, username)
         db.session.add(prof)
     else:
-        prof = db.session.query(Profile).filter(Profile.user_id == session['user_id']).first()
-        prof.occupation = occupation
-        prof.place_of_work = place_of_work
-        prof.involved = involved
-        prof.grade = grade
-        prof.year = year
-        prof.vk = vk
-        prof.tg = tg
-        prof.vernadsky_username = username
+        db.session.query(Profile).filter(Profile.user_id == session['user_id']).update(
+            {Profile.occupation: occupation, Profile.place_of_work: place_of_work, Profile.involved: involved,
+             Profile.grade: grade, Profile.year: year, Profile.vk: vk, Profile.telegram: tg,
+             Profile.vernadsky_username: username})
     db.session.commit()
     return redirect(url_for('.profile_info'))
 
@@ -678,9 +701,8 @@ def edited_category():
     cat_info['direction'] = int(request.form['direction'])
     cat_info['contest'] = int(request.form['contest'])
     write_category(cat_info)
-    cats_count, cats = categories_info()
     renew_session()
-    return render_template('categories.html', cats_count=cats_count, categories=cats)
+    return redirect(url_for('.categories_list'))
 
 
 @app.route('/add_categories')
@@ -715,9 +737,7 @@ def many_categs():
                 cat_info['direction'] = direction
             cat_info['contest'] = c[5].strip('\r')
             write_category(cat_info)
-    cats_count, cats = categories_info()
-    renew_session()
-    return render_template('categories.html', cats_count=cats_count, categories=cats)
+    return redirect(url_for('.categories_list'))
 
 
 @app.route('/supervisors')
@@ -756,7 +776,7 @@ def edited_supervisor():
     db.session.commit()
     sups = get_supervisors()
     renew_session()
-    return render_template('supervisors.html', supervisors=sups)
+    return redirect(url_for('.supervisors'))
 
 
 @app.route('/add_supervisors')
@@ -773,7 +793,6 @@ def many_sups():
         return redirect(url_for('.no_access'))
     text = request.form['text']
     sup_text = text.split('\n')
-    print(sup_text)
     for sup in sup_text:
         if sup != '':
             s = sup.split('\t')
@@ -783,7 +802,7 @@ def many_sups():
     db.session.commit()
     sups = get_supervisors()
     renew_session()
-    return render_template('supervisors.html', supervisors=sups)
+    return redirect(url_for('.supervisors'))
 
 
 # @app.route('/add_supervisors', methods=['GET'])
@@ -791,8 +810,6 @@ def many_sups():
 #     if check_access() < 10:
 #         return redirect(url_for('.no_access'))
 #     file = request.files.get('file', None)
-#     # print(file.read())
-#     print(type(file))
 #     # file.save(os.path.join('static/', file.txt))
 #     # data = genfromtxt(file, delimiter='\t', encoding='utf-8', dtype=None, names=True).tolist()
 #     # for row in data:
@@ -808,11 +825,14 @@ def many_sups():
 
 @app.route('/supervisor_profile/<supervisor_id>')
 def supervisor_profile(supervisor_id):
-    if check_access() < 3:
+    access = check_access()
+    if access < 2:
         return redirect(url_for('.no_access'))
+    elif access < 3:
+        access = 'partial'
     sup_info = supervisor_info(supervisor_id)
     renew_session()
-    return render_template('supervisor_profile.html', supervisor=sup_info)
+    return render_template('supervisor_profile.html', supervisor=sup_info, access=access)
 
 
 @app.route('/team_application')
@@ -820,12 +840,15 @@ def team_application():
     if check_access() == 2 and 'profile' not in session.keys():
         return redirect(url_for('.profile_info', message='fill profile first'))
     elif check_access() < 2:
-        return redirect(url_for('.no_access'))
+        return redirect(url_for('.no_access', message='register_first'))
     cats_count, categs = categories_info()
-    application = application_info('user-year', user=session['user_id'])
-    if application == {curr_year: {'role': None, 'category_1': None, 'category_2': None, 'category_3': None,
-                                   'any_category': None, 'taken_part': None, 'considered': None}}:
-        application = application[curr_year]
+    if session['user_id'] in [a.user_id for a in Application.query.all()]:
+        application = application_info('user-year', user=session['user_id'])
+        # if application == {curr_year: {'role': None, 'category_1': None, 'category_2': None, 'category_3': None,
+        #                                'any_category': None, 'taken_part': None, 'considered': None}}:
+        #     application = application[curr_year]
+    else:
+        application = None
     renew_session()
     return render_template('team_application.html', application=application, categories=categs)
 
@@ -839,7 +862,8 @@ def application_process():
     category_2 = request.form['category_2']
     category_3 = request.form['category_3']
     if 'any_category' in request.form:
-        any_category = bool(request.form['any_category'])
+        any_cat = request.form['any_category']
+        any_category = bool(any_cat)
     else:
         any_category = False
     if 'taken_part' in request.form:
@@ -847,21 +871,17 @@ def application_process():
     else:
         taken_part = 'not_filled'
     if session['user_id'] in [user.user_id for user in Application.query.all()]:
-        application = db.session.query(Application).filter(Application.user_id == session['user_id'])
-        application.role = role
-        application.category_1 = category_1
-        application.category_2 = category_2
-        application.category_3 = category_3
-        application.any_category = any_category
-        application.taken_part = taken_part
+        db.session.query(Application).filter(Application.user_id == session['user_id']).update(
+            {Application.role: role, Application.category_1: category_1, Application.category_2: category_2,
+             Application.category_3: category_3, Application.any_category: any_category,
+             Application.taken_part: taken_part})
     else:
         cat_sec = Application(session['user_id'], curr_year, role, category_1, category_2, category_3, any_category,
                               taken_part, 'False')
         db.session.add(cat_sec)
     db.session.commit()
-    appl_info = application_info('user', user=session['user_id'])
     renew_session()
-    return render_template('my_applications.html', application=appl_info)
+    return redirect(url_for('.application_page'))
 
 
 @app.route('/my_applications')
@@ -878,8 +898,9 @@ def view_applications():
     if check_access() < 9:
         return redirect(url_for('.no_access'))
     appl = application_info('year', user=session['user_id'])
+    users = all_users()
     renew_session()
-    return render_template('view_applications.html', applications=appl, year=curr_year)
+    return render_template('view_applications.html', applications=appl, year=curr_year, users=users)
 
 
 @app.route('/one_application/<year>/<user>')
@@ -952,8 +973,7 @@ def users_list(query):
     renew_session()
     users = dict()
     if query == 'all':
-        for u in Users.query.all():
-            users[u.user_id] = get_user_info(u.user_id)
+        users = all_users()
     else:
         tel = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in query if n not in tel_unneeded]))
         try:
@@ -1004,11 +1024,24 @@ def user_page(user):
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
 def assign_user_type(user):
+    if check_access() < 9:
+        return redirect(url_for('.no_access'))
     assign_type = request.values.get('assign_type', str)
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
     user_db.user_type = assign_type
     db.session.commit()
     return redirect(url_for('.user_page', user=user))
+
+
+@app.route('/remove_secretary/<user_id>/<cat_id>')
+def remove_secretary(user_id, cat_id):
+    if check_access() < 9:
+        return redirect(url_for('.no_access'))
+    cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
+                                          and CatSecretaries.cat_id == cat_id).first()
+    db.session.delete(cat_sec)
+    db.session.commit()
+    return redirect(url_for('.user_page', user=user_id))
 
 
 if __name__ == '__main__':

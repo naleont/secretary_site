@@ -21,11 +21,16 @@ year
 <h2>Профиль</h2>
 {% if message == 'fill profile first' %}
 <p class="alarm">Для подачи заявки в команду сначала <a href="/edit_profile">заполните информацию профиля</a>.</p>
+{% elif message == 'first_time' %}
+<p class="alarm">Регистрация прошла успешно. Для пользования сайтом подтвердите регистрацию по ссылке из отправленного вам e-mail.</p>
+{% endif %}
+{% if session['application'] != True and not session['profile'] %}
+<p class="alarm">Перед подачей заявки в команду необходимо <a href="/edit_profile">заполнить данные профиля</a>.</p>
 {% endif %}
 <table class="profile" cellspacing="5px">
     <tr>
         <td align="left" valign="bottom">
-            {% if session['application'] != True %}
+            {% if session['application'] != True and session['profile'] == True %}
             <a href="/team_application"><button>Подать заявку в команду</button></a>
             {% endif %}
         </td><td align="left" valign="bottom">
@@ -36,6 +41,7 @@ year
             <br>
         </td>
     </tr>
+    <tr><td colspan="2"><b><br>Основная информация</b></td></tr>
     <tr>
         <td>
             ФИО
@@ -43,7 +49,7 @@ year
         {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
         </td>
         <td rowspan="4" align="right" width="30%">
-            <a href="/edit_user"><button class="blue">Дополнить или исправить информацию пользователя</button></a>
+            <a href="/edit_user"><button class="blue">Редактировать основную информацию</button></a>
         </td>
     </tr>
     <tr>
@@ -67,30 +73,31 @@ year
         <a href="tel:{{ user['tel'] }}">{{ user['tel'] }}</a>
         </td>
     </tr>
+    <tr><td colspan="2"><b><br>Дополнительная информация</b></td></tr>
     <tr>
         <td>
             VK
         </td><td>
-        {% if profile['vk'] != None %}
+        {% if profile['vk'] %}
         <a href="https://vk.com/{{ profile['vk'] }}">vk.com/{{ profile['vk'] }}</a>
         {% endif %}
         </td>
         <td rowspan="7" align="right">
-            <a href="/edit_profile"><button class="blue">Дополнить или исправить информацию профиля</button></a>
+            <a href="/edit_profile"><button class="blue">Редактировать дополнительную информацию</button></a>
         </td>
     </tr>
     <tr>
         <td>
             Telegram
         </td><td>
-        {% if profile['tg'] != None %}
+        {% if profile['tg'] %}
         <a href="https://t.me/{{ profile['tg'] }}">@{{ profile['tg'] }}</a>
         {% endif %}
         </td>
     </tr>
     <tr>
         <td>
-            Имя пользователя на <a href="https://vernadsky.info/">vernadsky.info</a>
+            Логин на <a href="https://vernadsky.info/">vernadsky.info</a>
         </td><td>
         {% if profile['username'] != None %}
         {{ profile['username'] }}
@@ -128,9 +135,9 @@ year
         <td>
             Класс/курс
         </td><td>
-        {% if profile['grade'] %}
+        {% if profile['occupation'] == 'scholar' and profile['grade'] %}
         {{ profile['grade'] }}
-        {% elif profile['year'] %}
+        {% elif profile['occupation'] == 'student' and profile['year'] %}
         {{ profile['year'] }}
         {% endif %}
         </td>
@@ -149,5 +156,5 @@ year
         {% endif %}
         </td>
     </tr>
-</table>
+</table><br>
 {% endblock %}

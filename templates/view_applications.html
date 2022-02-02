@@ -3,9 +3,11 @@
 {% block title %} Заявки {% endblock %}
 
 {% block content %}
+<h2>Заявки в команду</h2>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
         <td rowspan="2" align="center"></td>
+        <td rowspan="2" align="center"><b>Секр</b></td>
         <td rowspan="2" align="center"><b>Роль</b></td>
         <td colspan="3" align="center"><b>Секция</b></td>
         <td rowspan="2" align="center"><b>Любая</b></td>
@@ -25,6 +27,11 @@
     <tr>
         <td width="20%">
             <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
+        </td>
+        <td align="center">
+            {% if users[applications[key]['user_id']]['secretary'] == True %}
+            Да
+            {% endif %}
         </td>
         <td>
             {% if applications[key]['role'] == 'secretary' %}

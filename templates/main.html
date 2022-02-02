@@ -7,11 +7,12 @@
 {% if session['application'] == True %}
 {% else %}
       <div align="center">
-            <a href="/team_application"><button class="big-button"><h3>Подать заявку в команду</h3></button></a>
+            <a href="/team_application"><button class="big-button"><h4>Подать заявку в команду</h4></button></a>
       </div><br>
 {% endif %}
 <p>Пока что здесь пустовато, но со временем на сайте появятся описание работы секретарей, задачи и все
-      необходимые инструкции. А пока что можно <a href="/team_application">подать заявку в команд</a>.</p>
+      необходимые инструкции.{% if session['application'] != True %} А пока что можно <a href="/team_application">
+            подать заявку в команду</a>.{% endif %}</p>
 <hr>
 <h3>Новости</h3>
 <p>Здесь когда-нибудь будут новости, но пока что их нет.</p>

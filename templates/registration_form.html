@@ -9,9 +9,9 @@
 Отправка формы вызывает функцию registration_res
 -->
 <div class="alarm">
-    {% if exists == 'email' %}
+    {% if message == 'email' %}
     <br>Пользователь с таким e-mail уже существует.
-    {% elif exists == 'tel' %}
+    {% elif message == 'tel' %}
     <br>Пользователь с таким телефоном уже существует.
     {% endif %}
 </div>
@@ -25,11 +25,13 @@
                 <span class="required">Контактный e-mail</span><br>
                     <input size="30" name="email" type="email" placeholder="example@example.com" required><br><br>
                 <span class="required">Номер телефона</span><br>
+                <span class="comment">Можно использовать +, скобки, дефисы</span><br>
                     <input size="30" name="tel" type="tel" placeholder="+79908378209"
                            pattern="\+?\d+-?\(?\d+\)?\d+-?\d+-?\d+-?\d+" required><br><br>
                 <span class="required">Пароль</span><br>
-                    <input size="30" name="password" type="password" placeholder="*********"
-                           pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+                <span class="comment">От 8 символов, может содержать латинские буквы, цифры и знаки препинания.</span><br>
+                    <input size="30" name="password" type="password"
+                           pattern="[A-Za-z0-9\(\)\.,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{8,50}" required><br><br>
             </td>
             <td>
                 <span class="required">Фамилия</span><br>
