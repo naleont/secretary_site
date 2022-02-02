@@ -5,7 +5,7 @@
 {% block content %}
 <h2>Секции Конкурса</h2>
 {% if session['type'] == 'admin' %}
-<a href="/add_category"><button>Добавить секцию</button></a><br><br>
+<a href="/edit_category"><button>Добавить секцию</button></a><br><br>
 <a href="/add_categories"><button>Добавить много секций</button></a><br><br>
 <!--<form action="/add_categories" method = 'GET'>-->
 <!--    <fieldset>-->
@@ -21,7 +21,7 @@
 Количество секций: {{ cats_count }}<br>
 Количество секций без секретаря<br><br>
 
-{% if session['type'] == 'team' or session['type'] == 'admin' %}
+{% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
         <td align="center" width="30%">
@@ -40,7 +40,7 @@
 {% for key in categories %}
     <tr bgcolor="#C5E3F3">
         <td>
-            {{ categories[key]['name'] }}
+            <a href="/category_page/{{ categories[key]['id'] }}">{{ categories[key]['name'] }}</a>
         </td>
         <td>
             {% if categories[key]['tg_channel'] %}
@@ -63,7 +63,7 @@
 {% for key in categories %}
     <tr bgcolor="#C5E3F3">
         <td width="45%">
-            {{ categories[key]['name'] }}
+            <a href="/category_page/{{ categories[key]['id'] }}">{{ categories[key]['name'] }}</a>
         </td>
         <td>
             {% if categories[key]['tg_channel'] %}

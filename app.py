@@ -218,15 +218,24 @@ def write_category(cat_info):
     if cat_info['cat_id']:
         cat_info['cat_id'] = int(cat_info['cat_id'])
     if cat_info['cat_id'] in [cat.cat_id for cat in Categories.query.all()]:
-        cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
-        cat.year = curr_year
-        cat.cat_name = cat_info['cat_name']
-        cat.short_name = cat_info['short_name']
-        cat.tg_channel = cat_info['tg_channel']
+        db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).update(
+            {Categories.year: curr_year, Categories.cat_name: cat_info['cat_name'],
+             Categories.short_name: cat_info['short_name'], Categories.tg_channel: cat_info['tg_channel']})
         if cat_info['cat_id'] in [cat_dir.cat_id for cat_dir in CatDirs.query.all()]:
-            cat_dir = db.session.query(CatDirs).filter(CatDirs.cat_id == cat_info['cat_id']).first()
-            cat_dir.direction_id = cat_info['direction']
-            cat_dir.contest_id = cat_info['contest']
+            db.session.query(CatDirs).filter(CatDirs.cat_id == cat_info['cat_id']).update(
+                {CatDirs.cat_id: cat_info['cat_id'], CatDirs.dir_id: cat_info['direction'],
+                 CatDirs.contest_id: cat_info['contest']})
+        else:
+            cat_dir = CatDirs(cat_info['cat_id'], cat_info['direction'], cat_info['contest'])
+            db.session.add(cat_dir)
+        if cat_info['supervisor'] in [sup.supervisor_id for sup in CatSupervisors.query.all()]:
+            db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).update(
+                {CatSupervisors.cat_id: cat_info['cat_id'], CatSupervisors.supervisor_id: cat_info['supervisor']})
+        else:
+            sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
+            db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
+            cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
+            db.session.add(cat)
     else:
         cat = Categories(curr_year, cat_info['cat_name'], cat_info['short_name'], cat_info['tg_channel'])
         db.session.add(cat)
@@ -242,9 +251,9 @@ def write_category(cat_info):
             cont = db.session.query(Contests).filter(Contests.contest_name == cat_info['contest']).first()
         cat_dir = CatDirs(categ.cat_id, direct.direction_id, cont.contest_id)
         db.session.add(cat_dir)
-        cat_id = db.session.query(Categories).filter(Categories.cat_name == cat_info['cat_name']).first().cat_id
-    if cat_id in [cat_sup.cat_id for cat_sup in CatSupervisors.query.all()]:
-        cat = db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).all()
+        cat_info['cat_id'] = db.session.query(Categories).filter(Categories.cat_name == cat_info['cat_name']).first().cat_id
+    if cat_info['cat_id'] in [cat_sup.cat_id for cat_sup in CatSupervisors.query.all()]:
+        cat = db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).first()
         sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
         cat.supervisor_id = sup.supervisor_id
     else:
@@ -255,7 +264,7 @@ def write_category(cat_info):
             sup = db.session.query(Supervisors).filter(Supervisors.last_name == sup_name[0] and
                                                        Supervisors.first_name == sup_name[1] and
                                                        Supervisors.patronymic == sup_name[2]).first()
-        db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_id).first()
+        db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
         cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
         db.session.add(cat)
     db.session.commit()
@@ -273,8 +282,10 @@ def one_category(categ):
     cat_dir = db.session.query(CatDirs).filter(CatDirs.cat_id == cat_id).first()
     direction = db.session.query(Directions).filter(Directions.direction_id == cat_dir.dir_id).first()
     cat['direction'] = direction.dir_name
+    cat['dir_id'] = direction.direction_id
     contest = db.session.query(Contests).filter(Contests.contest_id == cat_dir.contest_id).first()
     cat['contest'] = contest.contest_name
+    cat['cont_id'] = contest.contest_id
     if db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).first():
         sup_id = db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).first().supervisor_id
         sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == sup_id).first()
@@ -665,8 +676,9 @@ def categories_list():
     return render_template('categories.html', cats_count=cats_count, categories=cats)
 
 
-@app.route('/add_category')
-def add_category():
+@app.route('/edit_category', defaults={'cat_id': None})
+@app.route('/edit_category/<cat_id>')
+def edit_category(cat_id):
     if check_access() < 10:
         return redirect(url_for('.no_access'))
     sups = get_supervisors()
@@ -684,8 +696,12 @@ def add_category():
         conts[dir_id] = dict()
         conts[dir_id]['id'] = cont.contest_id
         conts[dir_id]['name'] = cont.contest_name
+    if cat_id is not None:
+        category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
+    else:
+        category = None
     renew_session()
-    return render_template('add_category.html', supervisors=sups, directions=dirs, contests=conts)
+    return render_template('add_category.html', supervisors=sups, directions=dirs, contests=conts, category=category)
 
 
 @app.route('/edited_cat', methods=['POST'])
@@ -1042,6 +1058,12 @@ def remove_secretary(user_id, cat_id):
     db.session.delete(cat_sec)
     db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
+
+
+@app.route('/category_page/<cat_id>')
+def category_page(cat_id):
+    category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
+    return render_template('category_page.html', category=category)
 
 
 if __name__ == '__main__':

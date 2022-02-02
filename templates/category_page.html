@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<table><tr>
+    <td><h2>{{ category['name'] }}</h2></td>
+    <td><a href="/edit_category/{{ category['id'] }}"><button>Редактировать секцию</button></a></td>
+</tr></table>
+{{ category['contest'] }}<br>
+Направление: {{ category['direction'] }}<br>
+{% if category['tg_channel'] %}
+Telegram-канал: <a href="https://t.me/{{ category['tg_channel'] }}">@{{ category['tg_channel'] }}</a><br>
+{% endif %}
+{% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
+Руководитель секции: <a href="/supervisor_profile/{{ category['supervisor_id'] }}">{{ category['supervisor'] }}</a><br>
+{% else %}
+Руководитель секции: {{ category['supervisor'] }}
+{% endif %}
+{% if category['secretary'] %}
+{% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
+Секретарь: <a href="/user_page/{{ category['supervisor_id'] }}">{{ category['secretary'] }}</a><br>
+{% else %}
+Секретарь: {{ category['secretary'] }}<br>
+{% endif %}
+{% endif %}
+
+{% endblock %}

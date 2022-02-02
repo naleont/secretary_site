@@ -1,3 +1,6 @@
 secret.key
 team_db.db
 /venv
+check.py
+plan.txt
+DROP.py
