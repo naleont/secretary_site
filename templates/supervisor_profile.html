@@ -3,7 +3,13 @@
 {% block title %} Секции {% endblock %}
 
 {% block content %}
-<h2>Профиль руководителя секции</h2>
+<table><tr>
+    <td>
+        <h2>Профиль руководителя секции</h2>
+    </td>
+    <td>
+        <a href="/edit_supervisor/{{ supervisor['id'] }}"><button>Редактировать русека</button></a></td>
+</tr></table>
 ФИО: {{ supervisor['name'] }}<br>
 {% if access == 'partial' %}
 e-mail: <a href="mailto:{{ supervisor['email'] }}">{{ supervisor['email'] }}</a><br>

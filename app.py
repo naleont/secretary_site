@@ -122,7 +122,8 @@ def personal_info_form():
     info['last_name'] = request.form['last_name']
     info['first_name'] = request.form['first_name']
     info['patronymic'] = request.form['patronymic']
-    info['born'] = datetime.datetime.strptime(request.form['born'], '%Y-%m-%d').date().strftime('%d/%m/%Y')
+    if 'born' in request.form.keys():
+        info['born'] = datetime.datetime.strptime(request.form['born'], '%Y-%m-%d').date().strftime('%d/%m/%Y')
     return info
 
 
@@ -215,8 +216,6 @@ def write_user(user_info):
 
 
 def write_category(cat_info):
-    if cat_info['cat_id']:
-        cat_info['cat_id'] = int(cat_info['cat_id'])
     if cat_info['cat_id'] in [cat.cat_id for cat in Categories.query.all()]:
         db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).update(
             {Categories.year: curr_year, Categories.cat_name: cat_info['cat_name'],
@@ -228,9 +227,10 @@ def write_category(cat_info):
         else:
             cat_dir = CatDirs(cat_info['cat_id'], cat_info['direction'], cat_info['contest'])
             db.session.add(cat_dir)
-        if cat_info['supervisor'] in [sup.supervisor_id for sup in CatSupervisors.query.all()]:
+        if cat_info['cat_id'] in [sup.cat_id for sup in CatSupervisors.query.all()]:
+            print('hi')
             db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).update(
-                {CatSupervisors.cat_id: cat_info['cat_id'], CatSupervisors.supervisor_id: cat_info['supervisor']})
+                {CatSupervisors.supervisor_id: cat_info['supervisor']})
         else:
             sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
             db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
@@ -340,6 +340,9 @@ def supervisor_info(sup_id):
     sup_info = dict()
     sup_info['id'] = sup.supervisor_id
     sup_info['name'] = sup.last_name + ' ' + sup.first_name + ' ' + sup.patronymic
+    sup_info['last_name'] = sup.last_name
+    sup_info['first_name'] = sup.first_name
+    sup_info['patronymic'] = sup.patronymic
     sup_info['email'] = sup.email
     sup_info['tel'] = sup.tel
     categories = db.session.query(CatSupervisors).filter(CatSupervisors.supervisor_id == sup_info['id']).all()
@@ -709,7 +712,7 @@ def edited_category():
     if check_access() < 9:
         return redirect(url_for('.no_access'))
     cat_info = dict()
-    cat_info['cat_id'] = request.form['cat_id']
+    cat_info['cat_id'] = int(request.form['cat_id'])
     cat_info['cat_name'] = request.form['category_name']
     cat_info['short_name'] = request.form['short_name']
     cat_info['supervisor'] = int(request.form['supervisor'])
@@ -763,34 +766,36 @@ def supervisors():
     return render_template('supervisors.html', supervisors=sups, access=check_access())
 
 
-@app.route('/add_supervisor')
-def add_supervisor():
+@app.route('/edit_supervisor', defaults={'sup_id': None})
+@app.route('/edit_supervisor/<sup_id>')
+def edit_supervisor(sup_id):
     if check_access() < 10:
         return redirect(url_for('.no_access'))
+    if sup_id is not None:
+        supervisor = supervisor_info(sup_id)
+    else:
+        supervisor = None
     renew_session()
-    return render_template('add_supervisor.html')
+    return render_template('add_supervisor.html', supervisor=supervisor)
 
 
 @app.route('/adding_supervisor', methods=['POST'])
 def edited_supervisor():
     if check_access() < 9:
         return redirect(url_for('.no_access'))
-    supervisor_id = request.form['supervisor_id']
-    email, tel, last_name, first_name, patronymic = personal_info_form()
-    sup_info = request.form['supervisor_info']
-    if supervisor_id in db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).all():
-        supervisor = db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).first()
-        supervisor.email = email
-        supervisor.tel = tel
-        supervisor.last_name = last_name
-        supervisor.first_name = first_name
-        supervisor.patronymic = patronymic
-        supervisor.supervisor_info = sup_info
+    supervisor_id = int(request.form['supervisor_id'])
+    supervisor = personal_info_form()
+    supervisor['sup_info'] = request.form['supervisor_info']
+    if supervisor_id in [sup.supervisor_id for sup in Supervisors.query.all()]:
+        db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).update(
+            {Supervisors.last_name: supervisor['last_name'], Supervisors.first_name: supervisor['first_name'],
+             Supervisors.patronymic: supervisor['patronymic'], Supervisors.email: supervisor['email'],
+             Supervisors.tel: supervisor['tel'], Supervisors.supervisor_info: supervisor['sup_info']})
     else:
-        supervisor = Supervisors(last_name, first_name, patronymic, email, tel, sup_info)
+        supervisor = Supervisors(supervisor['last_name'], supervisor['first_name'], supervisor['patronymic'],
+                                 supervisor['email'], supervisor['tel'], supervisor['sup_info'])
         db.session.add(supervisor)
     db.session.commit()
-    sups = get_supervisors()
     renew_session()
     return redirect(url_for('.supervisors'))
 
