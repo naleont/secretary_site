@@ -105,13 +105,24 @@ def decrypt(encrypted_message):
 # Отправка письма для подтверждения регистрации на адрес email
 def send_email(email):
     user_id = db.session.query(Users).filter(Users.email == email).first().user_id
-    link = 'http://127.0.0.1:5000/approve/' + str(user_id)
+    link = 'http://nleontovich.pythonanywhere.com/approve/' + str(user_id)
     msg = Message(subject='Подтверждение e-mail',
                   body='Это подтверждение вашей регистрации на сайте для секретарей Конкурса им. В. И.'
                        'Вернадского. Перейдите по ссылке для подтверждения email: ' + link,
                   sender=('Конкурс им. В. И. Вернадского', 'info@vernadsky.info'),
                   recipients=[email])
     mail.send(msg)
+
+
+def find_user(user_got):
+    tel = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in user_got if n not in tel_unneeded]))
+    if user_got in [user.email for user in Users.query.all()]:
+        user = db.session.query(Users).filter(Users.email == user_got).first()
+    elif tel in [user.tel for user in Users.query.all()]:
+        user = db.session.query(Users).filter(Users.tel == tel).first()
+    else:
+        return None
+    return user
 
 
 def personal_info_form():
@@ -442,10 +453,11 @@ def secretary_job():
 
 
 # Страница авторизации
-@app.route('/login')
-def login():
+@app.route('/login', defaults={'wrong': None})
+@app.route('/login/<wrong>')
+def login(wrong):
     renew_session()
-    return render_template('login.html')
+    return render_template('login.html', wrong=wrong)
 
 
 # Страница регистрации на сайте
@@ -487,14 +499,8 @@ def logging():
     user_got = request.values.get('user', str)
     pwd = request.values.get('password', str)
     password = pwd
-    tel = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in user_got if n not in tel_unneeded]))
-    # Проверка существования пользователя с введенными email или телефоном. Если пользователь существует,
-    # записываем его данные в переменную user. Если нет, выводим страницу авторизации с ошибкой.
-    if user_got in [user.email for user in Users.query.all()]:
-        user = db.session.query(Users).filter(Users.email == user_got).first()
-    elif tel in [user.tel for user in Users.query.all()]:
-        user = db.session.query(Users).filter(Users.tel == tel).first()
-    else:
+    user = find_user(user_got)
+    if user is None:
         return render_template('login.html', wrong='user')
     # Проверка соответствия пароля записи в БД. Если совпал, записываем сессию пользователя
     if decrypt(user.password) == password:
@@ -503,7 +509,7 @@ def logging():
         session['user_id'] = user.user_id
     else:
         # Если пароль не совпал, выводим страницу авторизации с ошибкой
-        return render_template('login.html', wrong='password')
+        return redirect(url_for('.login', wrong='password'))
     user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
     user.last_login = datetime.datetime.now()
     db.session.commit()
@@ -523,6 +529,35 @@ def logout():
     session.pop('application', None)
     # Перенаправление на главную страницу
     return redirect(url_for('main_page'))
+
+
+# @app.route('/reset_password')
+# def reset_password():
+#     return render_template('user_reminder.html')
+#
+#
+# @app.route('/reset_pwd', methods=['GET'])
+# def reset_pwd():
+#     user_got = request.values.get('user', str)
+#     user = find_user(user_got)
+#     if user is None:
+#         return render_template('user_reminder.html', wrong='user')
+#     else:
+#         link = '/new_password/' + str(user.user_id) + '/' + user.password
+#         msg = Message(subject='Сброс пароля',
+#                       body='Для сброса пароля перейдите по ссылке: ' + link + '\nЕсли вы не собирались сбрасывать '
+#                                                                               'пароль, игрорируйте это письмо.',
+#                       sender=('Конкурс им. В. И. Вернадского', 'info@vernadsky.info'),
+#                       recipients=[user.email])
+#         mail.send(msg)
+#     return redirect()
+#
+#
+# @app.route('/new_password/<user_id>/<password>')
+# def new_password(user_id, password):
+#     user = db.session.query(Users).filter(Users.user_id == user_id).first()
+#     if user.password == password:
+#         return render_template()
 
 
 # Страница подтверждения регистрации (из email)

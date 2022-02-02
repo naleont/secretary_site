@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Сброс пароля</h2>
+{% if wrong == 'user' %}
+<div class="alarm">
+  <br>Неверный e-mail или номер телефона
+</div>
+{% elif wrong == 'password' %}
+<div class="alarm">
+  <br>Неверный пароль
+</div>
+{% endif %}
+<form action="/reset_pwd" method = 'GET'>
+    <fieldset>
+        <span>Введите e-mail или номер телефона, с которым вы регистрировались на сайте</span>
+        <input type="text" name="user" size="30" pattern="(\+?\d+-?\(?\d+\)?\d+-?\d+-?\d+-?\d+)|(\w+@\w+\.\w+)">
+        <input class="button" type="submit" value="Сбросить пароль">
+    </fieldset>
+</form>
+
+{% endblock %}
