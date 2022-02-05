@@ -761,8 +761,10 @@ def admin():
 @app.route('/categories')
 def categories_list():
     cats_count, cats = categories_info()
+    with_secretary = db.session.query(CatSecretaries).count()
+    no_secr = cats_count - with_secretary
     renew_session()
-    return render_template('categories.html', cats_count=cats_count, categories=cats)
+    return render_template('categories.html', cats_count=cats_count, categories=cats, no_secr=no_secr)
 
 
 @app.route('/edit_category', defaults={'cat_id': None})

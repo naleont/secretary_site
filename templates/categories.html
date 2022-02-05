@@ -16,10 +16,9 @@
 <!--</form><br>-->
 
 Удалить секцию<br>
-Редактировать секцию<br><br>
 {% endif %}
 Количество секций: {{ cats_count }}<br>
-Количество секций без секретаря<br><br>
+Количество секций без секретаря: {{ no_secr }}<br><br>
 
 {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
 <table frame="void" border="2px" bordercolor="#4962A4">
