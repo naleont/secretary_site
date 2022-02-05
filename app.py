@@ -30,7 +30,14 @@ mail = Mail(app)
 tel_unneeded = '-() '
 curr_year = 2022
 
-access_types = {'unauthorized': 0, 'user': 1, 'approved_user': 2, 'team': 3, 'secretary': 7, 'manager': 9, 'admin': 10}
+access_types = {'unauthorized': 0,
+                'user': 1,
+                'approved_user': 2,
+                'team': 3,
+                'secretary': 7,
+                'org': 8,
+                'manager': 9,
+                'admin': 10}
 
 
 def renew_session():
@@ -59,6 +66,8 @@ def check_access():
             return 10
         elif session['type'] == 'manager':
             return 9
+        elif session['type'] == 'org':
+            return 8
         elif 'secretary' in session.keys() and session['secretary'] is True:
             return 7
         elif session['type'] == 'team':
@@ -706,14 +715,14 @@ def new_pwd():
 @app.route('/change_user_password/<user_id>', defaults={'message': None})
 @app.route('/change_user_password/<user_id>/<message>')
 def change_user_password(user_id, message):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     return render_template('change_user_password.html', user=user_id, message=message)
 
 
 @app.route('/new_user_password')
 def new_user_password():
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     new = request.values.get('new_password', str)
     confirm = request.values.get('confirm_password', str)

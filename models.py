@@ -231,3 +231,19 @@ class Works(db.Model):
 #         self.work_id = work_id
 #         self.criterion_id = criterion_id
 #         self.value_id = value_id
+
+
+# class News(db.Model):
+#     __tablename__ = 'news'
+#
+#     news_id = db.Column('news_id', db.Integer, primary_key=True)
+#     date = db.Column('date', db.DateTime, default=datetime.date.today())
+#     time = db.Column('time', db.DateTime, default=datetime.datetime.now().time())
+#     title = db.Column('title', db.Text)
+#     content = db.Column('content', db.Text)
+#     access = db.Column('access', db.Text)
+#
+#     def __init__(self, title, content, access):
+#         self.title = title
+#         self.content = content
+#         self.access = access
