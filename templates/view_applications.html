@@ -28,11 +28,11 @@
         <td width="20%">
             <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
         </td>
-        <td align="center">
-            {% if users[applications[key]['user_id']]['secretary'] == True %}
-            Да
-            {% endif %}
-        </td>
+<!--        <td align="center">-->
+<!--            {% if users[applications[key]['user_id']]['secretary'] == True %}-->
+<!--            Да-->
+<!--            {% endif %}-->
+<!--        </td>-->
         <td>
             {% if applications[key]['role'] == 'secretary' %}
             Секретарь

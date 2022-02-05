@@ -1023,6 +1023,7 @@ def see_one_application(year, user):
                            profile=profile, categories=cats)
 
 
+@app.route('/manage_application/<year>/<user>/<action>', defaults={'page': 'all'})
 @app.route('/manage_application/<year>/<user>/<action>/<page>')
 def manage_application(year, user, action, page):
     if check_access() < 9:
@@ -1035,8 +1036,10 @@ def manage_application(year, user, action, page):
             user_db.user_type = 'team'
     elif action == 'decline':
         appl_db.considered = 'False'
-    else:
+    elif action == 'await':
         appl_db.considered = 'in_process'
+    elif action == 'delete':
+        db.session.delete(appl_db)
     db.session.commit()
     renew_session()
     if page == 'all':
