@@ -51,13 +51,13 @@
             {{ applications[key]['category_1_short'] }}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_1_id'] %}
+        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_2_id'] %}
         bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_2'] != None %}
             {{ applications[key]['category_2_short'] }}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_1_id'] %}
+        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_3_id'] %}
         bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_3'] != None %}
             {{ applications[key]['category_3_short'] }}
