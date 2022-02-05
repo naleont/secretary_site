@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs
+    # , RevCriteria, RevCritValues, RevAnalysis, Works
 import re
 import datetime
 import os
@@ -156,7 +157,6 @@ def get_user_info(user):
     if user_db.last_login:
         user_info['last_login'] = user_db.last_login.date()
     if user in [u.secretary_id for u in CatSecretaries.query.all()]:
-        print(True)
         user_info['secretary'] = True
         user_info['cat_id'] = db.session.query(CatSecretaries).filter(
             CatSecretaries.secretary_id == user).first().cat_id
@@ -239,7 +239,6 @@ def write_category(cat_info):
             cat_dir = CatDirs(cat_info['cat_id'], cat_info['direction'], cat_info['contest'])
             db.session.add(cat_dir)
         if cat_info['cat_id'] in [sup.cat_id for sup in CatSupervisors.query.all()]:
-            print('hi')
             db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).update(
                 {CatSupervisors.supervisor_id: cat_info['supervisor']})
         else:
@@ -704,6 +703,32 @@ def new_pwd():
     return render_template('change_pwd.html', success=success)
 
 
+@app.route('/change_user_password/<user_id>', defaults={'message': None})
+@app.route('/change_user_password/<user_id>/<message>')
+def change_user_password(user_id, message):
+    if check_access() < 9:
+        return redirect(url_for('.no_access'))
+    return render_template('change_user_password.html', user=user_id, message=message)
+
+
+@app.route('/new_user_password')
+def new_user_password():
+    if check_access() < 9:
+        return redirect(url_for('.no_access'))
+    new = request.values.get('new_password', str)
+    confirm = request.values.get('confirm_password', str)
+    user_id = int(request.values.get('user_id', str))
+    user = db.session.query(Users).filter(Users.user_id == user_id).first()
+    if new == confirm:
+        user.password = encrypt(new)
+        db.session.commit()
+        message = 'password_changed'
+    else:
+        return redirect(url_for('.change_user_password', user_id=user_id, message='unmatched'))
+    renew_session()
+    return redirect(url_for('.user_page', user=user_id, message=message))
+
+
 @app.route('/admin')
 def admin():
     if check_access() < 10:
@@ -1073,14 +1098,15 @@ def search_user():
     return redirect(url_for('.users_list', query=query))
 
 
-@app.route('/user_page/<user>')
-def user_page(user):
+@app.route('/user_page/<user>', defaults={'message': None})
+@app.route('/user_page/<user>/<message>')
+def user_page(user, message):
     if check_access() < 3:
         return redirect(url_for('.no_access'))
     user_info = get_user_info(user)
     profile = get_profile_info(user)
     cats_count, cats = categories_info()
-    return render_template('user_page.html', user=user_info, profile=profile, categories=cats)
+    return render_template('user_page.html', user=user_info, profile=profile, categories=cats, message=message)
 
 
 @app.route('/assign_user_type/<user>', methods=['GET'])

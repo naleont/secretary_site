@@ -180,3 +180,54 @@ class CatSecretaries(db.Model):
     def __init__(self, cat_id, secretary_id):
         self.cat_id = cat_id
         self.secretary_id = secretary_id
+
+
+class Works(db.Model):
+    __tablename__ = 'works'
+    __table_args__ = (PrimaryKeyConstraint('cat_id'),)
+
+    work_id = db.Column('work_id', db.Integer, primary_key=True)
+    work_name = db.Column('work_name', db.Integer)
+    cat_id = db.Column('cat_id', db.Integer, ForeignKey('categories.cat_id'), unique=False)
+
+    def __init__(self, work_id, work_name, cat_id):
+        self.work_id = work_id
+        self.work_name = work_name
+        self.cat_id = cat_id
+
+
+# class RevCriteria(db.Model):
+#     __tableneme__ = 'rev_criteria'
+#
+#     criterion_id = db.Column('criterion_id', db.Integer, primary_key=True)
+#     criterion_name = db.Column('criterion_name', db.Text)
+#
+#     def __init__(self, criterion_name):
+#         self.criterion_name = criterion_name
+#
+#
+# class RevCritValues(db.Model):
+#     __tableneme__ = 'rev_crit_values'
+#     # __table_args__ = (PrimaryKeyConstraint('criterion_id'),)
+#
+#     value_id = db.Column('value_id', db.Integer, primary_key=True)
+#     value_name = db.Column('value_name', db.Text)
+#     criterion_id = db.Column('criterion_id', db.Integer, ForeignKey('rev_criteria.criterion_id'), unique=False)
+#
+#     def __init__(self, value_name, criterion_id):
+#         self.value_name = value_name
+#         self.criterion_id = criterion_id
+#
+#
+# class RevAnalysis(db.Model):
+#     __tablename__ = 'rev_analysis'
+#     __table_args__ = (PrimaryKeyConstraint('work_id', 'criterion_id', 'value_id'),)
+#
+#     work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+#     criterion_id = db.Column('criterion_id', db.Integer, ForeignKey('rev_criteria.criterion_id'))
+#     value_id = db.Column('value_id', db.Integer, ForeignKey('rev_crit_values.value_id'))
+#
+#     def __init__(self, work_id, criterion_id, value_id):
+#         self.work_id = work_id
+#         self.criterion_id = criterion_id
+#         self.value_id = value_id

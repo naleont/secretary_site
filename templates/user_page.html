@@ -3,8 +3,21 @@
 {% block title %} Заявка в команду {% endblock %}
 
 {% block content %}
+<table width="100%">
+    <tr>
+        <td>
+            <h3>{{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}</h3>
+        </td>
+        <td align="right" valign="bottom">
+            <a href="/change_user_password/{{ user['user_id'] }}"><button class="blue" type="button">
+                Сменить пароль</button></a>
+        </td>
+    </tr>
+</table>
 
-<h3>{{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}</h3>
+{% if message == 'password_changed' %}
+<span class="green-text">Пароль успешно изменен</span>
+{% endif %}
 
 <table frame="void" border="2px" bordercolor="#4962A4">
     {% if session['type'] == 'manager' or session['type'] == 'admin' %}
