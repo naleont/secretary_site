@@ -644,14 +644,26 @@ def write_profile():
         occupation = request.form['occupation']
     else:
         occupation = None
+    if 'place_of_w' in request.form:
+        place_of_w = request.form['place_of_w']
+        if place_of_w == 'None':
+            place_of_w = None
+    else:
+        place_of_w = None
     if 'place_of_work' in request.form:
         place_of_work = request.form['place_of_work']
     else:
-        place_of_work = None
+        place_of_work = place_of_w
     if 'involved' in request.form:
-        involved = request.form['involved']
+        inv = request.form['involved']
     else:
-        involved = None
+        inv = None
+    if 'school' in request.form:
+        involved = request.form['school']
+        if involved == 'None':
+            involved = None
+    else:
+        involved = inv
     if 'grade' in request.form:
         grade = request.form['grade']
     else:

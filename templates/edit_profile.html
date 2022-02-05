@@ -47,25 +47,28 @@ place_of_work
             </td></tr>
             <tr><td>
                 <span class="required">Я знаю о Чтениях, потому что учусь или выпустился из</span><br>
-                    <input type="radio" name="involved" {% if profile['involved'] == "MSU_School" %} checked {% endif %}
+                    <input type="radio" name="school" value="None"> Не выбрано<br>
+                    <input type="radio" name="school" {% if profile['involved'] == "MSU_School" %} checked {% endif %}
                            value="MSU_School"> Университетской гимназии МГУ<br>
-                    <input type="radio" name="involved" {% if profile['involved'] == "1553" %} checked {% endif %}
+                    <input type="radio" name="school" {% if profile['involved'] == "1553" %} checked {% endif %}
                            value="1553"> Лицея №1553 им. В. И. Вернадского<br><br>
             </td><td>
                 <span class="required">Место учебы/работы</span><br>
-                    <input type="radio" name="place_of_work" {% if profile['place_of_work'] == "MSU_School" %} checked {% endif %}
+                    <input type="radio" name="place_of_w" value="None"> Не выбрано<br>
+                    <input type="radio" name="place_of_w" {% if profile['place_of_work'] == "MSU_School" %} checked {% endif %}
                            value="MSU_School"> Университетская гимназия МГУ<br>
-                    <input type="radio" name="place_of_work" {% if profile['place_of_work'] == "1553" %} checked {% endif %}
+                    <input type="radio" name="place_of_w" {% if profile['place_of_work'] == "1553" %} checked {% endif %}
                            value="1553"> Лицей №1553 им. В. И. Вернадского<br>
                     <input size="30" name="place_of_work" type="text" placeholder="Московская школа №1543 на Юго-Западе"
-                           pattern=("[\w\s\+\(\)\.\,\"\«\»\“\”\–\:№-]+") {% if profile['filled'] == True and profile['place_of_work'] !="1553"
-                           and profile['place_of_work'] !="MSU_School" %}
-                           value = "{{ profile['place_of_work'] }}" {% endif %}}><br><br>
+                           pattern=("[\w\s\+\(\)\.\,\"\«\»\“\”\–\:№-]+") {% if profile['filled'] == True
+                            and profile['place_of_work'] != "1553"
+                            and profile['place_of_work'] != "MSU_School" and profile['place_of_work'] != None %}
+                           value = "{{ profile['place_of_work'] }}" {% endif %}><br><br>
             </td><tr>
             <td colspan="2">
                 <span class="required">Если вы не имеете отношения к этим школам, укажите, как вы узнали о Конкурсе</span><br>
                     <input size="30" {% if profile['filled'] == True and profile['involved'] !="1553"
-                        and profile['involved'] !="MSU_School" %}
+                        and profile['involved'] !="MSU_School" and profile['involved'] !=None %}
                            value = "{{ profile['involved'] }}" {% endif %}}
                            name="involved" type="text" placeholder="Я друг лицеиста"
                            pattern=("[\w\s\+\(\)\.\,\"\«\»\“\”\–\:№-]+")><br><br>
