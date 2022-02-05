@@ -195,6 +195,12 @@
       <div class="well">
         <p><a href="https://vk.com/vernadsky_org_news" target="_blank">Группа VK</a></p>
       </div>
+      {% if session['secretary'] == True or session['type'] == 'manager' or session['type'] == 'org'
+      or session['type'] == 'admin' %}
+      <div class="well">
+        <p><a href="https://vk.me/join/Fxb4PJ6/87Crw4RuDDOwK2cPn_doRnU3x8I=" target="_blank">Беседа секретарей</a></p>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
