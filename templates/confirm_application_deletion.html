@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h3>Удаление заявки: {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }} ({{ application['year'] }})</h3>
+<div align="center">
+    <table>
+        <tr>
+            <td>
+                <a href="/manage_application/{{ year }}/{{ user['user_id'] }}/delete"><button>Подтвердить</button></a>
+            </td>
+            <td>
+                <a href="/view_applications"><button class="red-button">Назад</button></a>
+            </td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

@@ -13,7 +13,16 @@
 <p>Пока что здесь пустовато, но со временем на сайте появятся описание работы секретарей, задачи и все
       необходимые инструкции.{% if session['application'] != True %} А пока что можно <a href="/team_application">
             подать заявку в команду</a>.{% endif %}</p>
+<br>
+<h3 align="center">Новости</h3>
 <hr>
-<h3>Новости</h3>
-<p>Здесь когда-нибудь будут новости, но пока что их нет.</p>
+{% for key in news %}
+{% if news[key]['publish'] == True and news[key]['access'] in access_list%}
+<h4 class="small-ident">{{ news[key]['title'] }}</h4>
+<span class="news-date">{{ news[key]['date'] }} {{ news[key]['time'] }}</span><br>
+<span class="news-content">{{ news[key]['content'] }}</span><br>
+<hr>
+{% endif %}
+{% endfor %}
+
 {% endblock %}

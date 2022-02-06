@@ -1,8 +1,8 @@
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
-    Directions, Contests, CatDirs
-    # , RevCriteria, RevCritValues, RevAnalysis, Works
+    Directions, Contests, CatDirs, News
+# , RevCriteria, RevCritValues, RevAnalysis, Works
 import re
 import datetime
 import os
@@ -30,7 +30,7 @@ mail = Mail(app)
 tel_unneeded = '-() '
 curr_year = 2022
 
-access_types = {'unauthorized': 0,
+access_types = {'guest': 0,
                 'user': 1,
                 'approved_user': 2,
                 'team': 3,
@@ -270,7 +270,8 @@ def write_category(cat_info):
             cont = db.session.query(Contests).filter(Contests.contest_name == cat_info['contest']).first()
         cat_dir = CatDirs(categ.cat_id, direct.direction_id, cont.contest_id)
         db.session.add(cat_dir)
-        cat_info['cat_id'] = db.session.query(Categories).filter(Categories.cat_name == cat_info['cat_name']).first().cat_id
+        cat_info['cat_id'] = db.session.query(Categories).filter(
+            Categories.cat_name == cat_info['cat_name']).first().cat_id
     if cat_info['cat_id'] in [cat_sup.cat_id for cat_sup in CatSupervisors.query.all()]:
         cat = db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).first()
         sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
@@ -429,16 +430,40 @@ def application_info(info_type, user, year=curr_year):
     else:
         appl[curr_year] = dict()
         appl[curr_year]['role'], appl[curr_year]['category_1'], appl[curr_year]['category_2'], \
-            appl[curr_year]['category_3'], appl[curr_year]['any_category'], appl[curr_year]['taken_part'], \
-            appl[curr_year]['considered'] = None, None, None, None, None, None, None
+        appl[curr_year]['category_3'], appl[curr_year]['any_category'], appl[curr_year]['taken_part'], \
+        appl[curr_year]['considered'] = None, None, None, None, None, None, None
     return appl
+
+
+def one_news(news_id):
+    n = db.session.query(News).filter(News.news_id == news_id).first()
+    news = dict()
+    news['news_id'] = news_id
+    news['title'] = n.title
+    news['content'] = n.content
+    news['access'] = n.access
+    news['publish'] = n.publish
+    news['date'] = n.date_time.strftime('%d-%m-%Y')
+    news['time'] = n.date_time.strftime('%H:%M')
+    return news
+
+
+def all_news():
+    news_db = News.query.order_by(News.date_time.desc()).all()
+    all_n = dict()
+    for news in news_db:
+        all_n[news.news_id] = one_news(news.news_id)
+    return all_n
 
 
 # Главная страница
 @app.route('/')
 def main_page():
     renew_session()
-    return render_template('main.html')
+    news = all_news()
+    access = check_access()
+    access_list = [i for i in access_types.keys() if access_types[i] <= access]
+    return render_template('main.html', news=news, access_list=access_list)
 
 
 @app.route('/no_access', defaults={'message': None})
@@ -1025,6 +1050,13 @@ def see_one_application(year, user):
                            profile=profile, categories=cats)
 
 
+@app.route('/confirm_application_deletion/<year>/<user>')
+def confirm_application_deletion(year, user):
+    application = application_info('user-year', user, year)
+    user_info = get_user_info(user)
+    return render_template('confirm_application_deletion.html', application=application, year=year, user=user_info)
+
+
 @app.route('/manage_application/<year>/<user>/<action>', defaults={'page': 'all'})
 @app.route('/manage_application/<year>/<user>/<action>/<page>')
 def manage_application(year, user, action, page):
@@ -1108,9 +1140,9 @@ def users_list(query):
                 users[u.secretary_id] = get_user_info(u.secretary_id)
         elif query in access_types.keys():
             for val in [val for val in access_types.values() if val >= access_types[query]]:
-                for u in Users.query.filter(Users.user_type == list(access_types.keys())[list(access_types.values()
-                                                                                              ).index(val)]).order_by(
-                    Users.user_id).all():
+                for u in Users.query.filter(Users.user_type == list(access_types.keys()
+                                                                    )[list(access_types.values()).index(val)
+                                                                        ]).order_by(Users.user_id).all():
                     users[u.user_id] = get_user_info(u.user_id)
     return render_template('users_list.html', users=users)
 
@@ -1161,6 +1193,58 @@ def remove_secretary(user_id, cat_id):
 def category_page(cat_id):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     return render_template('category_page.html', category=category)
+
+
+@app.route('/news_list')
+def news_list():
+    if check_access() < 8:
+        return redirect(url_for('.no_access'))
+    news = all_news()
+    return render_template('news_list.html', news=news)
+
+
+@app.route('/edit_news', defaults={'news_id': None})
+@app.route('/edit_news/<news_id>')
+def edit_news(news_id):
+    if check_access() < 8:
+        return redirect(url_for('.no_access'))
+    if news_id == 'None' or news_id is None:
+        news = {'news_id': None}
+    else:
+        news = one_news(news_id)
+    return render_template('edit_news.html', news=news)
+
+
+@app.route('/editing_news', methods=['POST'])
+def editing_news():
+    if check_access() < 8:
+        return redirect(url_for('.no_access'))
+    news = dict()
+    news_id = int(request.form['news_id'])
+    news['title'] = request.form['title']
+    news['content'] = request.form['content']
+    news['access'] = request.form['access']
+    if news_id in [n.news_id for n in News.query.all()]:
+        db.session.query(News).filter(News.news_id == news_id).update(
+            {News.title: news['title'], News.content: news['content'],
+             News.access: news['access']})
+    else:
+        news['publish'] = False
+        new_news = News(news['title'], news['content'], news['access'], news['publish'])
+        db.session.add(new_news)
+    db.session.commit()
+    return redirect(url_for('.news_list'))
+
+
+@app.route('/publish_news/<news_id>')
+def publish_news(news_id):
+    news = db.session.query(News).filter(News.news_id == news_id).first()
+    if news.publish is True:
+        news.publish = False
+    elif news.publish is False:
+        news.publish = True
+    db.session.commit()
+    return redirect(url_for('.news_list'))
 
 
 if __name__ == '__main__':

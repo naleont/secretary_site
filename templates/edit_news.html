@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/editing_news" method="POST">
+    <fieldset>
+        <legend><h2><b>Добавление / редактирование новости</b></h2></legend>
+
+        <input type="hidden" name="news_id" value="{{ news['news_id'] }}">
+        <span class="required">Аудитория</span><br>
+        <p><select name="access">
+            <option class="container-fluid bg-2" {% if not news['access'] %} selected="true" {% endif %}
+                value="guest">Посетитель</option>
+            <option class="container-fluid bg-2" value="user" {% if news['access'] == 'user' %} selected="true"
+                {% endif %}>Пользователь</option>
+            <option class="container-fluid bg-2" value="team" {% if news['access'] == 'team' %} selected="true"
+                {% endif %}>Команда</option>
+            <option class="container-fluid bg-2" value="secretary" {% if news['access'] == 'secretary' %} selected="true"
+                {% endif %}>Секретари</option>
+            <option class="container-fluid bg-2" value="org" {% if news['access'] == 'org' %} selected="true"
+                {% endif %}>Оргкомитет</option>
+        </select></p>
+        <span class="required">Заголовок</span><br>
+            <input size="123" name="title" type="text" value="{{ news['title'] }}" required><br><br>
+        <span class="required">Текст</span><br>
+            <textarea cols="120" rows="10" name="content" required>{{ news['content'] }}</textarea><br><br>
+
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+<br>
+{% endblock %}
