@@ -534,7 +534,7 @@ def logging():
     password = pwd
     user = find_user(user_got)
     if user is None:
-        return render_template('login.html', wrong='user')
+        return render_template('registration, logging and applications/login.html', wrong='user')
     # Проверка соответствия пароля записи в БД. Если совпал, записываем сессию пользователя
     if decrypt(user.password) == password:
         app.permanent_session_lifetime = datetime.timedelta(hours=1)
