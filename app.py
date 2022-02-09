@@ -21,8 +21,8 @@ app.config['SECRET_KEY'] = 'hello'
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'info@vernadsky.info'
-app.config['MAIL_PASSWORD'] = 'Vernadsky'
+app.config['MAIL_USERNAME'] = 'team@vernadsky.info'
+app.config['MAIL_PASSWORD'] = 'TeamVernadsky'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
@@ -119,7 +119,7 @@ def send_email(email):
     msg = Message(subject='Подтверждение e-mail',
                   body='Это подтверждение вашей регистрации на сайте для секретарей Конкурса им. В. И.'
                        'Вернадского. Перейдите по ссылке для подтверждения email: ' + link,
-                  sender=('Конкурс им. В. И. Вернадского', 'info@vernadsky.info'),
+                  sender=('Команда Конкурса', 'team@vernadsky.info'),
                   recipients=[email])
     mail.send(msg)
 
