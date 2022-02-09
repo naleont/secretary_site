@@ -7,13 +7,13 @@
     <td>
         <h2>Профиль руководителя секции</h2>
     </td>
-{% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
+{% if session['type'] == 'org' or session['type'] == 'admin' or session['type'] == 'manager' %}
     <td>
         <a href="/edit_supervisor/{{ supervisor['id'] }}"><button>Редактировать русека</button></a></td>
 {% endif %}
 </tr></table>
 ФИО: {{ supervisor['name'] }}<br>
-{% if access == 'partial' %}
+{% if access != 'partial' or not access %}
 e-mail: <a href="mailto:{{ supervisor['email'] }}">{{ supervisor['email'] }}</a><br>
 Телефон: <a href="tel:{{ supervisor['tel'] }}">{{ supervisor['tel'] }}</a><br>
 {% endif %}
