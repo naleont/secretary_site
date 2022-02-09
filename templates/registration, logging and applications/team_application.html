@@ -80,6 +80,9 @@
         <td>
             <b>Возраст участников</b>
         </td>
+        <td>
+            <b>Секретарь</b>
+        </td>
     </tr>
 {% for key in categories %}
     <tr bgcolor="#C5E3F3">
@@ -95,6 +98,11 @@
             8 - 11 класс
             {% elif categories[key]['contest'] == 'Тропой открытий В. И. Вернадского' %}
             5 - 7 класс
+            {% endif %}
+        </td>
+        <td>
+            {% if categories[key]['secretary']%}
+            Есть
             {% endif %}
         </td>
     </tr>
