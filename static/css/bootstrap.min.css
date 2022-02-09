@@ -8,9 +8,9 @@ font-family:sans-serif;
 -ms-text-size-adjust:100%;
 -webkit-text-size-adjust:100%
 }
-* {
-    overflow-x: auto
-}
+/** {*/
+/*    overflow-x: auto*/
+/*}*/
 body{
 margin:0
 }
@@ -1414,7 +1414,7 @@ border-radius:0
 }
 .pre-scrollable{
 max-height:340px;
-overflow-y:scroll
+overflow-y:auto
 }
 .container{
 padding-right:15px;
@@ -1462,7 +1462,8 @@ padding-left:0
 position:relative;
 min-height:1px;
 padding-right:15px;
-padding-left:15px
+padding-left:15px;
+overflow-y: auto;
 }
 .col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9{
 float:left
@@ -2199,7 +2200,7 @@ overflow-x:auto
 .table-responsive{
 width:100%;
 margin-bottom:15px;
-overflow-y:hidden;
+overflow-y:auto;
 -ms-overflow-style:-ms-autohiding-scrollbar;
 border:1px solid #ddd
 }
@@ -3607,7 +3608,7 @@ padding-bottom:0;
 overflow:visible!important
 }
 .navbar-collapse.in{
-overflow-y:visible
+overflow-y:auto
 }
 .navbar-fixed-bottom .navbar-collapse,.navbar-fixed-top .navbar-collapse,.navbar-static-top .navbar-collapse{
 padding-right:0;

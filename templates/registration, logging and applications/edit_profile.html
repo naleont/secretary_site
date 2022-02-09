@@ -23,7 +23,7 @@ place_of_work
                 <span class="required">Ссылка на страницу VK</span><br>
                     <input size="30" {% if profile['filled'] == True %} value = "vk.com/{{ profile['vk'] }}" {% endif %}}
                            name="vk" type="text" placeholder="vk.com/myname"
-                           pattern="(https://)?vk.com/[A-Za-z0-9_-]{5,32}" required><br><br>
+                           pattern="(https://)?vk.com/[A-Za-z0-9_-\.]{5,32}" required><br><br>
                 Имя пользователя в Telegram<br>
                     <input size="30" {% if profile['filled'] == True %} value = "@{{ profile['tg'] }}" {% endif %}}
                            name="telegram" type="text" placeholder="@my_name"
@@ -74,7 +74,7 @@ place_of_work
                            pattern=("[\w\s\+\(\)\.\,\"\«\»\“\”\–\:№-]+")><br><br>
             </td></tr>
             <tr><td>
-                <span class="required">Для школьников - класс</span><br>
+                <span>Для школьников - класс</span><br>
                     <p><select name="grade">
                         <option class="container-fluid bg-2" {% if profile['grade'] == None %} selected="true" {% endif %}
                                 disabled>Класс</option>
@@ -94,7 +94,7 @@ place_of_work
                                 value="11">11</option>
                     </select></p><br>
             </td><td>
-                <span class="required">Для студентов - курс</span><br>
+                <span>Для студентов - курс</span><br>
                     <p><select name="year">
                         <option class="container-fluid bg-2" {% if profile['year'] == None %} selected="true" {% endif %}
                                 disabled>Курс</option>
