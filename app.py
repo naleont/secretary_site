@@ -477,12 +477,12 @@ def secretary_reminder():
     if check_access() < 7:
         return redirect(url_for('.no_access'))
     renew_session()
-    return render_template('secretary_reminder.html')
+    return render_template('info_pages/secretaries_info/secretary_reminder.html')
 
 
 @app.route('/secretary_job')
 def secretary_job():
-    return render_template('secretary_job.html')
+    return render_template('info_pages/secretaries_info/secretary_job.html')
 
 
 # Страница авторизации
@@ -490,14 +490,14 @@ def secretary_job():
 @app.route('/login/<wrong>')
 def login(wrong):
     renew_session()
-    return render_template('login.html', wrong=wrong)
+    return render_template('registration, logging and applications/login.html', wrong=wrong)
 
 
 # Страница регистрации на сайте
 @app.route('/register', defaults={'message': None})
 @app.route('/register/<message>')
 def register(message):
-    return render_template('registration_form.html', message=message)
+    return render_template('registration, logging and applications/registration_form.html', message=message)
 
 
 # Обработка данных формы регистрации на сайте
@@ -619,7 +619,7 @@ def profile_info(message):
         return redirect(url_for('.no_access'))
     user = get_user_info(session['user_id'])
     profile = get_profile_info(session['user_id'])
-    return render_template('profile_info.html', profile=profile, user=user, access=access, message=message)
+    return render_template('registration, logging and applications/profile_info.html', profile=profile, user=user, access=access, message=message)
 
 
 # Форма изменения информации пользователя (email, телефон, ФИО, дата рождения)
@@ -632,7 +632,7 @@ def edit_user(message):
     user = get_user_info(session['user_id'])
     renew_session()
     # Вывод формы изменения информации пользователя с предзаполненными из БД полями
-    return render_template('edit_user.html', user=user, message=message)
+    return render_template('registration, logging and applications/edit_user.html', user=user, message=message)
 
 
 # Обработка информации из формы изменения информации пользователя
@@ -657,7 +657,7 @@ def edit_profile():
     profile = get_profile_info(session['user_id'])
     renew_session()
     # Вывод страницы профиля с информацией пользователя и профиля из БД
-    return render_template('edit_profile.html', profile=profile)
+    return render_template('registration, logging and applications/edit_profile.html', profile=profile)
 
 
 # Обработка данных формы редактирования профиля
@@ -719,12 +719,13 @@ def write_profile():
     return redirect(url_for('.profile_info'))
 
 
-@app.route('/change_pwd')
-def change_pwd():
+@app.route('/change_pwd', defaults={'success': None})
+@app.route('/change_pwd/<success>')
+def change_pwd(success):
     if check_access() < 2:
         return redirect(url_for('.no_access'))
     renew_session()
-    return render_template('change_pwd.html')
+    return render_template('registration, logging and applications/change_pwd.html', success=success)
 
 
 @app.route('/new_pwd', methods=['GET'])
@@ -746,7 +747,7 @@ def new_pwd():
     else:
         success = 'wrong_old'
     renew_session()
-    return render_template('change_pwd.html', success=success)
+    return redirect(url_for('.change_pwd', success=success))
 
 
 @app.route('/change_user_password/<user_id>', defaults={'message': None})
@@ -754,7 +755,7 @@ def new_pwd():
 def change_user_password(user_id, message):
     if check_access() < 8:
         return redirect(url_for('.no_access'))
-    return render_template('change_user_password.html', user=user_id, message=message)
+    return render_template('user_management/change_user_password.html', user=user_id, message=message)
 
 
 @app.route('/new_user_password')
@@ -789,7 +790,7 @@ def categories_list():
     with_secretary = db.session.query(CatSecretaries).count()
     no_secr = cats_count - with_secretary
     renew_session()
-    return render_template('categories.html', cats_count=cats_count, categories=cats, no_secr=no_secr)
+    return render_template('categories/categories.html', cats_count=cats_count, categories=cats, no_secr=no_secr)
 
 
 @app.route('/edit_category', defaults={'cat_id': None})
@@ -817,7 +818,7 @@ def edit_category(cat_id):
     else:
         category = None
     renew_session()
-    return render_template('add_category.html', supervisors=sups, directions=dirs, contests=conts, category=category)
+    return render_template('categories/add_category.html', supervisors=sups, directions=dirs, contests=conts, category=category)
 
 
 @app.route('/edited_cat', methods=['POST'])
@@ -842,7 +843,7 @@ def add_categories():
     if check_access() < 10:
         return redirect(url_for('.no_access'))
     renew_session()
-    return render_template('add_categories.html')
+    return render_template('categories/add_categories.html')
 
 
 @app.route('/many_categs', methods=['POST'])
@@ -876,7 +877,7 @@ def many_categs():
 def supervisors():
     sups = get_supervisors()
     renew_session()
-    return render_template('supervisors.html', supervisors=sups, access=check_access())
+    return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access())
 
 
 @app.route('/edit_supervisor', defaults={'sup_id': None})
@@ -889,7 +890,7 @@ def edit_supervisor(sup_id):
     else:
         supervisor = None
     renew_session()
-    return render_template('add_supervisor.html', supervisor=supervisor)
+    return render_template('supervisors/add_supervisor.html', supervisor=supervisor)
 
 
 @app.route('/adding_supervisor', methods=['POST'])
@@ -918,7 +919,7 @@ def add_supervisors():
     if check_access() < 10:
         return redirect(url_for('.no_access'))
     renew_session()
-    return render_template('add_supervisors.html')
+    return render_template('supervisors/add_supervisors.html')
 
 
 @app.route('/many_sups', methods=['POST'])
@@ -966,7 +967,7 @@ def supervisor_profile(supervisor_id):
         access = 'partial'
     sup_info = supervisor_info(supervisor_id)
     renew_session()
-    return render_template('supervisor_profile.html', supervisor=sup_info, access=access)
+    return render_template('supervisors/supervisor_profile.html', supervisor=sup_info, access=access)
 
 
 @app.route('/team_application')
@@ -984,7 +985,7 @@ def team_application():
     else:
         application = None
     renew_session()
-    return render_template('team_application.html', application=application, categories=categs)
+    return render_template('registration, logging and applications/team_application.html', application=application, categories=categs)
 
 
 @app.route('/application_process', methods=['POST'])
@@ -1024,7 +1025,7 @@ def application_page():
         return redirect(url_for('.no_access'))
     appl_info = application_info('user', user=session['user_id'])
     renew_session()
-    return render_template('my_applications.html', application=appl_info)
+    return render_template('registration, logging and applications/my_applications.html', application=appl_info)
 
 
 @app.route('/view_applications')
@@ -1034,7 +1035,7 @@ def view_applications():
     appl = application_info('year', user=session['user_id'])
     users = all_users()
     renew_session()
-    return render_template('view_applications.html', applications=appl, year=curr_year, users=users)
+    return render_template('application management/view_applications.html', applications=appl, year=curr_year, users=users)
 
 
 @app.route('/one_application/<year>/<user>')
@@ -1046,7 +1047,7 @@ def see_one_application(year, user):
     profile = get_profile_info(user)
     cats_count, cats = categories_info()
     renew_session()
-    return render_template('one_application.html', application=application, year=curr_year, user=user_info,
+    return render_template('application management/one_application.html', application=application, year=curr_year, user=user_info,
                            profile=profile, categories=cats)
 
 
@@ -1054,7 +1055,7 @@ def see_one_application(year, user):
 def confirm_application_deletion(year, user):
     application = application_info('user-year', user, year)
     user_info = get_user_info(user)
-    return render_template('confirm_application_deletion.html', application=application, year=year, user=user_info)
+    return render_template('application management/confirm_application_deletion.html', application=application, year=year, user=user_info)
 
 
 @app.route('/manage_application/<year>/<user>/<action>', defaults={'page': 'all'})
@@ -1089,7 +1090,7 @@ def assign_category(user, category):
     user_info = get_user_info(user)
     cats_count, cats = categories_info(category)
     renew_session()
-    return render_template('confirm_assignment.html', user=user_info, category=cats)
+    return render_template('application management/confirm_assignment.html', user=user_info, category=cats)
 
 
 @app.route('/confirm_assignment/<user>/<category>')
@@ -1144,7 +1145,7 @@ def users_list(query):
                                                                     )[list(access_types.values()).index(val)
                                                                         ]).order_by(Users.user_id).all():
                     users[u.user_id] = get_user_info(u.user_id)
-    return render_template('users_list.html', users=users)
+    return render_template('user_management/users_list.html', users=users)
 
 
 @app.route('/search_user', methods=['GET'])
@@ -1164,7 +1165,7 @@ def user_page(user, message):
     user_info = get_user_info(user)
     profile = get_profile_info(user)
     cats_count, cats = categories_info()
-    return render_template('user_page.html', user=user_info, profile=profile, categories=cats, message=message)
+    return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats, message=message)
 
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
@@ -1192,7 +1193,7 @@ def remove_secretary(user_id, cat_id):
 @app.route('/category_page/<cat_id>')
 def category_page(cat_id):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
-    return render_template('category_page.html', category=category)
+    return render_template('categories/category_page.html', category=category)
 
 
 @app.route('/news_list')
@@ -1200,7 +1201,7 @@ def news_list():
     if check_access() < 8:
         return redirect(url_for('.no_access'))
     news = all_news()
-    return render_template('news_list.html', news=news)
+    return render_template('news/news_list.html', news=news)
 
 
 @app.route('/edit_news', defaults={'news_id': None})
@@ -1212,7 +1213,7 @@ def edit_news(news_id):
         news = {'news_id': None}
     else:
         news = one_news(news_id)
-    return render_template('edit_news.html', news=news)
+    return render_template('news/edit_news.html', news=news)
 
 
 @app.route('/editing_news', methods=['POST'])
