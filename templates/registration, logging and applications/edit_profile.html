@@ -27,7 +27,7 @@ place_of_work
                 Имя пользователя в Telegram<br>
                     <input size="30" {% if profile['filled'] == True %} value = "@{{ profile['tg'] }}" {% endif %}}
                            name="telegram" type="text" placeholder="@my_name"
-                           pattern="@[A-Za-z_-]+"><br><br>
+                           pattern="@[A-Za-z0-9_-]+"><br><br>
                 Логин <a href="http://vernadsky.info/">на сайте Чтений</a><br>
                     <input size="30" {% if profile['filled'] == True %} value = "{{ profile['username'] }}" {% endif %}}
                            name="vernadsky_username" type="text" placeholder="user_name"
