@@ -177,7 +177,9 @@
       <ul class="nav navbar-nav navbar-right">
         {% if not session['user_id'] %}
         <li>
-        <a href="/login"><span class="glyphicon glyphicon-log-in"></span> Войти</a>
+        <a href="/login">
+<!--          <span class="glyphicon glyphicon-log-in"></span>-->
+          Войти</a>
         </li>
         {% else %}
         <li>
@@ -189,7 +191,9 @@
         </li>
         {% endif %}
         <li>
-        <a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Выйти</a>
+        <a href="/logout">
+<!--          <span class="glyphicon glyphicon-log-in"></span> -->
+          Выйти</a>
         </li>
         {% endif %}
       </ul>
