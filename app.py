@@ -973,7 +973,7 @@ def supervisor_profile(supervisor_id):
 @app.route('/team_application')
 def team_application():
     if check_access() == 2 and 'profile' not in session.keys():
-        return redirect(url_for('.profile_info', message='fill profile first'))
+        return redirect(url_for('.profile_info', message='fill_profile_first'))
     elif check_access() < 2:
         return redirect(url_for('.no_access', message='register_first'))
     cats_count, categs = categories_info()
