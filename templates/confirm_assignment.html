@@ -9,7 +9,7 @@
 Назначаем секретаря: {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}<br>
 Секция: {{ category['name'] }}<br>
 {% if category['secretary'] %}
-<span class="alarm">На эту секцию уже назначен секретарь category['secretary']. После подтверждения будет назначен новый секретарь.</span>
+<span class="alarm">На эту секцию уже назначен секретарь {{ category['secretary'] }}. После подтверждения будет назначен новый секретарь.</span>
 {% endif %}
 Руководитель секции: {{ category['supervisor'] }}<br><br>
 

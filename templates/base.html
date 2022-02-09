@@ -182,7 +182,7 @@
         <li>
         <a href="/profile_info">Профиль</a></li>
         </li>
-        {% if session['type'] == 'admin' %}
+        {% if session['type'] == 'admin' or session['type'] == 'org' or session['type'] == 'manager' %}
         <li>
         <a href="/admin">Админка</a></li>
         </li>

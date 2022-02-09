@@ -777,7 +777,7 @@ def new_user_password():
 
 @app.route('/admin')
 def admin():
-    if check_access() < 10:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     renew_session()
     return render_template('admin.html')
@@ -1029,7 +1029,7 @@ def application_page():
 
 @app.route('/view_applications')
 def view_applications():
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     appl = application_info('year', user=session['user_id'])
     users = all_users()
@@ -1039,7 +1039,7 @@ def view_applications():
 
 @app.route('/one_application/<year>/<user>')
 def see_one_application(year, user):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     application = application_info('user-year', user=user, year=year)
     user_info = get_user_info(user)
@@ -1060,7 +1060,7 @@ def confirm_application_deletion(year, user):
 @app.route('/manage_application/<year>/<user>/<action>', defaults={'page': 'all'})
 @app.route('/manage_application/<year>/<user>/<action>/<page>')
 def manage_application(year, user, action, page):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     appl_db = db.session.query(Application).filter(Application.user_id == user and Application.year == year).first()
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
@@ -1084,7 +1084,7 @@ def manage_application(year, user, action, page):
 
 @app.route('/assign_category/<user>/<category>')
 def assign_category(user, category):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     user_info = get_user_info(user)
     cats_count, cats = categories_info(category)
@@ -1094,7 +1094,7 @@ def assign_category(user, category):
 
 @app.route('/confirm_assignment/<user>/<category>')
 def confirm_assignment(user, category):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     user = int(user)
     category = int(category)
@@ -1112,7 +1112,7 @@ def confirm_assignment(user, category):
 @app.route('/users_list', defaults={'query': 'all'})
 @app.route('/users_list/<query>')
 def users_list(query):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     renew_session()
     users = dict()
@@ -1149,7 +1149,7 @@ def users_list(query):
 
 @app.route('/search_user', methods=['GET'])
 def search_user():
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     renew_session()
     query = request.values.get('query', str)
@@ -1169,7 +1169,7 @@ def user_page(user, message):
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
 def assign_user_type(user):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     assign_type = request.values.get('assign_type', str)
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
@@ -1180,7 +1180,7 @@ def assign_user_type(user):
 
 @app.route('/remove_secretary/<user_id>/<cat_id>')
 def remove_secretary(user_id, cat_id):
-    if check_access() < 9:
+    if check_access() < 8:
         return redirect(url_for('.no_access'))
     cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
                                           and CatSecretaries.cat_id == cat_id).first()
