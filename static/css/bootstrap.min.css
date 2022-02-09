@@ -2,7 +2,11 @@
  * Bootstrap v3.4.1 (https://getbootstrap.com/)
  * Copyright 2011-2019 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
- *//*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */html{
+ *//*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
+*{
+  overflow-x: auto;
+}
+html{
 font-family:sans-serif;
 -ms-text-size-adjust:100%;
 -webkit-text-size-adjust:100%
@@ -5841,5 +5845,15 @@ display:none!important
 }
 
 }
+
+@media screen and (max-width: 767px) {
+  .sidenav {
+    height: auto;
+    padding: 15px;
+  }
+  .row.content {height:auto;}
+  table {
+    width: 50%;
+  }
 
 /*# sourceMappingURL=bootstrap.min.css.map */
