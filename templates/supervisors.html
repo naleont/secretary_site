@@ -19,6 +19,11 @@
 
 {% endif %}
 
+{% if session['type'] == 'admin' or session['type'] == 'manager' or session['type'] == 'org' %}
+<a href="mailto: {% for key in supervisors %} {{ supervisors[key]['email'] }} {% endfor %}" target="_blank"><button>
+    Написать всем</button></a><br><br>
+{% endif %}
+
 {% if access >= 3 %}
 <table frame="void" border="2px" bordercolor="#4962A4">
 {% for key in supervisors %}
