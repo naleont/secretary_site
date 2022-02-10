@@ -40,7 +40,7 @@ or session['type'] == 'admin' %}
 <table class="profile" cellspacing="5px">
     <tr>
         <td align="left" valign="bottom">
-            {% if session['application'] != True and session['profile'] == True %}
+            {% if session['application'] != True %}
             <a href="/team_application"><button>Подать заявку в команду</button></a>
             {% endif %}
         </td><td align="left" valign="bottom">

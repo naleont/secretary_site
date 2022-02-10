@@ -710,13 +710,15 @@ def write_profile():
     if session['user_id'] not in [prof.user_id for prof in Profile.query.all()]:
         prof = Profile(session['user_id'], occupation, place_of_work, involved, grade, year, vk, tg, username)
         db.session.add(prof)
+        db.session.commit()
+        return redirect(url_for('.team_application'))
     else:
         db.session.query(Profile).filter(Profile.user_id == session['user_id']).update(
             {Profile.occupation: occupation, Profile.place_of_work: place_of_work, Profile.involved: involved,
              Profile.grade: grade, Profile.year: year, Profile.vk: vk, Profile.telegram: tg,
              Profile.vernadsky_username: username})
-    db.session.commit()
-    return redirect(url_for('.profile_info'))
+        db.session.commit()
+        return redirect(url_for('.profile_info'))
 
 
 @app.route('/change_pwd', defaults={'success': None})
@@ -973,7 +975,7 @@ def supervisor_profile(supervisor_id):
 @app.route('/team_application')
 def team_application():
     if check_access() == 2 and 'profile' not in session.keys():
-        return redirect(url_for('.profile_info', message='fill_profile_first'))
+        return redirect(url_for('.edit_profile'))
     elif check_access() < 2:
         return redirect(url_for('.no_access', message='register_first'))
     cats_count, categs = categories_info()
