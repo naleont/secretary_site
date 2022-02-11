@@ -64,13 +64,6 @@ or session['type'] == 'admin' %}
     </tr>
     <tr>
         <td>
-            Дата рождения
-        </td><td>
-        {{ user['born'] }}
-        </td>
-    </tr>
-    <tr>
-        <td>
             e-mail
         </td><td>
         <a href="mailto:{{ user['email'] }}">{{ user['email'] }}</a>
@@ -84,6 +77,13 @@ or session['type'] == 'admin' %}
         </td>
     </tr>
     <tr><td colspan="2"><b><br>Дополнительная информация</b></td></tr>
+    <tr>
+        <td>
+            Дата рождения
+        </td><td>
+        {{ profile['born'] }}
+        </td>
+    </tr>
     <tr>
         <td>
             VK

@@ -25,7 +25,7 @@ place_of_work
                            name="vk" type="text" placeholder="vk.com/myname"
                            pattern="(https://)?vk.com/[A-Za-z0-9_-\.]{5,32}" required><br><br>
                 Имя пользователя в Telegram<br>
-                    <input size="30" {% if profile['filled'] == True %} value = "@{{ profile['tg'] }}" {% endif %}}
+                    <input size="30" {% if profile['tg'] %} value = "@{{ profile['tg'] }}" {% endif %}}
                            name="telegram" type="text" placeholder="@my_name"
                            pattern="@[A-Za-z0-9_-]+"><br><br>
                 Логин <a href="http://vernadsky.info/">на сайте Чтений</a><br>
@@ -33,6 +33,8 @@ place_of_work
                            name="vernadsky_username" type="text" placeholder="user_name"
                            pattern="[A-Za-z0-9_]{4-12}"><br><br>
             </td><td>
+                <span class="required">Дата рождения</span><br>
+                    <input size="30" name="born" type="date" value="{{ profile['born'] }}" required><br><br>
                 <span class="required">Вид деятельности</span><br>
                 <p><select name="occupation" required>
                     <option class="container-fluid bg-2" {% if profile['occupation'] == None %} selected="true" {% endif %}

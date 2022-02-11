@@ -143,8 +143,6 @@ def personal_info_form():
     info['last_name'] = request.form['last_name']
     info['first_name'] = request.form['first_name']
     info['patronymic'] = request.form['patronymic']
-    if 'born' in request.form.keys():
-        info['born'] = datetime.datetime.strptime(request.form['born'], '%Y-%m-%d').date().strftime('%d/%m/%Y')
     return info
 
 
@@ -159,7 +157,6 @@ def get_user_info(user):
     user_info['last_name'] = user_db.last_name
     user_info['first_name'] = user_db.first_name
     user_info['patronymic'] = user_db.patronymic
-    user_info['born'] = user_db.born
     user_info['type'] = user_db.user_type
     user_info['approved'] = user_db.approved
     user_info['created_on'] = user_db.created_on.date()
@@ -193,9 +190,10 @@ def get_profile_info(user):
         profile['place_of_work'] = prof_info.place_of_work
         profile['grade'] = prof_info.grade
         profile['year'] = prof_info.year
+        profile['born'] = prof_info.born
     else:
         profile = {'filled': False, 'vk': None, 'tg': None, 'username': None, 'occupation': None, 'involved': None,
-                   'place_of_work': None, 'grade': None, 'year': None}
+                   'place_of_work': None, 'grade': None, 'year': None, 'born': None}
     return profile
 
 
@@ -225,10 +223,10 @@ def write_user(user_info):
 
         db.session.query(Users).filter(Users.user_id == session['user_id']).update(
             {Users.last_name: user_info['last_name'], Users.first_name: user_info['first_name'],
-             Users.patronymic: user_info['patronymic'], Users.born: user_info['born']})
+             Users.patronymic: user_info['patronymic']})
     else:
         user = Users(user_info['email'], user_info['tel'], user_info['password'], user_info['last_name'],
-                     user_info['first_name'], user_info['patronymic'], user_info['born'], user_info['user_type'],
+                     user_info['first_name'], user_info['patronymic'], user_info['user_type'],
                      user_info['approved'], None)
         db.session.add(user)
     db.session.commit()
@@ -619,6 +617,7 @@ def profile_info(message):
         return redirect(url_for('.no_access'))
     user = get_user_info(session['user_id'])
     profile = get_profile_info(session['user_id'])
+    profile['born'] = profile['born'].strftime('%d.%m.%Y')
     return render_template('registration, logging and applications/profile_info.html', profile=profile, user=user,
                            access=access, message=message)
 
@@ -656,6 +655,7 @@ def edit_profile():
         return redirect(url_for('.no_access'))
     # Извлечение информации профиля из БД (если она заполнен)
     profile = get_profile_info(session['user_id'])
+    profile['born'] = profile['born'].strftime('%Y-%m-%d')
     renew_session()
     # Вывод страницы профиля с информацией пользователя и профиля из БД
     return render_template('registration, logging and applications/edit_profile.html', profile=profile)
@@ -707,9 +707,11 @@ def write_profile():
         username = request.form['vernadsky_username']
     else:
         username = None
+    if 'born' in request.form.keys():
+        born = datetime.datetime.strptime(request.form['born'], '%Y-%m-%d').date()
 
     if session['user_id'] not in [prof.user_id for prof in Profile.query.all()]:
-        prof = Profile(session['user_id'], occupation, place_of_work, involved, grade, year, vk, tg, username)
+        prof = Profile(session['user_id'], occupation, place_of_work, involved, grade, year, vk, tg, username, born)
         db.session.add(prof)
         db.session.commit()
         return redirect(url_for('.team_application'))
@@ -717,7 +719,7 @@ def write_profile():
         db.session.query(Profile).filter(Profile.user_id == session['user_id']).update(
             {Profile.occupation: occupation, Profile.place_of_work: place_of_work, Profile.involved: involved,
              Profile.grade: grade, Profile.year: year, Profile.vk: vk, Profile.telegram: tg,
-             Profile.vernadsky_username: username})
+             Profile.vernadsky_username: username, Profile.born: born})
         db.session.commit()
         return redirect(url_for('.profile_info'))
 
@@ -1051,6 +1053,7 @@ def see_one_application(year, user):
     application = application_info('user-year', user=user, year=year)
     user_info = get_user_info(user)
     profile = get_profile_info(user)
+    profile['born'] = profile['born'].strftime('%d.%m.%Y')
     cats_count, cats = categories_info()
     renew_session()
     return render_template('application management/one_application.html', application=application, year=curr_year,
@@ -1172,6 +1175,7 @@ def user_page(user, message):
         return redirect(url_for('.no_access'))
     user_info = get_user_info(user)
     profile = get_profile_info(user)
+    profile['born'] = profile['born'].strftime('%d.%m.%Y')
     cats_count, cats = categories_info()
     return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats,
                            message=message)

@@ -148,7 +148,7 @@
         <td>
             VK
         </td><td colspan="3">
-        {% if profile['vk'] != None %}
+        {% if profile['vk'] %}
         <a href="https://vk.com/{{ profile['vk'] }}">vk.com/{{ profile['vk'] }}</a>
         {% endif %}
         </td>
@@ -157,7 +157,7 @@
         <td>
             Telegram
         </td><td colspan="3">
-        {% if profile['tg'] != None %}
+        {% if profile['tg'] %}
         <a href="https://t.me/{{ profile['tg'] }}">@{{ profile['tg'] }}</a>
         {% endif %}
         </td>

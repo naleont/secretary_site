@@ -22,14 +22,13 @@ class Users(db.Model):
     created_on = db.Column(db.DateTime, index=False, unique=False, nullable=True, default=datetime.datetime.now)
     last_login = db.Column(db.DateTime, index=False, unique=False, nullable=True)
 
-    def __init__(self, email, tel, password, last_name, first_name, patronymic, born, user_type, approved, last_login):
+    def __init__(self, email, tel, password, last_name, first_name, patronymic, user_type, approved, last_login):
         self.email = email
         self.tel = tel
         self.password = password
         self.last_name = last_name
         self.first_name = first_name
         self.patronymic = patronymic
-        self.born = born
         self.user_type = user_type
         self.approved = approved
         self.last_login = last_login
@@ -48,9 +47,10 @@ class Profile(db.Model):
     vk = db.Column('vk', db.Text)
     telegram = db.Column('telegram', db.Text)
     vernadsky_username = db.Column('vernadsky_username', db.Text)
+    born = db.Column('born', db.Date)
 
     def __init__(self, user_id, occupation, place_of_work, involved, grade, year, vk, telegram,
-                 vernadsky_username):
+                 vernadsky_username, born):
         self.user_id = user_id
         self.occupation = occupation
         self.place_of_work = place_of_work
@@ -60,6 +60,7 @@ class Profile(db.Model):
         self.vk = vk
         self.telegram = telegram
         self.vernadsky_username = vernadsky_username
+        self.born = born
 
 
 class Supervisors(db.Model):
