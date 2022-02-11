@@ -174,7 +174,7 @@ def get_user_info(user):
 
 def all_users():
     users = dict()
-    for u in Users.query.all():
+    for u in Users.query.order_by(Users.user_id.desc()).all():
         users[u.user_id] = get_user_info(u.user_id)
     return users
 
@@ -619,7 +619,8 @@ def profile_info(message):
         return redirect(url_for('.no_access'))
     user = get_user_info(session['user_id'])
     profile = get_profile_info(session['user_id'])
-    return render_template('registration, logging and applications/profile_info.html', profile=profile, user=user, access=access, message=message)
+    return render_template('registration, logging and applications/profile_info.html', profile=profile, user=user,
+                           access=access, message=message)
 
 
 # Форма изменения информации пользователя (email, телефон, ФИО, дата рождения)
@@ -820,7 +821,8 @@ def edit_category(cat_id):
     else:
         category = None
     renew_session()
-    return render_template('categories/add_category.html', supervisors=sups, directions=dirs, contests=conts, category=category)
+    return render_template('categories/add_category.html', supervisors=sups, directions=dirs, contests=conts,
+                           category=category)
 
 
 @app.route('/edited_cat', methods=['POST'])
@@ -987,7 +989,8 @@ def team_application():
     else:
         application = None
     renew_session()
-    return render_template('registration, logging and applications/team_application.html', application=application, categories=categs)
+    return render_template('registration, logging and applications/team_application.html', application=application,
+                           categories=categs)
 
 
 @app.route('/application_process', methods=['POST'])
@@ -1037,7 +1040,8 @@ def view_applications():
     appl = application_info('year', user=session['user_id'])
     users = all_users()
     renew_session()
-    return render_template('application management/view_applications.html', applications=appl, year=curr_year, users=users)
+    return render_template('application management/view_applications.html', applications=appl, year=curr_year,
+                           users=users)
 
 
 @app.route('/one_application/<year>/<user>')
@@ -1049,7 +1053,8 @@ def see_one_application(year, user):
     profile = get_profile_info(user)
     cats_count, cats = categories_info()
     renew_session()
-    return render_template('application management/one_application.html', application=application, year=curr_year, user=user_info,
+    return render_template('application management/one_application.html', application=application, year=curr_year,
+                           user=user_info,
                            profile=profile, categories=cats)
 
 
@@ -1057,7 +1062,8 @@ def see_one_application(year, user):
 def confirm_application_deletion(year, user):
     application = application_info('user-year', user, year)
     user_info = get_user_info(user)
-    return render_template('application management/confirm_application_deletion.html', application=application, year=year, user=user_info)
+    return render_template('application management/confirm_application_deletion.html', application=application,
+                           year=year, user=user_info)
 
 
 @app.route('/manage_application/<year>/<user>/<action>', defaults={'page': 'all'})
@@ -1125,27 +1131,27 @@ def users_list(query):
         tel = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in query if n not in tel_unneeded]))
         try:
             if int(query) in [u.user_id for u in Users.query.all()]:
-                for u in Users.query.filter(Users.user_id == query).order_by(Users.user_id).all():
+                for u in Users.query.filter(Users.user_id == query).order_by(Users.user_id.desc()).all():
                     users[u.user_id] = get_user_info(u.user_id)
         except Exception:
             pass
         if query in [u.email for u in Users.query.all()]:
-            for u in Users.query.filter(Users.email == query).order_by(Users.user_id).all():
+            for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif tel in [u.tel for u in Users.query.all()]:
-            for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id).all():
+            for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif query in [u.last_name for u in Users.query.all()]:
-            for u in Users.query.filter(Users.last_name == query).order_by(Users.user_id).all():
+            for u in Users.query.filter(Users.last_name == query).order_by(Users.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif query == 'secretary':
-            for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id).all():
+            for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all():
                 users[u.secretary_id] = get_user_info(u.secretary_id)
         elif query in access_types.keys():
             for val in [val for val in access_types.values() if val >= access_types[query]]:
                 for u in Users.query.filter(Users.user_type == list(access_types.keys()
                                                                     )[list(access_types.values()).index(val)
-                                                                        ]).order_by(Users.user_id).all():
+                                                                        ]).order_by(Users.user_id.desc()).all():
                     users[u.user_id] = get_user_info(u.user_id)
     return render_template('user_management/users_list.html', users=users)
 
@@ -1167,7 +1173,8 @@ def user_page(user, message):
     user_info = get_user_info(user)
     profile = get_profile_info(user)
     cats_count, cats = categories_info()
-    return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats, message=message)
+    return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats,
+                           message=message)
 
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
