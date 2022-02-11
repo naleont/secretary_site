@@ -35,7 +35,6 @@
         <td align="center"><b>Фамилия, имя</b></td>
         <td align="center"><b>e-mail</b></td>
         <td align="center"><b>Телефон</b></td>
-        <td align="center"><b>Дата рождения</b></td>
         <td align="center"><b>Создан</b></td>
         <td align="center"><b>Последний вход</b></td>
     </tr>
@@ -53,9 +52,6 @@
         </td>
         <td>
             <a href="tel:{{ users[key]['tel'] }}">{{ users[key]['tel'] }}</a>
-        </td>
-        <td align="center">
-            {{ users[key]['born'] }}
         </td>
         <td>
             {{ users[key]['created_on'] }}
