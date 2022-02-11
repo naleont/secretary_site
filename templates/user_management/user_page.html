@@ -127,7 +127,9 @@
         <td>
             Дата рождения
         </td><td colspan="3">
-        {{ user['born'] }}
+        {% if profile['born'] %}
+        {{ profile['born'] }}
+        {% endif %}
         </td>
     </tr>
     <tr>
