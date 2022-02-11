@@ -45,20 +45,20 @@
             {% elif applications[key]['role'] == None %}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_1_id'] %}
-        bgcolor="#BBDAB8" {% endif %}>
+        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_1_id']
+                and applications[key]['category_1_id'] %} bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_1'] != None %}
             {{ applications[key]['category_1_short'] }}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_2_id'] %}
-        bgcolor="#BBDAB8" {% endif %}>
+        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_2_id']
+                and applications[key]['category_2_id'] %} bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_2'] != None %}
             {{ applications[key]['category_2_short'] }}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_3_id'] %}
-        bgcolor="#BBDAB8" {% endif %}>
+        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_3_id']
+                and applications[key]['category_3_id'] %} bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_3'] != None %}
             {{ applications[key]['category_3_short'] }}
             {% endif %}
