@@ -54,10 +54,10 @@
             <a href="tel:{{ users[key]['tel'] }}">{{ users[key]['tel'] }}</a>
         </td>
         <td>
-            {{ users[key]['created_on'] }}
+            <span class="comment">{{ users[key]['created_on'] }}</span>
         </td>
         <td align="center">
-            {{ users[key]['last_login'] }}
+            <span class="comment">{{ users[key]['last_login'] }}</span>
         </td>
     </tr>
 {% endfor %}

@@ -617,7 +617,8 @@ def profile_info(message):
         return redirect(url_for('.no_access'))
     user = get_user_info(session['user_id'])
     profile = get_profile_info(session['user_id'])
-    profile['born'] = profile['born'].strftime('%d.%m.%Y')
+    if profile['born'] is not None:
+        profile['born'] = profile['born'].strftime('%d.%m.%Y')
     return render_template('registration, logging and applications/profile_info.html', profile=profile, user=user,
                            access=access, message=message)
 
@@ -655,7 +656,8 @@ def edit_profile():
         return redirect(url_for('.no_access'))
     # Извлечение информации профиля из БД (если она заполнен)
     profile = get_profile_info(session['user_id'])
-    profile['born'] = profile['born'].strftime('%Y-%m-%d')
+    if profile['born'] is not None:
+        profile['born'] = profile['born'].strftime('%Y-%m-%d')
     renew_session()
     # Вывод страницы профиля с информацией пользователя и профиля из БД
     return render_template('registration, logging and applications/edit_profile.html', profile=profile)
@@ -1053,7 +1055,8 @@ def see_one_application(year, user):
     application = application_info('user-year', user=user, year=year)
     user_info = get_user_info(user)
     profile = get_profile_info(user)
-    profile['born'] = profile['born'].strftime('%d.%m.%Y')
+    if profile['born'] is not None:
+        profile['born'] = profile['born'].strftime('%d.%m.%Y')
     cats_count, cats = categories_info()
     renew_session()
     return render_template('application management/one_application.html', application=application, year=curr_year,
@@ -1175,7 +1178,8 @@ def user_page(user, message):
         return redirect(url_for('.no_access'))
     user_info = get_user_info(user)
     profile = get_profile_info(user)
-    profile['born'] = profile['born'].strftime('%d.%m.%Y')
+    if profile['born'] is not None:
+        profile['born'] = profile['born'].strftime('%d.%m.%Y')
     cats_count, cats = categories_info()
     return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats,
                            message=message)

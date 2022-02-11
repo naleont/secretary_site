@@ -110,7 +110,7 @@
         <td>
             Зарегистрирован
         </td><td colspan="3">
-        {{ user['created_on'] }}
+        <span class="comment">{{ user['created_on'] }}</span>
         </td>
     </tr>
     {% endif %}
@@ -119,7 +119,7 @@
         <td>
             Последний вход
         </td><td colspan="3">
-        {{ user['last_login'] }}
+        <span class="comment">{{ user['last_login'] }}</span>
         </td>
     </tr>
     {% endif %}

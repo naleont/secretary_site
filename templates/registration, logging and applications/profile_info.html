@@ -81,7 +81,9 @@ or session['type'] == 'admin' %}
         <td>
             Дата рождения
         </td><td>
+        {% if profile['born'] %}
         {{ profile['born'] }}
+        {% endif %}
         </td>
     </tr>
     <tr>
