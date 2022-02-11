@@ -159,7 +159,7 @@ def get_user_info(user):
     user_info['patronymic'] = user_db.patronymic
     user_info['type'] = user_db.user_type
     user_info['approved'] = user_db.approved
-    user_info['created_on'] = user_db.created_on.strftime('.%d.%m%Y %H:%M:%S')
+    user_info['created_on'] = user_db.created_on.strftime('%d.%m.%Y %H:%M:%S')
     if user_db.last_login:
         user_info['last_login'] = user_db.last_login.strftime('%d.%m.%Y %H:%M:%S')
     if user in [u.secretary_id for u in CatSecretaries.query.all()]:
