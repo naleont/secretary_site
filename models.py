@@ -82,6 +82,18 @@ class Supervisors(db.Model):
         self.supervisor_info = supervisor_info
 
 
+class SupervisorUser(db.Model):
+    __tablename__ = 'supervisor_user'
+    __table_args__ = (PrimaryKeyConstraint('user_id', 'supervisor_id'),)
+
+    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'))
+    supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('supervisors.supervisor_id'))
+
+    def __init__(self, user_id, supervisor_id):
+        self.user_id = user_id
+        self.supervisor_id = supervisor_id
+
+
 class Directions(db.Model):
     __tablename__ = 'directions'
 

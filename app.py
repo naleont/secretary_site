@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
-    Directions, Contests, CatDirs, News
+    Directions, Contests, CatDirs, News, SupervisorUser
 # , RevCriteria, RevCritValues, RevAnalysis, Works
 import re
 import datetime
@@ -166,6 +166,8 @@ def get_user_info(user):
         user_info['secretary'] = True
         user_info['cat_id'] = db.session.query(CatSecretaries).filter(
             CatSecretaries.secretary_id == user).first().cat_id
+    if user in [s.user_id for s in SupervisorUser.query.all()]:
+        user_info['supervisor_id'] = SupervisorUser.query.filter(SupervisorUser.user_id == user).first().supervisor_id
     return user_info
 
 
@@ -1157,7 +1159,7 @@ def users_list(query):
             for val in [val for val in access_types.values() if val >= access_types[query]]:
                 for u in Users.query.filter(Users.user_type == list(access_types.keys()
                                                                     )[list(access_types.values()).index(val)
-                                                                        ]).order_by(Users.user_id.desc()).all():
+                ]).order_by(Users.user_id.desc()).all():
                     users[u.user_id] = get_user_info(u.user_id)
     return render_template('user_management/users_list.html', users=users)
 
@@ -1181,8 +1183,9 @@ def user_page(user, message):
     if profile['born'] is not None:
         profile['born'] = profile['born'].strftime('%d.%m.%Y')
     cats_count, cats = categories_info()
+    supers = get_supervisors()
     return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats,
-                           message=message)
+                           message=message, supervisors=supers)
 
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
@@ -1263,6 +1266,32 @@ def publish_news(news_id):
         news.publish = True
     db.session.commit()
     return redirect(url_for('.news_list'))
+
+
+@app.route('/supervisor_user/<user_id>', methods=['GET'])
+def supervisor_user(user_id):
+    sup_id = request.values.get('user_supervisor')
+    user_id = int(user_id)
+    user = db.session.query(Users).filter(Users.user_id == user_id).first()
+    if sup_id != 'None':
+        sup_id = int(sup_id)
+        supervisor = db.session.query(Supervisors).filter(Supervisors.supervisor_id == sup_id).first()
+        if user_id in [u.user_id for u in SupervisorUser.query.all()]:
+            user_db = db.session.query(SupervisorUser).filter(SupervisorUser.user_id == user_id).first()
+            user_db.supervisor_id = supervisor.supervisor_id
+            db.session.commit()
+        else:
+            sup_user = SupervisorUser(user.user_id, supervisor.supervisor_id)
+            db.session.add(sup_user)
+            db.session.commit()
+    else:
+        if user_id in [u.user_id for u in Users.query.all()]:
+            superv = SupervisorUser.query.filter(SupervisorUser.user_id == user_id).first().supervisor_id
+            user_sup = SupervisorUser.query.filter(SupervisorUser.user_id == user_id
+                                                   and SupervisorUser.supervisor_id == superv).first()
+            db.session.delete(user_sup)
+            db.session.commit()
+    return redirect(url_for('.user_page', user=user_id))
 
 
 if __name__ == '__main__':
