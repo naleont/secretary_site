@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint
+from sqlalchemy.orm import relationship
 import datetime
 
 db = SQLAlchemy()
@@ -196,15 +197,24 @@ class CatSecretaries(db.Model):
 
 class Works(db.Model):
     __tablename__ = 'works'
-    __table_args__ = (PrimaryKeyConstraint('cat_id'),)
 
     work_id = db.Column('work_id', db.Integer, primary_key=True)
-    work_name = db.Column('work_name', db.Integer)
-    cat_id = db.Column('cat_id', db.Integer, ForeignKey('categories.cat_id'), unique=False)
+    work_name = db.Column('work_name', db.Text)
 
-    def __init__(self, work_id, work_name, cat_id):
+    def __init__(self, work_id, work_name):
         self.work_id = work_id
         self.work_name = work_name
+
+
+class WorkCategories(db.Model):
+    __tablename__ = 'work_cats'
+    __table_args__ = (PrimaryKeyConstraint('cat_id', 'work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('categories.cat_id'))
+    cat_id = db.Column('cat_id', db.Integer, ForeignKey('categories.cat_id'), unique=False)
+
+    def __init__(self, work_id, cat_id):
+        self.work_id = work_id
         self.cat_id = cat_id
 
 

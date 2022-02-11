@@ -1,8 +1,8 @@
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
-    Directions, Contests, CatDirs, News, SupervisorUser
-# , RevCriteria, RevCritValues, RevAnalysis, Works
+    Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories
+# , RevCriteria, RevCritValues, RevAnalysis
 import re
 import datetime
 import os
@@ -50,6 +50,11 @@ def renew_session():
         if user in [u.secretary_id for u in CatSecretaries.query.all()]:
             session['secretary'] = True
             session['cat_id'] = cat_sec.cat_id
+        if user in [u.supervisor_id for u in SupervisorUser.query.all()]:
+            session['supervisor'] = True
+            supervisor = SupervisorUser.query.filter(SupervisorUser.user_id == user).first()
+            if supervisor.supervisor_id in [s.supervisor_id for s in CatSupervisors.query.all()]:
+                session['cat_id'] = supervisor.category_id
         if user in [p.user_id for p in Profile.query.all()]:
             session['profile'] = True
         if user in [a.user_id for a in Application.query.filter(Application.year == curr_year)]:
@@ -454,6 +459,20 @@ def all_news():
     for news in news_db:
         all_n[news.news_id] = one_news(news.news_id)
     return all_n
+
+
+def get_works(cat_id):
+    works = dict()
+    cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == cat_id
+                                                        ).order_by(WorkCategories.work_id).all()
+    works_db = db.session.query(Works)
+    for work in cat_works:
+        work_db = works_db.filter(Works.work_id == work.work_id).first()
+        w_no = work_db.work_id
+        works[w_no] = dict()
+        works[w_no]['work_id'] = w_no
+        works[w_no]['work_name'] = work_db.work_name
+    return works
 
 
 # Главная страница
@@ -1213,7 +1232,8 @@ def remove_secretary(user_id, cat_id):
 @app.route('/category_page/<cat_id>')
 def category_page(cat_id):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
-    return render_template('categories/category_page.html', category=category)
+    works = get_works(cat_id)
+    return render_template('categories/category_page.html', category=category, works=works)
 
 
 @app.route('/news_list')
