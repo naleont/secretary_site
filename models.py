@@ -16,7 +16,6 @@ class Users(db.Model):
     last_name = db.Column('last_name', db.Text)
     first_name = db.Column('first_name', db.Text)
     patronymic = db.Column('patronymic', db.Text)
-    born = db.Column('born', db.Text)
     user_type = db.Column('type', db.Text)
     approved = db.Column('approved', db.Boolean)
     created_on = db.Column(db.DateTime, index=False, unique=False, nullable=True, default=datetime.datetime.now)
