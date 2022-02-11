@@ -235,14 +235,15 @@
             Это русек
         </td>
         <td colspan="3">
-            <div align="right">
+            <div>
                 <form action="/supervisor_user/{{ user['user_id'] }}" method = 'GET'>
                     <fieldset>
                         <select name="user_supervisor">
                             <option class="container-fluid bg-2" value="None"
                                     {% if not user['supervisor_id'] %} selected="true" {% endif %}>Нет</option>
                             {% for key in supervisors %}
-                                <option class="container-fluid bg-2" value="{{ supervisors[key]['id'] }}" {% if supervisors[key]['id'] == user['supervisor_id'] %} selected="true"
+                                <option class="container-fluid bg-2" value="{{ supervisors[key]['id'] }}"
+                                        {% if supervisors[key]['id'] == user['supervisor_id'] %} selected="true"
                                         {% endif %}>
                                 {{ supervisors[key]['name'] }}
                                 </option>
