@@ -60,6 +60,8 @@
                             selected="true" {% endif %}>Пользователь</option>
                             <option class="container-fluid bg-2" value="team"{% if user['type'] == 'team' %}
                             selected="true" {% endif %}>В команде</option>
+                            <option class="container-fluid bg-2" value="org"{% if user['type'] == 'org' %}
+                            selected="true" {% endif %}>Член оргкомитета</option>
                             <option class="container-fluid bg-2" value="manager"{% if user['type'] == 'manager' %}
                             selected="true" {% endif %}>Координатор</option>
                             <option class="container-fluid bg-2" value="admin"{% if user['type'] == 'admin' %}
