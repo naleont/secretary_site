@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/adding_criteria" method = 'POST'>
+    <fieldset>
+        <legend><h2><b>Добавить критерии анализа рецензий</b></h2></legend>
+            <span>Значения, разделенные табуляциями:</span><br>
+                    Название критерия, описание, год, вес<br>
+        <textarea cols="120" rows="10" name="data"></textarea><br><br>
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+{% endblock %}

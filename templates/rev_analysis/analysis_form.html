@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/write_analysis" method = 'POST'>
+    <fieldset>
+        <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
+        <h4><b>{{ work['work_name'] }}</b></h4></legend>
+        <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
+        {% for key in criteria %}
+        <span class="required">{{ criteria[key]['name'] }}</span><br>
+                <p><select name="{{ criteria[key]['id'] }}" required>
+                    <option class="container-fluid bg-2" selected="true" {% if analysis[criteria[key]['id']] == None %}
+                    selected="true" {% endif %} disabled>Не выбрано</option>
+                    {% for k in criteria[key]['values'] %}
+                    <option class="container-fluid bg-2"
+                            {% if analysis[criteria[key]['id']] == criteria[key]['values'][k]['value_id'] %}
+                            selected="true" {% endif %} value="{{ criteria[key]['values'][k]['value_id'] }}">
+                        {{ criteria[key]['values'][k]['val_name'] }}</option>
+                    {% endfor %}
+                </select></p>
+        {% for k in criteria[key]['values'] %}
+        {% if criteria[key]['values'][k]['comment'] %}
+        <span class="comment">{{ criteria[key]['values'][k]['val_name'] }} -
+            {{ criteria[key]['values'][k]['comment'] }}</span><br>
+        {% endif %}
+        {% endfor %}<br>
+        {% endfor %}
+        <input class="button" type="submit" value="Сохранить"><br>
+    </fieldset>
+</form>
+
+{% endblock %}

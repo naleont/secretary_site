@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Критерии анализа рецензий</h2>
+<a href="/add_criteria"><button>Добавить критерии</button></a><br><br>
+<a href="/add_values"><button>Добавить значения критериев</button></a><br><br>
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center"><b>
+            Вес
+        </b></td>
+        <td align="center"><b>
+            Название критерия
+        </b></td>
+        <td align="center"><b>
+            Описание критерия
+        </b></td>
+        <td align="center"><b>
+            Значение критерия
+        </b></td>
+        <td align="center"><b>
+            Вес
+        </b></td>
+    </tr>
+    {% for key in criteria %}
+    {% for k in criteria[key]['values'] %}
+    <tr>
+        <td align="center"><b>
+            {{ criteria[key]['weight'] }}
+        </b></td>
+        <td>
+            {{ criteria[key]['name'] }}
+        </td>
+        <td>
+            {{ criteria[key]['description'] }}
+        </td>
+        <td>
+            {{ criteria[key]['values'][k]['val_name'] }}
+        </td>
+        <td align="center"><b>
+            {{ criteria[key]['values'][k]['val_weight'] }}
+        </b></td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+</table>
+
+{% endblock %}

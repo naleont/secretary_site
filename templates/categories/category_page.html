@@ -43,20 +43,25 @@ Telegram-канал: <a href="https://t.me/{{ category['tg_channel'] }}">@{{ cat
         </td>
     </tr>
     {% for key in works %}
-    <tr>
-        <td align="center">
-            {{ works[key]['analysis'] }}
-        </td>
-        <td align="center">
-            {{ works[key]['work_id'] }}
-        </td>
-        <td>
-            {{ works[key]['work_name'] }}<br>
-        </td>
-        <td>
-            {{ works[key]['region'] }}
-        </td>
-    </tr>
+
+        <tr>
+            <td align="center">
+                {{ works[key]['analysis'] }}
+            </td>
+            <td align="center">
+                <a href="/pre_analysis/{{ works[key]['work_id'] }}">
+                    {{ works[key]['work_id'] }}
+                </a>
+            </td>
+            <td>
+                <a href="/pre_analysis/{{ works[key]['work_id'] }}">
+                    {{ works[key]['work_name'] }}<br>
+                </a>
+            </td>
+            <td>
+                {{ works[key]['region'] }}
+            </td>
+        </tr>
     {% endfor %}
 </table>
 {% endif %}

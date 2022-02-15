@@ -1,8 +1,8 @@
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
-    Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories
-# , RevCriteria, RevCritValues, RevAnalysis
+    Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
+    CriteriaValues, RevAnalysis, PreAnalysis
 import re
 import datetime
 import os
@@ -34,7 +34,8 @@ access_types = {'guest': 0,
                 'user': 1,
                 'approved_user': 2,
                 'team': 3,
-                'secretary': 7,
+                'secretary': 5,
+                'supervisor': 6,
                 'org': 8,
                 'manager': 9,
                 'admin': 10}
@@ -461,6 +462,14 @@ def all_news():
     return all_n
 
 
+def work_info(work_id):
+    work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
+    work = dict()
+    work['work_id'] = work_id
+    work['work_name'] = work_db.work_name
+    return work
+
+
 def get_works(cat_id):
     works = dict()
     cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == cat_id
@@ -469,10 +478,64 @@ def get_works(cat_id):
     for work in cat_works:
         work_db = works_db.filter(Works.work_id == work.work_id).first()
         w_no = work_db.work_id
-        works[w_no] = dict()
-        works[w_no]['work_id'] = w_no
-        works[w_no]['work_name'] = work_db.work_name
+        works[w_no] = work_info(w_no)
     return works
+
+
+def get_criteria(year):
+    criteria = dict()
+    y = datetime.datetime.strptime(str(year), '%Y').date()
+    crit_db = db.session.query(RevCriteria).filter(RevCriteria.year == y).all()
+    crit_val_db = db.session.query(CriteriaValues)
+    values_db = db.session.query(RevCritValues)
+    for crit in crit_db:
+        crit_info = dict()
+        crit_id = crit.criterion_id
+        crit_info['id'] = crit_id
+        crit_info['name'] = crit.criterion_name
+        crit_info['description'] = crit.criterion_description
+        crit_info['year'] = datetime.datetime.strftime(crit.year, '%Y')
+        crit_info['weight'] = crit.weight
+        crit_values = crit_val_db.filter(CriteriaValues.criterion_id == crit_id).all()
+        values = dict()
+        for val in crit_values:
+            v = dict()
+            val_id = val.value_id
+            value = values_db.filter(RevCritValues.value_id == val_id).first()
+            v['value_id'] = val_id
+            v['val_name'] = value.value_name
+            v['comment'] = value.comment
+            v['val_weight'] = value.weight
+            values[val_id] = v
+        crit_info['values'] = values
+        crit_info['val_num'] = len(values)
+        criteria[crit_id] = crit_info
+    return criteria
+
+
+def get_pre_analysis(work_id):
+    pre = dict()
+    pre_ana = db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).first()
+    if pre_ana is not None:
+        pre['good_work'] = pre_ana.good_work
+        pre['research'] = pre_ana.research
+        pre['has_review'] = pre_ana.has_review
+        pre['work_comment'] = pre_ana.work_comment
+        pre['rev_comment'] = pre_ana.rev_comment
+    else:
+        pre = None
+    return pre
+
+
+def get_analysis(work_id):
+    analysis = dict()
+    analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
+    if analysis_db is not None:
+        for criterion in analysis_db:
+            analysis[criterion.criterion_id] = criterion.value_id
+    else:
+        analysis = None
+    return analysis
 
 
 # Главная страница
@@ -493,7 +556,7 @@ def no_access(message):
 
 @app.route('/secretary_reminder')
 def secretary_reminder():
-    if check_access() < 7:
+    if check_access() < 5:
         return redirect(url_for('.no_access'))
     renew_session()
     return render_template('info_pages/secretaries_info/secretary_reminder.html')
@@ -926,14 +989,15 @@ def edit_supervisor(sup_id):
 def edited_supervisor():
     if check_access() < 9:
         return redirect(url_for('.no_access'))
-    supervisor_id = int(request.form['supervisor_id'])
     supervisor = personal_info_form()
     supervisor['sup_info'] = request.form['supervisor_info']
-    if supervisor_id in [sup.supervisor_id for sup in Supervisors.query.all()]:
-        db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).update(
-            {Supervisors.last_name: supervisor['last_name'], Supervisors.first_name: supervisor['first_name'],
-             Supervisors.patronymic: supervisor['patronymic'], Supervisors.email: supervisor['email'],
-             Supervisors.tel: supervisor['tel'], Supervisors.supervisor_info: supervisor['sup_info']})
+    if 'supervisor_id' in request.form.keys():
+        supervisor_id = int(request.form['supervisor_id'])
+        if supervisor_id in [sup.supervisor_id for sup in Supervisors.query.all()]:
+            db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).update(
+                {Supervisors.last_name: supervisor['last_name'], Supervisors.first_name: supervisor['first_name'],
+                 Supervisors.patronymic: supervisor['patronymic'], Supervisors.email: supervisor['email'],
+                 Supervisors.tel: supervisor['tel'], Supervisors.supervisor_info: supervisor['sup_info']})
     else:
         supervisor = Supervisors(supervisor['last_name'], supervisor['first_name'], supervisor['patronymic'],
                                  supervisor['email'], supervisor['tel'], supervisor['sup_info'])
@@ -1279,6 +1343,8 @@ def editing_news():
 
 @app.route('/publish_news/<news_id>')
 def publish_news(news_id):
+    if check_access() < 8:
+        return redirect(url_for('.no_access'))
     news = db.session.query(News).filter(News.news_id == news_id).first()
     if news.publish is True:
         news.publish = False
@@ -1290,6 +1356,8 @@ def publish_news(news_id):
 
 @app.route('/supervisor_user/<user_id>', methods=['GET'])
 def supervisor_user(user_id):
+    if check_access() < 8:
+        return redirect(url_for('.no_access'))
     sup_id = request.values.get('user_supervisor')
     user_id = int(user_id)
     user = db.session.query(Users).filter(Users.user_id == user_id).first()
@@ -1312,6 +1380,143 @@ def supervisor_user(user_id):
             db.session.delete(user_sup)
             db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
+
+
+@app.route('/rev_analysis_management')
+def rev_analysis_management():
+    if check_access() < 10:
+        return redirect(url_for('.no_access'))
+    return render_template('rev_analysis/analysis_management.html')
+
+
+@app.route('/analysis_criteria')
+def analysis_criteria():
+    if check_access() < 8:
+        return redirect(url_for('.no_access'))
+    criteria = get_criteria(curr_year)
+    return render_template('rev_analysis/analysis_criteria.html', criteria=criteria)
+
+
+@app.route('/add_criteria')
+def add_criteria():
+    if check_access() < 10:
+        return redirect(url_for('.no_access'))
+    return render_template('rev_analysis/add_criteria.html')
+
+
+@app.route('/adding_criteria', methods=['POST'])
+def adding_criteria():
+    if check_access() < 10:
+        return redirect(url_for('.no_access'))
+    data = request.form['data']
+    for line in data.split('\n'):
+        if line != '':
+            criteria = line.split('\t')
+            name = criteria[0].strip()
+            description = criteria[1].strip()
+            year = datetime.datetime.strptime(criteria[2].strip(), '%Y')
+            weight = criteria[3].strip()
+            crit = RevCriteria(name, description, year, weight)
+            db.session.add(crit)
+            db.session.commit()
+    return redirect(url_for('.analysis_criteria'))
+
+
+@app.route('/add_values')
+def add_values():
+    if check_access() < 10:
+        return redirect(url_for('.no_access'))
+    return render_template('rev_analysis/add_values.html')
+
+
+@app.route('/adding_values', methods=['POST'])
+def adding_values():
+    if check_access() < 10:
+        return redirect(url_for('.no_access'))
+    data = request.form['data']
+    for line in data.split('\n'):
+        if line != '':
+            values = line.split('\t')
+            criterion = values[0].strip()
+            value = values[1].strip()
+            comment = values[2].strip()
+            weight = values[3].strip()
+            vals = RevCritValues(value, comment, weight)
+            db.session.add(vals)
+            db.session.commit()
+            criterion_id = RevCriteria.query.filter(RevCriteria.criterion_name == criterion).first().criterion_id
+            value_id = RevCritValues.query.order_by(RevCritValues.value_id.desc()
+                                                    ).filter(RevCritValues.value_name == value).first().value_id
+            crit_val = CriteriaValues(criterion_id, value_id)
+            db.session.add(crit_val)
+            db.session.commit()
+    return redirect(url_for('.analysis_criteria'))
+
+
+@app.route('/pre_analysis/<work_id>')
+def pre_analysis(work_id):
+    work = work_info(work_id)
+    pre = get_pre_analysis(int(work_id))
+    return render_template('/rev_analysis/pre_analysis.html', work=work, pre_ana=pre)
+
+
+@app.route('/write_pre_analysis', methods=['POST'])
+def write_pre_analysis():
+    work_id = request.form['work_id']
+    if request.form['good_work'] == 'True':
+        good_work = True
+    else:
+        good_work = False
+    research = request.form['research']
+    if request.form['has_review'] == 'True':
+        has_review = True
+    else:
+        has_review = False
+    if int(work_id) in [w.work_id for w in PreAnalysis.query.all()]:
+        db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).update(
+            {PreAnalysis.good_work: good_work, PreAnalysis.research: research,
+             PreAnalysis.has_review: has_review})
+        db.session.commit()
+    else:
+        pre_ana = PreAnalysis(int(work_id), good_work, research, has_review, None, None)
+        db.session.add(pre_ana)
+        db.session.commit()
+    if has_review is True:
+        return redirect(url_for('.analysis_form', work_id=work_id))
+    else:
+        cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+        return redirect(url_for('.category_page', cat_id=cat_id))
+
+
+@app.route('/analysis_form/<work_id>')
+def analysis_form(work_id):
+    criteria = get_criteria(curr_year)
+    work = work_info(work_id)
+    analysis = get_analysis(int(work_id))
+    return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, analysis=analysis)
+
+
+@app.route('/write_analysis', methods=['POST'])
+def write_analysis():
+    work_id = int(request.form['work_id'])
+    criteria_ids = [criterion.criterion_id for criterion in RevCriteria.query.all()]
+    for criterion_id in criteria_ids:
+        value = int(request.form[str(criterion_id)])
+        if work_id in [w.work_id for w in RevAnalysis.query.all()]:
+            if criterion_id in [c.criterion_id for c in RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()]:
+                d = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
+                d.filter(RevAnalysis.criterion_id == criterion_id).update({RevAnalysis.value_id: value})
+                db.session.commit()
+            else:
+                crit_value = RevAnalysis(work_id, criterion_id, value)
+                db.session.add(crit_value)
+                db.session.commit()
+        else:
+            crit_value = RevAnalysis(work_id, criterion_id, value)
+            db.session.add(crit_value)
+            db.session.commit()
+    cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+    return redirect(url_for('.category_page', cat_id=cat_id))
 
 
 if __name__ == '__main__':

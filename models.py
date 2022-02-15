@@ -235,38 +235,77 @@ class News(db.Model):
         self.publish = publish
 
 
-# class RevCriteria(db.Model):
-#     __tableneme__ = 'rev_criteria'
-#
-#     criterion_id = db.Column('criterion_id', db.Integer, primary_key=True)
-#     criterion_name = db.Column('criterion_name', db.Text)
-#
-#     def __init__(self, criterion_name):
-#         self.criterion_name = criterion_name
-#
-#
-# class RevCritValues(db.Model):
-#     __tableneme__ = 'rev_crit_values'
-#     # __table_args__ = (PrimaryKeyConstraint('criterion_id'),)
-#
-#     value_id = db.Column('value_id', db.Integer, primary_key=True)
-#     value_name = db.Column('value_name', db.Text)
-#     criterion_id = db.Column('criterion_id', db.Integer, ForeignKey('rev_criteria.criterion_id'), unique=False)
-#
-#     def __init__(self, value_name, criterion_id):
-#         self.value_name = value_name
-#         self.criterion_id = criterion_id
-#
-#
-# class RevAnalysis(db.Model):
-#     __tablename__ = 'rev_analysis'
-#     __table_args__ = (PrimaryKeyConstraint('work_id', 'criterion_id', 'value_id'),)
-#
-#     work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
-#     criterion_id = db.Column('criterion_id', db.Integer, ForeignKey('rev_criteria.criterion_id'))
-#     value_id = db.Column('value_id', db.Integer, ForeignKey('rev_crit_values.value_id'))
-#
-#     def __init__(self, work_id, criterion_id, value_id):
-#         self.work_id = work_id
-#         self.criterion_id = criterion_id
-#         self.value_id = value_id
+class RevCriteria(db.Model):
+    __tableneme__ = 'rev_criteria'
+
+    criterion_id = db.Column('criterion_id', db.Integer, primary_key=True)
+    criterion_name = db.Column('criterion_name', db.Text)
+    criterion_description = db.Column('criterion_description', db.Text)
+    year = db.Column('year', db.Date)
+    weight = db.Column('weight', db.Integer)
+
+    def __init__(self, criterion_name, criterion_description, year, weight):
+        self.criterion_name = criterion_name
+        self.criterion_description = criterion_description
+        self.year = year
+        self.weight = weight
+
+
+class RevCritValues(db.Model):
+    __tableneme__ = 'rev_crit_values'
+
+    value_id = db.Column('value_id', db.Integer, primary_key=True)
+    value_name = db.Column('value_name', db.Text)
+    comment = db.Column('comment', db.Text)
+    weight = db.Column('weight', db.Integer)
+
+    def __init__(self, value_name, comment, weight):
+        self.value_name = value_name
+        self.comment = comment
+        self.weight = weight
+
+
+class CriteriaValues(db.Model):
+    __tablename__ = 'crit_values'
+    __table_args__ = (PrimaryKeyConstraint('criterion_id', 'value_id'),)
+
+    criterion_id = db.Column('criterion_id', db.Integer, ForeignKey('rev_criteria.criterion_id'), unique=False)
+    value_id = db.Column('value_id', db.Integer, ForeignKey('rev_criteria.criterion_id'))
+
+    def __init__(self, criterion_id, value_id):
+        self.criterion_id = criterion_id
+        self.value_id = value_id
+
+
+class PreAnalysis(db.Model):
+    __tablename__ = 'pre_analysis'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    good_work = db.Column('good_work', db.Boolean)
+    research = db.Column('research', db.Text)
+    has_review = db.Column('has_review', db.Boolean)
+    work_comment = db.Column('work_comment', db.Boolean)
+    rev_comment = db.Column('rev_comment', db.Boolean)
+
+    def __init__(self, work_id, good_work, research, has_review, work_comment, rev_comment):
+        self.work_id = work_id
+        self.good_work = good_work
+        self.research = research
+        self.has_review = has_review
+        self.work_comment = work_comment
+        self.rev_comment = rev_comment
+
+
+class RevAnalysis(db.Model):
+    __tablename__ = 'rev_analysis'
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'criterion_id', 'value_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    criterion_id = db.Column('criterion_id', db.Integer, ForeignKey('rev_criteria.criterion_id'), unique=False)
+    value_id = db.Column('value_id', db.Integer, ForeignKey('rev_crit_values.value_id'), unique=False)
+
+    def __init__(self, work_id, criterion_id, value_id):
+        self.work_id = work_id
+        self.criterion_id = criterion_id
+        self.value_id = value_id

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/write_pre_analysis" method = 'POST'>
+    <fieldset>
+        <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
+        <h4><b>{{ work['work_name'] }}</b></h4></legend>
+        <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
+        <span class="required">Была бы работа допущена до 2 тура, если бы проходила через рецензирование экспертами
+        вашей секции?</span><br>
+        <input type="radio" name="good_work" value="True" required {% if pre_ana['good_work'] == True %} checked {% endif %}>
+        Да<br>
+        <input type="radio" name="good_work" value="False" required {% if pre_ana['good_work'] == False %} checked {% endif %}>
+        Нет<br><br>
+        <span class="required">Работа соответствует формату Конкурса?</span><br>
+            <p><select name="research" required>
+                <option class="container-fluid bg-2" value="None" {% if pre_ana == None %} selected="true"
+                {% endif %} disabled>Не выбрано</option>
+                <option class="container-fluid bg-2" {% if pre_ana['research'] == "Да, работа исследовательская" %} selected="true"
+                {% endif %}>Да, работа исследовательская</option>
+                <option class="container-fluid bg-2" {% if pre_ana['research'] == "Нет, это проект" %} selected="true"
+                {% endif %}>Нет, это проект</option>
+                <option class="container-fluid bg-2" {% if pre_ana['research'] == "Нет, это реферат" %} selected="true"
+                {% endif %}>Нет, это реферат</option>
+                <option class="container-fluid bg-2" {% if pre_ana['research'] == "Выявлен плагиат!" %} selected="true"
+                {% endif %}>Выявлен плагиат!</option>
+            </select></p>
+        <span class="required">У работы есть рецензия от регионального тура?</span><br>
+        <span class="comment">Рецензия должна быть среди файлов работы</span><br>
+        <input type="radio" name="has_review" value=True required {% if pre_ana['has_review'] == True %} checked {% endif %}>
+        Да<br>
+        <input type="radio" name="has_review" value=False required {% if pre_ana['has_review'] == False %} checked {% endif %}>
+        Нет<br><br>
+
+        <input class="button" type="submit" value="Сохранить"><br>
+    </fieldset>
+</form>
+
+{% endblock %}
