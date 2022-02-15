@@ -991,7 +991,7 @@ def edited_supervisor():
         return redirect(url_for('.no_access'))
     supervisor = personal_info_form()
     supervisor['sup_info'] = request.form['supervisor_info']
-    if 'supervisor_id' in request.form.keys():
+    if request.form['supervisor_id'] is not '':
         supervisor_id = int(request.form['supervisor_id'])
         if supervisor_id in [sup.supervisor_id for sup in Supervisors.query.all()]:
             db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).update(
