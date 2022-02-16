@@ -10,11 +10,11 @@
         {% for key in criteria %}
         <span class="required">{{ criteria[key]['name'] }}</span><br>
                 <p><select name="{{ criteria[key]['id'] }}" required>
-                    <option class="container-fluid bg-2" selected="true" {% if analysis[criteria[key]['id']] == None %}
+                    <option class="container-fluid bg-2" selected="true" {% if analysis[criteria[key]['id']]['val_id'] == None %}
                     selected="true" {% endif %} disabled>Не выбрано</option>
                     {% for k in criteria[key]['values'] %}
                     <option class="container-fluid bg-2"
-                            {% if analysis[criteria[key]['id']] == criteria[key]['values'][k]['value_id'] %}
+                            {% if analysis[criteria[key]['id']]['val_id'] == criteria[key]['values'][k]['value_id'] %}
                             selected="true" {% endif %} value="{{ criteria[key]['values'][k]['value_id'] }}">
                         {{ criteria[key]['values'][k]['val_name'] }}</option>
                     {% endfor %}

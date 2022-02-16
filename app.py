@@ -65,24 +65,33 @@ def renew_session():
     return session
 
 
-def check_access():
+def check_access(url):
     renew_session()
     if 'type' in session.keys():
         if session['type'] == 'admin':
+            session['access'] = 10
             return 10
         elif session['type'] == 'manager':
+            session['access'] = 9
             return 9
         elif session['type'] == 'org':
+            session['access'] = 8
             return 8
         elif 'secretary' in session.keys() and session['secretary'] is True:
+            session['access'] = 7
             return 7
         elif session['type'] == 'team':
+            session['access'] = 3
             return 3
         elif session['approved'] is True:
+            session['access'] = 2
             return 2
         elif 'user_id' in session.keys():
+            session['access'] = 1
             return 1
     else:
+        session['url'] = url
+        session['access'] = 0
         return 0
 
 
@@ -467,6 +476,10 @@ def work_info(work_id):
     work = dict()
     work['work_id'] = work_id
     work['work_name'] = work_db.work_name
+    if work_id in [w.work_id for w in RevAnalysis.query.all()]:
+        work['analysis'] = True
+    else:
+        work['analysis'] = False
     return work
 
 
@@ -530,9 +543,13 @@ def get_pre_analysis(work_id):
 def get_analysis(work_id):
     analysis = dict()
     analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
+    values_db = db.session.query(RevCritValues)
     if analysis_db is not None:
         for criterion in analysis_db:
-            analysis[criterion.criterion_id] = criterion.value_id
+            crit = dict()
+            crit['val_id'] = criterion.value_id
+            crit['val_name'] = values_db.filter(RevCritValues.value_id == crit['val_id']).first().value_name
+            analysis[criterion.criterion_id] = crit
     else:
         analysis = None
     return analysis
@@ -543,7 +560,7 @@ def get_analysis(work_id):
 def main_page():
     renew_session()
     news = all_news()
-    access = check_access()
+    access = check_access('/')
     access_list = [i for i in access_types.keys() if access_types[i] <= access]
     return render_template('main.html', news=news, access_list=access_list)
 
@@ -551,12 +568,12 @@ def main_page():
 @app.route('/no_access', defaults={'message': None})
 @app.route('/no_access/<message>')
 def no_access(message):
-    return render_template('no_access.html', access=check_access(), message=message)
+    return render_template('no_access.html', message=message)
 
 
 @app.route('/secretary_reminder')
 def secretary_reminder():
-    if check_access() < 5:
+    if check_access(url='/secretary_reminder') < 5:
         return redirect(url_for('.no_access'))
     renew_session()
     return render_template('info_pages/secretaries_info/secretary_reminder.html')
@@ -628,7 +645,7 @@ def logging():
     user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
     user.last_login = datetime.datetime.now()
     db.session.commit()
-    return redirect(url_for('.main_page'))
+    return redirect(session['url'])
 
 
 # Выход из учетной записи
@@ -642,6 +659,7 @@ def logout():
     session.pop('cat_id', None)
     session.pop('approved', None)
     session.pop('application', None)
+    session.pop('url', None)
     # Перенаправление на главную страницу
     return redirect(url_for('main_page'))
 
@@ -696,7 +714,7 @@ def approve(user_id, page):
 @app.route('/profile_info/<message>')
 def profile_info(message):
     renew_session()
-    access = check_access()
+    access = check_access(url='/profile_info')
     if access < 1:
         return redirect(url_for('.no_access'))
     user = get_user_info(session['user_id'])
@@ -711,7 +729,7 @@ def profile_info(message):
 @app.route('/edit_user', defaults={'message': None})
 @app.route('/edit_user/<message>')
 def edit_user(message):
-    if check_access() < 2:
+    if check_access(url='/edit_user') < 2:
         return redirect(url_for('.no_access'))
     # Получение информации текущего пользователя из БД
     user = get_user_info(session['user_id'])
@@ -723,8 +741,6 @@ def edit_user(message):
 # Обработка информации из формы изменения информации пользователя
 @app.route('/edited_user', methods=['POST'])
 def edited_user():
-    if check_access() < 2:
-        return redirect(url_for('.no_access'))
     # Получение новых данных пользователя из формы и запись их в БД
     user_info = personal_info_form()
     message = write_user(user_info)
@@ -736,7 +752,7 @@ def edited_user():
 # Форма редактирования информации профиля
 @app.route('/edit_profile')
 def edit_profile():
-    if check_access() < 2:
+    if check_access(url='/edit_profile') < 2:
         return redirect(url_for('.no_access'))
     # Извлечение информации профиля из БД (если она заполнен)
     profile = get_profile_info(session['user_id'])
@@ -750,8 +766,6 @@ def edit_profile():
 # Обработка данных формы редактирования профиля
 @app.route('/write_profile', methods=['POST'])
 def write_profile():
-    if check_access() < 2:
-        return redirect(url_for('.no_access'))
     if 'occupation' in request.form:
         occupation = request.form['occupation']
     else:
@@ -813,7 +827,7 @@ def write_profile():
 @app.route('/change_pwd', defaults={'success': None})
 @app.route('/change_pwd/<success>')
 def change_pwd(success):
-    if check_access() < 2:
+    if check_access(url='/change_pwd') < 2:
         return redirect(url_for('.no_access'))
     renew_session()
     return render_template('registration, logging and applications/change_pwd.html', success=success)
@@ -821,8 +835,6 @@ def change_pwd(success):
 
 @app.route('/new_pwd', methods=['GET'])
 def new_pwd():
-    if check_access() < 2:
-        return redirect(url_for('.no_access'))
     old = request.values.get('old_password', str)
     new = request.values.get('new_password', str)
     confirm = request.values.get('confirm_password', str)
@@ -844,14 +856,14 @@ def new_pwd():
 @app.route('/change_user_password/<user_id>', defaults={'message': None})
 @app.route('/change_user_password/<user_id>/<message>')
 def change_user_password(user_id, message):
-    if check_access() < 8:
+    if check_access(url='/change_user_password/' + user_id) < 8:
         return redirect(url_for('.no_access'))
     return render_template('user_management/change_user_password.html', user=user_id, message=message)
 
 
 @app.route('/new_user_password')
 def new_user_password():
-    if check_access() < 8:
+    if check_access(url='/new_user_password') < 8:
         return redirect(url_for('.no_access'))
     new = request.values.get('new_password', str)
     confirm = request.values.get('confirm_password', str)
@@ -869,7 +881,7 @@ def new_user_password():
 
 @app.route('/admin')
 def admin():
-    if check_access() < 8:
+    if check_access(url='/admin') < 8:
         return redirect(url_for('.no_access'))
     renew_session()
     return render_template('admin.html')
@@ -887,7 +899,7 @@ def categories_list():
 @app.route('/edit_category', defaults={'cat_id': None})
 @app.route('/edit_category/<cat_id>')
 def edit_category(cat_id):
-    if check_access() < 10:
+    if check_access(url='/edit_category/' + cat_id) < 10:
         return redirect(url_for('.no_access'))
     sups = get_supervisors()
     dirs = dict()
@@ -915,8 +927,6 @@ def edit_category(cat_id):
 
 @app.route('/edited_cat', methods=['POST'])
 def edited_category():
-    if check_access() < 9:
-        return redirect(url_for('.no_access'))
     cat_info = dict()
     cat_info['cat_id'] = int(request.form['cat_id'])
     cat_info['cat_name'] = request.form['category_name']
@@ -932,7 +942,7 @@ def edited_category():
 
 @app.route('/add_categories')
 def add_categories():
-    if check_access() < 10:
+    if check_access(url='/add_categories') < 10:
         return redirect(url_for('.no_access'))
     renew_session()
     return render_template('categories/add_categories.html')
@@ -940,8 +950,6 @@ def add_categories():
 
 @app.route('/many_categs', methods=['POST'])
 def many_categs():
-    if check_access() < 10:
-        return redirect(url_for('.no_access'))
     text = request.form['text']
     cat_text = text.split('\n')
     for cat in cat_text:
@@ -969,13 +977,13 @@ def many_categs():
 def supervisors():
     sups = get_supervisors()
     renew_session()
-    return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access())
+    return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access(url='/supervisors'))
 
 
 @app.route('/edit_supervisor', defaults={'sup_id': None})
 @app.route('/edit_supervisor/<sup_id>')
 def edit_supervisor(sup_id):
-    if check_access() < 10:
+    if check_access(url='/edit_supervisor/' + sup_id) < 10:
         return redirect(url_for('.no_access'))
     if sup_id is not None:
         supervisor = supervisor_info(sup_id)
@@ -987,11 +995,9 @@ def edit_supervisor(sup_id):
 
 @app.route('/adding_supervisor', methods=['POST'])
 def edited_supervisor():
-    if check_access() < 9:
-        return redirect(url_for('.no_access'))
     supervisor = personal_info_form()
     supervisor['sup_info'] = request.form['supervisor_info']
-    if request.form['supervisor_id'] is not '':
+    if request.form['supervisor_id'] != '':
         supervisor_id = int(request.form['supervisor_id'])
         if supervisor_id in [sup.supervisor_id for sup in Supervisors.query.all()]:
             db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).update(
@@ -1009,7 +1015,7 @@ def edited_supervisor():
 
 @app.route('/add_supervisors')
 def add_supervisors():
-    if check_access() < 10:
+    if check_access(url='/add_supervisors') < 10:
         return redirect(url_for('.no_access'))
     renew_session()
     return render_template('supervisors/add_supervisors.html')
@@ -1017,8 +1023,6 @@ def add_supervisors():
 
 @app.route('/many_sups', methods=['POST'])
 def many_sups():
-    if check_access() < 10:
-        return redirect(url_for('.no_access'))
     text = request.form['text']
     sup_text = text.split('\n')
     for sup in sup_text:
@@ -1053,7 +1057,7 @@ def many_sups():
 
 @app.route('/supervisor_profile/<supervisor_id>')
 def supervisor_profile(supervisor_id):
-    access = check_access()
+    access = check_access(url='/supervisor_profile/' + supervisor_id)
     if access < 2:
         return redirect(url_for('.no_access'))
     elif access < 3:
@@ -1065,9 +1069,9 @@ def supervisor_profile(supervisor_id):
 
 @app.route('/team_application')
 def team_application():
-    if check_access() == 2 and 'profile' not in session.keys():
+    if check_access(url='/team_application') == 2 and 'profile' not in session.keys():
         return redirect(url_for('.edit_profile'))
-    elif check_access() < 2:
+    elif check_access(url='/team_application') < 2:
         return redirect(url_for('.no_access', message='register_first'))
     cats_count, categs = categories_info()
     if session['user_id'] in [a.user_id for a in Application.query.all()]:
@@ -1084,8 +1088,6 @@ def team_application():
 
 @app.route('/application_process', methods=['POST'])
 def application_process():
-    if check_access() < 2:
-        return redirect(url_for('.no_access'))
     role = request.form['role']
     category_1 = request.form['category_1']
     category_2 = request.form['category_2']
@@ -1115,7 +1117,7 @@ def application_process():
 
 @app.route('/my_applications')
 def application_page():
-    if check_access() < 2:
+    if check_access(url='/my_applications') < 2:
         return redirect(url_for('.no_access'))
     appl_info = application_info('user', user=session['user_id'])
     renew_session()
@@ -1124,7 +1126,7 @@ def application_page():
 
 @app.route('/view_applications')
 def view_applications():
-    if check_access() < 8:
+    if check_access(url='/view_applications') < 8:
         return redirect(url_for('.no_access'))
     appl = application_info('year', user=session['user_id'])
     users = all_users()
@@ -1135,7 +1137,7 @@ def view_applications():
 
 @app.route('/one_application/<year>/<user>')
 def see_one_application(year, user):
-    if check_access() < 8:
+    if check_access(url='/one_application/' + year + '/' + user) < 8:
         return redirect(url_for('.no_access'))
     application = application_info('user-year', user=user, year=year)
     user_info = get_user_info(user)
@@ -1160,7 +1162,7 @@ def confirm_application_deletion(year, user):
 @app.route('/manage_application/<year>/<user>/<action>', defaults={'page': 'all'})
 @app.route('/manage_application/<year>/<user>/<action>/<page>')
 def manage_application(year, user, action, page):
-    if check_access() < 8:
+    if check_access(url='/manage_application/' + year + '/' + user + '/' + action + '/' + page) < 8:
         return redirect(url_for('.no_access'))
     appl_db = db.session.query(Application).filter(Application.user_id == user and Application.year == year).first()
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
@@ -1184,7 +1186,7 @@ def manage_application(year, user, action, page):
 
 @app.route('/assign_category/<user>/<category>')
 def assign_category(user, category):
-    if check_access() < 8:
+    if check_access(url='/assign_category/' + user + '/' + category) < 8:
         return redirect(url_for('.no_access'))
     user_info = get_user_info(user)
     cats_count, cats = categories_info(category)
@@ -1194,7 +1196,7 @@ def assign_category(user, category):
 
 @app.route('/confirm_assignment/<user>/<category>')
 def confirm_assignment(user, category):
-    if check_access() < 8:
+    if check_access(url='/confirm_assignment/' + user + '/' + category) < 8:
         return redirect(url_for('.no_access'))
     user = int(user)
     category = int(category)
@@ -1212,7 +1214,7 @@ def confirm_assignment(user, category):
 @app.route('/users_list', defaults={'query': 'all'})
 @app.route('/users_list/<query>')
 def users_list(query):
-    if check_access() < 8:
+    if check_access(url='/users_list/' + query) < 8:
         return redirect(url_for('.no_access'))
     renew_session()
     users = dict()
@@ -1249,8 +1251,6 @@ def users_list(query):
 
 @app.route('/search_user', methods=['GET'])
 def search_user():
-    if check_access() < 8:
-        return redirect(url_for('.no_access'))
     renew_session()
     query = request.values.get('query', str)
     return redirect(url_for('.users_list', query=query))
@@ -1259,7 +1259,7 @@ def search_user():
 @app.route('/user_page/<user>', defaults={'message': None})
 @app.route('/user_page/<user>/<message>')
 def user_page(user, message):
-    if check_access() < 3:
+    if check_access(url='/user_page/' + user) < 3:
         return redirect(url_for('.no_access'))
     user_info = get_user_info(user)
     profile = get_profile_info(user)
@@ -1273,8 +1273,6 @@ def user_page(user, message):
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
 def assign_user_type(user):
-    if check_access() < 8:
-        return redirect(url_for('.no_access'))
     assign_type = request.values.get('assign_type', str)
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
     user_db.user_type = assign_type
@@ -1284,7 +1282,7 @@ def assign_user_type(user):
 
 @app.route('/remove_secretary/<user_id>/<cat_id>')
 def remove_secretary(user_id, cat_id):
-    if check_access() < 8:
+    if check_access(url='/remove_secretary/' + user_id + '/' + cat_id) < 8:
         return redirect(url_for('.no_access'))
     cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
                                           and CatSecretaries.cat_id == cat_id).first()
@@ -1302,7 +1300,7 @@ def category_page(cat_id):
 
 @app.route('/news_list')
 def news_list():
-    if check_access() < 8:
+    if check_access(url='/news_list') < 8:
         return redirect(url_for('.no_access'))
     news = all_news()
     return render_template('news/news_list.html', news=news)
@@ -1311,7 +1309,7 @@ def news_list():
 @app.route('/edit_news', defaults={'news_id': None})
 @app.route('/edit_news/<news_id>')
 def edit_news(news_id):
-    if check_access() < 8:
+    if check_access(url='/edit_news/' + news_id) < 8:
         return redirect(url_for('.no_access'))
     if news_id == 'None' or news_id is None:
         news = {'news_id': None}
@@ -1322,8 +1320,6 @@ def edit_news(news_id):
 
 @app.route('/editing_news', methods=['POST'])
 def editing_news():
-    if check_access() < 8:
-        return redirect(url_for('.no_access'))
     news = dict()
     news_id = int(request.form['news_id'])
     news['title'] = request.form['title']
@@ -1343,7 +1339,7 @@ def editing_news():
 
 @app.route('/publish_news/<news_id>')
 def publish_news(news_id):
-    if check_access() < 8:
+    if check_access(url='/publish_news/' + news_id) < 8:
         return redirect(url_for('.no_access'))
     news = db.session.query(News).filter(News.news_id == news_id).first()
     if news.publish is True:
@@ -1356,8 +1352,6 @@ def publish_news(news_id):
 
 @app.route('/supervisor_user/<user_id>', methods=['GET'])
 def supervisor_user(user_id):
-    if check_access() < 8:
-        return redirect(url_for('.no_access'))
     sup_id = request.values.get('user_supervisor')
     user_id = int(user_id)
     user = db.session.query(Users).filter(Users.user_id == user_id).first()
@@ -1384,14 +1378,14 @@ def supervisor_user(user_id):
 
 @app.route('/rev_analysis_management')
 def rev_analysis_management():
-    if check_access() < 10:
+    if check_access(url='/rev_analysis_management') < 10:
         return redirect(url_for('.no_access'))
     return render_template('rev_analysis/analysis_management.html')
 
 
 @app.route('/analysis_criteria')
 def analysis_criteria():
-    if check_access() < 8:
+    if check_access(url='/analysis_criteria') < 8:
         return redirect(url_for('.no_access'))
     criteria = get_criteria(curr_year)
     return render_template('rev_analysis/analysis_criteria.html', criteria=criteria)
@@ -1399,15 +1393,13 @@ def analysis_criteria():
 
 @app.route('/add_criteria')
 def add_criteria():
-    if check_access() < 10:
+    if check_access(url='/add_criteria') < 10:
         return redirect(url_for('.no_access'))
     return render_template('rev_analysis/add_criteria.html')
 
 
 @app.route('/adding_criteria', methods=['POST'])
 def adding_criteria():
-    if check_access() < 10:
-        return redirect(url_for('.no_access'))
     data = request.form['data']
     for line in data.split('\n'):
         if line != '':
@@ -1424,15 +1416,13 @@ def adding_criteria():
 
 @app.route('/add_values')
 def add_values():
-    if check_access() < 10:
+    if check_access(url='/add_values') < 10:
         return redirect(url_for('.no_access'))
     return render_template('rev_analysis/add_values.html')
 
 
 @app.route('/adding_values', methods=['POST'])
 def adding_values():
-    if check_access() < 10:
-        return redirect(url_for('.no_access'))
     data = request.form['data']
     for line in data.split('\n'):
         if line != '':
@@ -1451,6 +1441,16 @@ def adding_values():
             db.session.add(crit_val)
             db.session.commit()
     return redirect(url_for('.analysis_criteria'))
+
+
+@app.route('/review_analysis/<work_id>')
+def review_analysis(work_id):
+    work = work_info(work_id)
+    analysis = get_analysis(work_id)
+    criteria = get_criteria(curr_year)
+    pre_ana = get_pre_analysis(work_id)
+    return render_template('rev_analysis/review_analysis.html', work=work, analysis=analysis, criteria=criteria,
+                           pre_analysis=pre_ana)
 
 
 @app.route('/pre_analysis/<work_id>')

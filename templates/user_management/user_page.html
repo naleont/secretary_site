@@ -40,11 +40,13 @@
     <tr>
         <td>
             Тип пользователя
-        </td><td width="20%">
+        </td><td width="25%">
         {% if user['type'] == 'admin' %}
         Админ
         {% elif user['type'] == 'manager' %}
         Координатор
+        {% elif user['type'] == 'org' %}
+        Член оргкомитета
         {% elif user['type'] == 'team' %}
         В команде
         {% elif user['type'] == 'user' %}

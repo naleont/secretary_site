@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{{ work['analysis'] }}
+<h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
+<h4><b>{{ work['work_name'] }}</b></h4>
+<a href="/pre_analysis/{{ work['work_id'] }}"><button>
+    {% if work['analysis'] == False %}
+        Заполнить анализ
+    {% elif work['analysis'] == True %}
+        Редактировать анализ
+    {% endif %}
+</button></a><br><br>
+
+{% if work['analysis'] == True %}
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td colspan="2">
+            <b>О работе</b>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Была бы допущена при нашем рецензировании
+        </td>
+        <td>
+            {% if pre_ana['good_work'] == True %}
+            Да
+            {% elif pre_ana['good_work'] == False %}
+            Нет
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Соответствует формату Конкурса
+        </td>
+        <td>
+            {{ pre_ana['research'] }}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Поступила с рецензией
+        </td>
+        <td>
+            {% if pre_ana['has_review'] == True %}
+            Да
+            {% elif pre_ana['has_review'] == False %}
+            Нет
+            {% endif %}
+        </td>
+    </tr>
+    {% if pre_ana['has_review'] == True %}
+    <tr>
+        <td colspan="2">
+            <b>О рецензии</b>
+        </td>
+    </tr>
+    {% for key in criteria %}
+    <tr>
+        <td>
+            {{ criteria[key]['name'] }}
+        </td>
+        <td>
+            {{ criteria[key]['values'][k]['val_name'] }}
+        </td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+</table>
+{% endif %}
+{% endblock %}
