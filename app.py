@@ -645,7 +645,10 @@ def logging():
     user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
     user.last_login = datetime.datetime.now()
     db.session.commit()
-    return redirect(session['url'])
+    if 'url' in session.keys():
+        return redirect(session['url'])
+    else:
+        return redirect(url_for('.main_page'))
 
 
 # Выход из учетной записи
