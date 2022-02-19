@@ -482,8 +482,8 @@ def work_info(work_id):
     work['work_id'] = work_id
     work['work_name'] = work_db.work_name
     if work_id in [w.work_id for w in RevAnalysis.query.all()] \
-            or work_id in [w.work_id for w in PreAnalysis.query.all()]\
-            and PreAnalysis.query.filter(PreAnalysis.work_id == work_id).first().has_review is False:
+            or (work_id in [w.work_id for w in PreAnalysis.query.all()]\
+            and PreAnalysis.query.filter(PreAnalysis.work_id == work_id).first().has_review is False):
         work['analysis'] = True
     else:
         work['analysis'] = False
