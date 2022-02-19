@@ -19,10 +19,10 @@
         </td>
     </tr>
     <tr>
-        <td>
+        <td width="70%">
             Была бы допущена при нашем рецензировании
         </td>
-        <td>
+        <td width="30%">
             {% if pre_ana['good_work'] == True %}
             Да
             {% elif pre_ana['good_work'] == False %}
@@ -54,6 +54,7 @@
     {% if work['analysis'] == True %}
     <tr>
         <td colspan="2">
+            <br>
             <b>О рецензии</b>
         </td>
     </tr>
@@ -63,7 +64,11 @@
             {{ criteria[key]['name'] }}
         </td>
         <td>
-            {{ criteria[key]['values'][k]['val_name'] }}
+            {% for k in analysis %}
+            {% if k == key %}
+            {{ analysis[k]['val_name'] }}
+            {% endif %}
+            {% endfor %}
         </td>
     </tr>
     {% endfor %}

@@ -1546,6 +1546,8 @@ def review_analysis(work_id):
     analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
     pre_ana = get_pre_analysis(work_id)
+    print(criteria)
+    print(analysis)
     if pre_ana is None:
         return redirect(url_for('.pre_analysis', work_id=work_id))
     return render_template('rev_analysis/review_analysis.html', work=work, analysis=analysis, criteria=criteria,
