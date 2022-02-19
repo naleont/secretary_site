@@ -494,6 +494,7 @@ def work_info(work_id):
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     work['reg_tour'] = work_db.reg_tour
     work['site_id'] = work_db.work_site_id
+    print(work['work_id'], work['analysis'])
     return work
 
 
