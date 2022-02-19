@@ -4,14 +4,13 @@
 <h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
 <h4><b>{{ work['work_name'] }}</b></h4>
 <a href="/pre_analysis/{{ work['work_id'] }}"><button>
-    {% if work['analysis'] == False %}
-        Заполнить анализ
-    {% elif work['analysis'] == True %}
+    {% if work['analysis'] == True or pre_ana != None %}
         Редактировать анализ
+    {% elif work['analysis'] == False %}
+        Заполнить анализ
     {% endif %}
 </button></a><br><br>
 
-{% if work['analysis'] == True %}
 {% if pre_ana != None %}
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
@@ -52,6 +51,7 @@
         </td>
     </tr>
     {% if pre_ana['has_review'] == True %}
+    {% if work['analysis'] == True %}
     <tr>
         <td colspan="2">
             <b>О рецензии</b>

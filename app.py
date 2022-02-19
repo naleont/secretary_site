@@ -494,7 +494,6 @@ def work_info(work_id):
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     work['reg_tour'] = work_db.reg_tour
     work['site_id'] = work_db.work_site_id
-    print(work['work_id'], work['analysis'])
     return work
 
 
@@ -1591,7 +1590,7 @@ def write_pre_analysis():
             for ana in rev_ana:
                 db.session.delete(ana)
                 db.session.commit()
-        return redirect(url_for('.category_page', cat_id=cat_id))
+        return redirect(url_for('.analysis_works', cat_id=cat_id))
 
 
 @app.route('/analysis_form/<work_id>')
