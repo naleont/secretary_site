@@ -1045,16 +1045,20 @@ def many_categs():
 @app.route('/supervisors')
 def supervisors():
     sups = get_supervisors()
+    c, cats = categories_info()
+    relevant = [cats[k]['supervisor_id'] for k in cats.keys()]
+    relevant.append(21)
     renew_session()
-    return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access(url='/supervisors'))
+    return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access(url='/supervisors'),
+                           relevant=relevant)
 
 
-@app.route('/edit_supervisor', defaults={'sup_id': None})
+@app.route('/edit_supervisor', defaults={'sup_id': ''})
 @app.route('/edit_supervisor/<sup_id>')
 def edit_supervisor(sup_id):
-    if check_access(url='/edit_supervisor/' + sup_id) < 10:
+    if check_access(url=('/edit_supervisor/' + sup_id)) < 10:
         return redirect(url_for('.no_access'))
-    if sup_id is not None:
+    if sup_id != '':
         supervisor = supervisor_info(sup_id)
     else:
         supervisor = None

@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% block title %} Добавление русека {% endblock %}
-
 {% block content %}
 <div  class="grid-container">
   <form action="/adding_supervisor" method = 'POST'>
@@ -33,7 +31,10 @@
             <tr><td>
                 <span>Информация о русеке</span><br>
                     <input size="70" name="supervisor_info" type="text"><br><br>
-                    <input size="30" name="supervisor_id" type="hidden" value="{{ supervisor['id'] }}"><br><br>
+                    <input size="30" name="supervisor_id" type="hidden"
+                           {% if supervisor['id'] != '' %}
+                                value="{{ supervisor['id'] }}
+                            {% endif %}"><br><br>
             </td></tr>
 
             <tr><td colspan="2">

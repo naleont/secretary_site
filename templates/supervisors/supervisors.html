@@ -20,7 +20,13 @@
 {% endif %}
 
 {% if session['type'] == 'admin' or session['type'] == 'manager' or session['type'] == 'org' %}
-<a href="mailto: {% for key in supervisors %} {{ supervisors[key]['email'] }} {% endfor %}" target="_blank"><button>
+<a href="mailto:
+    {% for key in supervisors %}
+    {% if supervisors[key]['id'] in relevant %}
+    {{ supervisors[key]['email'] }}
+    {% endif %}
+    {% endfor %}"
+    target="_blank"><button>
     Написать всем</button></a><br><br>
 {% endif %}
 
