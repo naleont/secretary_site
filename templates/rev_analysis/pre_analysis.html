@@ -28,9 +28,9 @@
             </select></p>
         <span class="required">У работы есть рецензия от регионального тура?</span><br>
         <span class="comment">Рецензия должна быть среди файлов работы</span><br>
-        <input type="radio" name="has_review" value=True required {% if pre_ana['has_review'] == True %} checked {% endif %}>
+        <input type="radio" name="has_review" value='True' required {% if pre_ana['has_review'] == True %} checked {% endif %}>
         Да<br>
-        <input type="radio" name="has_review" value=False required {% if pre_ana['has_review'] == False %} checked {% endif %}>
+        <input type="radio" name="has_review" value='False' required {% if pre_ana['has_review'] == False %} checked {% endif %}>
         Нет<br><br>
 
         <input class="button" type="submit" value="Сохранить"><br>
