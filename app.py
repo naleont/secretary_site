@@ -60,7 +60,6 @@ def renew_session():
                 cat_id = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
                                                      ).first().cat_id
                 session['cat_id'] = cat_id
-            print(session['supervisor'])
         if user in [p.user_id for p in Profile.query.all()]:
             session['profile'] = True
         if user in [a.user_id for a in Application.query.filter(Application.year == curr_year)]:
@@ -477,16 +476,19 @@ def all_news():
 
 
 def work_info(work_id):
+    work_id = int(work_id)
     work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
     work = dict()
     work['work_id'] = work_id
     work['work_name'] = work_db.work_name
-    if work_id in [w.work_id for w in RevAnalysis.query.all()] \
-            or (work_id in [w.work_id for w in PreAnalysis.query.all()]\
-            and PreAnalysis.query.filter(PreAnalysis.work_id == work_id).first().has_review is False):
+    if work_id in [w.work_id for w in RevAnalysis.query.all()]:
         work['analysis'] = True
     else:
-        work['analysis'] = False
+        if work_id in [w.work_id for w in PreAnalysis.query.all()] \
+           and PreAnalysis.query.filter(PreAnalysis.work_id == work_id).first().has_review is False:
+            work['analysis'] = True
+        else:
+            work['analysis'] = False
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     work['reg_tour'] = work_db.reg_tour
     work['site_id'] = work_db.work_site_id
@@ -552,15 +554,17 @@ def get_pre_analysis(work_id):
 
 def get_analysis(work_id):
     analysis = dict()
-    analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
+    analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
     values_db = db.session.query(RevCritValues)
     if analysis_db is not None:
-        for criterion in analysis_db:
+        for criterion in analysis_db.all():
             crit = dict()
             crit['val_id'] = criterion.value_id
             crit['val_name'] = values_db.filter(RevCritValues.value_id == crit['val_id']).first().value_name
             analysis[criterion.criterion_id] = crit
     else:
+        analysis = None
+    if analysis == {}:
         analysis = None
     return analysis
 
@@ -1539,10 +1543,10 @@ def review_analysis(work_id):
     analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
     pre_ana = get_pre_analysis(work_id)
-    if analysis is None or analysis == {}:
+    if pre_ana is None or pre_ana == {}:
         return redirect(url_for('.pre_analysis', work_id=work_id))
     return render_template('rev_analysis/review_analysis.html', work=work, analysis=analysis, criteria=criteria,
-                           pre_analysis=pre_ana)
+                           pre_ana=pre_ana)
 
 
 @app.route('/pre_analysis/<work_id>')
@@ -1555,6 +1559,7 @@ def pre_analysis(work_id):
 @app.route('/write_pre_analysis', methods=['POST'])
 def write_pre_analysis():
     work_id = request.form['work_id']
+    work_id = int(work_id)
     if request.form['good_work'] == 'True':
         good_work = True
     else:
@@ -1564,19 +1569,24 @@ def write_pre_analysis():
         has_review = True
     else:
         has_review = False
-    if int(work_id) in [w.work_id for w in PreAnalysis.query.all()]:
+    if work_id in [w.work_id for w in PreAnalysis.query.all()]:
         db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).update(
             {PreAnalysis.good_work: good_work, PreAnalysis.research: research,
              PreAnalysis.has_review: has_review})
         db.session.commit()
     else:
-        pre_ana = PreAnalysis(int(work_id), good_work, research, has_review, None, None)
+        pre_ana = PreAnalysis(work_id, good_work, research, has_review, None, None)
         db.session.add(pre_ana)
         db.session.commit()
     if has_review is True:
         return redirect(url_for('.analysis_form', work_id=work_id))
     else:
         cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+        if work_id in [a.work_id for a in RevAnalysis.query.all()]:
+            rev_ana = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
+            for ana in rev_ana:
+                db.session.delete(ana)
+                db.session.commit()
         return redirect(url_for('.category_page', cat_id=cat_id))
 
 
