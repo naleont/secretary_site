@@ -487,6 +487,8 @@ def work_info(work_id):
         pre = db.session.query(PreAnalysis).filter(PreAnalysis.work_id == work_id).first()
         if pre.has_review is False:
             work['analysis'] = True
+        else:
+            work['analysis'] = False
     else:
         work['analysis'] = False
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
