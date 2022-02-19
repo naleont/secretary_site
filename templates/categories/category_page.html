@@ -30,7 +30,9 @@
             {% endif %}
         </td>
         {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
-            <td width="auto"><a href="/analysis_works/{{ category['id'] }}"><button>Анализ рецензий</button></a></td>
+            <td width="auto"><a href="/analysis_works/{{ category['id'] }}">
+                <button {% if need_analysis == True %} class="red-button" {% else %} {% endif %}>Анализ рецензий</button>
+            </a></td>
         {% endif %}
     </tr>
 </table>

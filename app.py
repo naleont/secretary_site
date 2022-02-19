@@ -611,6 +611,16 @@ def analysis_nums():
     return ana_nums
 
 
+def check_analysis(cat_id):
+    works = get_works(cat_id)
+    for key in works:
+        if works[key]['reg_tour'] is not None \
+                and ('analysis' not in works[key].keys()
+                     or works[key]['analysis'] is False):
+            return True
+    return False
+
+
 # Главная страница
 @app.route('/')
 def main_page():
@@ -1354,7 +1364,9 @@ def remove_secretary(user_id, cat_id):
 def category_page(cat_id):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
-    return render_template('categories/category_page.html', category=category)
+    need_analysis = check_analysis(cat_id)
+    print(need_analysis)
+    return render_template('categories/category_page.html', category=category, need_analysis=need_analysis)
 
 
 @app.route('/news_list')
