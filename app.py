@@ -483,12 +483,11 @@ def work_info(work_id):
     work['work_name'] = work_db.work_name
     if work_id in [w.work_id for w in RevAnalysis.query.all()]:
         work['analysis'] = True
+    elif work_id in [w.work_id for w in PreAnalysis.query.all()]\
+            and PreAnalysis.query.filter(PreAnalysis.work_id == work_id).first().has_review is False:
+        work['analysis'] = True
     else:
-        if work_id in [w.work_id for w in PreAnalysis.query.all()] \
-           and PreAnalysis.query.filter(PreAnalysis.work_id == work_id).first().has_review is False:
-            work['analysis'] = True
-        else:
-            work['analysis'] = False
+        work['analysis'] = False
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     work['reg_tour'] = work_db.reg_tour
     work['site_id'] = work_db.work_site_id
