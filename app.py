@@ -554,10 +554,10 @@ def get_pre_analysis(work_id):
 
 def get_analysis(work_id):
     analysis = dict()
-    analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
+    analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
     values_db = db.session.query(RevCritValues)
     if analysis_db is not None:
-        for criterion in analysis_db.all():
+        for criterion in analysis_db:
             crit = dict()
             crit['val_id'] = criterion.value_id
             crit['val_name'] = values_db.filter(RevCritValues.value_id == crit['val_id']).first().value_name
@@ -1373,7 +1373,6 @@ def category_page(cat_id):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
     need_analysis = check_analysis(cat_id)
-    print(need_analysis)
     return render_template('categories/category_page.html', category=category, need_analysis=need_analysis)
 
 
@@ -1543,7 +1542,7 @@ def review_analysis(work_id):
     analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
     pre_ana = get_pre_analysis(work_id)
-    if pre_ana is None or pre_ana == {}:
+    if pre_ana is None:
         return redirect(url_for('.pre_analysis', work_id=work_id))
     return render_template('rev_analysis/review_analysis.html', work=work, analysis=analysis, criteria=criteria,
                            pre_ana=pre_ana)
