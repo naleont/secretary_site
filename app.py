@@ -549,6 +549,8 @@ def get_pre_analysis(work_id):
         pre['rev_comment'] = pre_ana.rev_comment
     else:
         pre = None
+    if pre == {}:
+        pre = None
     return pre
 
 
