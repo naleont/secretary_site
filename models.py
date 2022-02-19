@@ -119,16 +119,18 @@ class Categories(db.Model):
     __tablename__ = 'categories'
 
     cat_id = db.Column('cat_id', db.Integer, primary_key=True)
+    cat_site_id = db.Column('cat_site_id', db.Integer)
     year = db.Column('year', db.Integer)
     cat_name = db.Column('cat_name', db.Text)
     short_name = db.Column('short_name', db.Text)
     tg_channel = db.Column('tg_channel', db.Text)
 
-    def __init__(self, year, cat_name, short_name, tg_channel):
+    def __init__(self, year, cat_name, short_name, tg_channel, cat_site_id):
         self.year = year
         self.cat_name = cat_name
         self.short_name = short_name
         self.tg_channel = tg_channel
+        self.id_from_site = cat_site_id
 
 
 class CatDirs(db.Model):
@@ -200,10 +202,40 @@ class Works(db.Model):
 
     work_id = db.Column('work_id', db.Integer, primary_key=True)
     work_name = db.Column('work_name', db.Text)
+    work_site_id = db.Column('work_site_id', db.Integer)
+    email = db.Column('email', db.Text)
+    tel = db.Column('tel', db.Text)
+    author_1_name = db.Column('author_1_name', db.Text)
+    author_1_age = db.Column('author_1_age', db.Integer)
+    author_1_class = db.Column('author_1_class', db.Integer)
+    author_2_name = db.Column('author_2_name', db.Text)
+    author_2_age = db.Column('author_2_age', db.Integer)
+    author_2_class = db.Column('author_2_class', db.Integer)
+    author_3_name = db.Column('author_3_name', db.Text)
+    author_3_age = db.Column('author_3_age', db.Integer)
+    author_3_class = db.Column('author_3_class', db.Integer)
+    teacher_name = db.Column('teacher_name', db.Text)
+    reg_tour = db.Column('reg_tour', db.Text)
 
-    def __init__(self, work_id, work_name):
+    def __init__(self, work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age, author_1_class,
+                 author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class, teacher_name,
+                 reg_tour):
         self.work_id = work_id
         self.work_name = work_name
+        self.work_site_id = work_site_id
+        self.email = email
+        self.tel = tel
+        self.author_1_name = author_1_name
+        self.author_1_age = author_1_age
+        self.author_1_class = author_1_class
+        self.author_2_name = author_2_name
+        self.author_2_age = author_2_age
+        self.author_2_class = author_2_class
+        self.author_3_name = author_3_name
+        self.author_3_age = author_3_age
+        self.author_3_class = author_3_class
+        self.teacher_name = teacher_name
+        self.reg_tour = reg_tour
 
 
 class WorkCategories(db.Model):
@@ -309,3 +341,26 @@ class RevAnalysis(db.Model):
         self.work_id = work_id
         self.criterion_id = criterion_id
         self.value_id = value_id
+
+
+class ParticipationStatuses(db.Model):
+    __tablename__ = 'participation_statuses'
+
+    status_id = db.Column('status_id', db.Integer, primary_key=True)
+    status_name = db.Column('status_name', db.Text)
+
+    def __init__(self, status_id, status_name):
+        self.status_id = status_id
+        self.status_name = status_name
+
+
+class WorkStatuses(db.Model):
+    __tablename__ = 'work_statuses'
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'status_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    status_id = db.Column('status_id', db.Integer, primary_key=True)
+
+    def __init__(self, work_id, status_id):
+        self.work_id = work_id
+        self.status_id = status_id

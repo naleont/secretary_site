@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/many_works" method = 'POST'>
+    <fieldset>
+        <legend><h2><b>Добавить работы </b>
+            <a target="_blank" href="https://vernadsky.info/personal_office/requests_2/?report=21">
+                (Копировать отсюда)</a></h2></legend>
+        {% if works_added != None %}
+        <span>Добавлено {{ works_added }} работ</span>
+        {% endif %}
+        {% if works_added != None %}
+        <span>Обновлено {{ works_edited }} работ</span>
+        {% endif %}
+        <textarea cols="120" rows="10" name="text"></textarea><br><br>
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+{% endblock %}

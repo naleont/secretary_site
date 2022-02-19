@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{{ work['analysis'] }}
 <h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
 <h4><b>{{ work['work_name'] }}</b></h4>
 <a href="/pre_analysis/{{ work['work_id'] }}"><button>

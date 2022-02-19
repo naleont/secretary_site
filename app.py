@@ -1,8 +1,10 @@
+import json
+
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
-    CriteriaValues, RevAnalysis, PreAnalysis
+    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses
 import re
 import datetime
 import os
@@ -51,11 +53,14 @@ def renew_session():
         if user in [u.secretary_id for u in CatSecretaries.query.all()]:
             session['secretary'] = True
             session['cat_id'] = cat_sec.cat_id
-        if user in [u.supervisor_id for u in SupervisorUser.query.all()]:
+        if user in [u.user_id for u in SupervisorUser.query.all()]:
             session['supervisor'] = True
             supervisor = SupervisorUser.query.filter(SupervisorUser.user_id == user).first()
             if supervisor.supervisor_id in [s.supervisor_id for s in CatSupervisors.query.all()]:
-                session['cat_id'] = supervisor.category_id
+                cat_id = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
+                                                     ).first().cat_id
+                session['cat_id'] = cat_id
+            print(session['supervisor'])
         if user in [p.user_id for p in Profile.query.all()]:
             session['profile'] = True
         if user in [a.user_id for a in Application.query.filter(Application.year == curr_year)]:
@@ -476,10 +481,15 @@ def work_info(work_id):
     work = dict()
     work['work_id'] = work_id
     work['work_name'] = work_db.work_name
-    if work_id in [w.work_id for w in RevAnalysis.query.all()]:
+    if work_id in [w.work_id for w in RevAnalysis.query.all()] \
+            or work_id in [w.work_id for w in PreAnalysis.query.all()]\
+            and PreAnalysis.query.filter(PreAnalysis.work_id == work_id).first().has_review is False:
         work['analysis'] = True
     else:
         work['analysis'] = False
+    work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+    work['reg_tour'] = work_db.reg_tour
+    work['site_id'] = work_db.work_site_id
     return work
 
 
@@ -553,6 +563,52 @@ def get_analysis(work_id):
     else:
         analysis = None
     return analysis
+
+
+def analysis_results():
+    analysis_res = dict()
+    criteria = db.session.query(RevCriteria).all()
+    rev_ana = db.session.query(RevAnalysis)
+    cats = db.session.query(Categories).all()
+    for cat in cats:
+        cat_works = get_works(cat.cat_id)
+        analysis_res.update(cat_works)
+    for work in analysis_res.keys():
+        if work in [w.work_id for w in RevAnalysis.query.all()]:
+            for criterion in criteria:
+                val = rev_ana.filter(RevAnalysis.work_id == work)
+                value = val.filter(RevAnalysis.criterion_id == criterion.criterion_id).first().value_id
+                analysis_res[work].update({criterion.criterion_id: value})
+    crit_vals = get_criteria(curr_year)
+    for work in analysis_res.keys():
+        rk = 0
+        if 'analysis' in analysis_res[work].keys() and analysis_res[work]['analysis'] is True:
+            for key in analysis_res[work].keys():
+                if key in crit_vals.keys():
+                    rk += crit_vals[key]['weight'] * crit_vals[key]['values'][analysis_res[work][key]]['val_weight']
+            analysis_res[work]['ana_rk'] = rk
+    return analysis_res
+
+
+def analysis_nums():
+    ana_res = analysis_results()
+    c, cats = categories_info()
+    ana_nums = dict()
+    for key in cats.keys():
+        ana_nums[key] = dict()
+        ana_nums[key]['cat_id'] = cats[key]['id']
+        ana_nums[key]['cat_name'] = cats[key]['name']
+        ana_nums[key]['analysed'] = 0
+        cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cats[key]['id'])]
+        ana_nums[key]['regional_applied'] = 0
+        for work in cat_works:
+            if Works.query.filter(Works.work_id == work).first().reg_tour is not None:
+                ana_nums[key]['regional_applied'] += 1
+        for k in ana_res.keys():
+            if ana_res[k]['cat_id'] == cats[key]['id'] and ana_res[k]['analysis'] is True:
+                ana_nums[key]['analysed'] += 1
+        ana_nums[key]['left'] = ana_nums[key]['regional_applied'] - ana_nums[key]['analysed']
+    return ana_nums
 
 
 # Главная страница
@@ -1297,8 +1353,8 @@ def remove_secretary(user_id, cat_id):
 @app.route('/category_page/<cat_id>')
 def category_page(cat_id):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
-    works = get_works(cat_id)
-    return render_template('categories/category_page.html', category=category, works=works)
+    renew_session()
+    return render_template('categories/category_page.html', category=category)
 
 
 @app.route('/news_list')
@@ -1370,7 +1426,7 @@ def supervisor_user(user_id):
             db.session.add(sup_user)
             db.session.commit()
     else:
-        if user_id in [u.user_id for u in Users.query.all()]:
+        if user_id in [u.user_id for u in SupervisorUser.query.all()]:
             superv = SupervisorUser.query.filter(SupervisorUser.user_id == user_id).first().supervisor_id
             user_sup = SupervisorUser.query.filter(SupervisorUser.user_id == user_id
                                                    and SupervisorUser.supervisor_id == superv).first()
@@ -1384,6 +1440,13 @@ def rev_analysis_management():
     if check_access(url='/rev_analysis_management') < 10:
         return redirect(url_for('.no_access'))
     return render_template('rev_analysis/analysis_management.html')
+
+
+@app.route('/analysis_state')
+def analysis_state():
+    analysis_res = analysis_results()
+    ana_nums = analysis_nums()
+    return render_template('rev_analysis/analysis_state.html', analysis_res=analysis_res, ana_nums=ana_nums)
 
 
 @app.route('/analysis_criteria')
@@ -1446,12 +1509,22 @@ def adding_values():
     return redirect(url_for('.analysis_criteria'))
 
 
+@app.route('/analysis_works/<cat_id>')
+def analysis_works(cat_id):
+    works = get_works(cat_id)
+    category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
+    renew_session()
+    return render_template('rev_analysis/analysis_works.html', works=works, category=category)
+
+
 @app.route('/review_analysis/<work_id>')
 def review_analysis(work_id):
     work = work_info(work_id)
     analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
     pre_ana = get_pre_analysis(work_id)
+    if analysis is None or analysis == {}:
+        return redirect(url_for('.pre_analysis', work_id=work_id))
     return render_template('rev_analysis/review_analysis.html', work=work, analysis=analysis, criteria=criteria,
                            pre_analysis=pre_ana)
 
@@ -1520,6 +1593,116 @@ def write_analysis():
             db.session.commit()
     cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     return redirect(url_for('.category_page', cat_id=cat_id))
+
+
+@app.route('/add_works', defaults={'works_added': None, 'works_edited': None})
+@app.route('/add_works/<works_added>/<works_edited>')
+def add_works(works_added, works_edited):
+    return render_template('works/add_works.html', works_added=works_added, works_edited=works_edited)
+
+
+@app.route('/many_works', methods=['POST'])
+def many_works():
+    text = '{"works": ' + request.form['text'].strip('\n') + '}'
+    works_added = 0
+    works_edited = 0
+
+    works = json.loads(text)
+    w = works['works']
+
+    for n in w:
+        edited = False
+        work_id = int(n['number'])
+        work_site_id = int(n['id'])
+        email = n['contacts']['email']
+        tel = n['contacts']['phone']
+        work_name = n['title']
+        cat = n['section']['id']
+        if cat == 0:
+            cat_id = None
+        else:
+            cat_id = Categories.query.filter(Categories.cat_site_id == cat).first().cat_id
+        authors = n['authors']
+        author_1_name = authors[0]['name']
+        author_1_age = authors[0]['age']
+        author_1_class = authors[0]['class']
+        if len(authors) > 1:
+            author_2_name = authors[1]['name']
+            author_2_age = authors[1]['age']
+            author_2_class = authors[1]['class']
+        else:
+            author_2_name = None
+            author_2_age = None
+            author_2_class = None
+        if len(authors) > 2:
+            author_3_name = authors[2]['name']
+            author_3_age = authors[2]['age']
+            author_3_class = authors[2]['class']
+        else:
+            author_3_name = None
+            author_3_age = None
+            author_3_class = None
+        teacher_name = n['teacher']['name']
+        if teacher_name == '':
+            teacher_name = None
+        status_id = int(n['status']['id'])
+        status_name = n['status']['value']
+        reg_tour = n['regional_tour']
+        if work_id in [w.work_id for w in Works.query.all()]:
+            db.session.query(Works).filter(Works.work_id == work_id).update({Works.work_name: work_name,
+                                                                             Works.work_site_id: work_site_id,
+                                                                             Works.email: email, Works.tel: tel,
+                                                                             Works.author_1_name: author_1_name,
+                                                                             Works.author_1_age: author_1_age,
+                                                                             Works.author_1_class: author_1_class,
+                                                                             Works.author_2_name: author_2_name,
+                                                                             Works.author_2_age: author_2_age,
+                                                                             Works.author_2_class: author_2_class,
+                                                                             Works.author_3_name: author_3_name,
+                                                                             Works.author_3_age: author_3_age,
+                                                                             Works.author_3_class: author_3_class,
+                                                                             Works.teacher_name: teacher_name,
+                                                                             Works.reg_tour: reg_tour})
+            edited = True
+        else:
+            work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age,
+                               author_1_class,
+                               author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class,
+                               teacher_name, reg_tour)
+            db.session.add(work_write)
+            works_added += 1
+        db.session.commit()
+        if status_id not in [s.status_id for s in ParticipationStatuses.query.all()]:
+            part_status = ParticipationStatuses(status_id, status_name)
+            db.session.add(part_status)
+            db.session.commit()
+        if work_id in [s.work_id for s in WorkStatuses.query.all()]:
+            db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
+                                                  ).update({WorkStatuses.status_id: status_id})
+            edited = True
+        else:
+            work_status = WorkStatuses(work_id, status_id)
+            db.session.add(work_status)
+            edited = True
+        db.session.commit()
+        if work_id in [w.work_id for w in WorkCategories.query.all()]:
+            if cat_id is None:
+                work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
+                db.session.delete(work_cat)
+                edited = True
+            else:
+                db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id
+                                                        ).update({WorkCategories.cat_id: cat_id})
+                edited = True
+        else:
+            if cat_id is not None:
+                work_cat = WorkCategories(work_id, cat_id)
+                db.session.add(work_cat)
+                edited = True
+        db.session.commit()
+        if edited is True:
+            works_edited += 1
+    return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
 
 
 if __name__ == '__main__':
