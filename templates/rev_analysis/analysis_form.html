@@ -7,9 +7,9 @@
         <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
         <h4><b>{{ work['work_name'] }}</b></h4></legend>
         <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
+        <span>hi</span>
         {% for key in criteria %}
         <span class="required">{{ criteria[key]['name'] }}</span><br>
-        <span>hi</span>
                 <p><select name="{{ criteria[key]['id'] }}" required>
                     <option class="container-fluid bg-2" {% if analysis == None %}
                     selected="true" {% endif %} disabled>Не выбрано</option>
