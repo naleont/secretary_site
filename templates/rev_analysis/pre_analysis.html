@@ -15,7 +15,7 @@
         Нет<br><br>
         <span class="required">Работа соответствует формату Конкурса?</span><br>
             <p><select name="research" required>
-                <option class="container-fluid bg-2" value="None" {% if pre_ana == None %} selected="true"
+                <option class="container-fluid bg-2" value="" {% if pre_ana == None %} selected="true"
                 {% endif %} disabled>Не выбрано</option>
                 <option class="container-fluid bg-2" {% if pre_ana['research'] == "Да, работа исследовательская" %} selected="true"
                 {% endif %}>Да, работа исследовательская</option>
