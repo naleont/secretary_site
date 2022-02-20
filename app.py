@@ -2,6 +2,8 @@ import json
 
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
+
+import works
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
     CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses
@@ -494,7 +496,12 @@ def work_info(work_id):
             work['analysis'] = False
     else:
         work['analysis'] = False
-    work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+    if work_id in [w.work_id for w in WorkCategories.query.all()]:
+        work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+        work['cat_name'] = Categories.query.filter(Categories.cat_id == work['cat_id']).first().cat_name
+    else:
+        work['cat_id'] = None
+        work['cat_name'] = None
     work['reg_tour'] = work_db.reg_tour
     work['site_id'] = work_db.work_site_id
     return work
@@ -510,6 +517,22 @@ def get_works(cat_id):
         w_no = work_db.work_id
         works[w_no] = work_info(w_no)
     return works
+
+
+def regional_works(cat_id='all'):
+    reg_works = dict()
+    if cat_id == 'all':
+        for work_id in [w.work_id for w in Works.query.all()]:
+            work = work_info(work_id)
+            if work['reg_tour'] is not None:
+                reg_works[work_id] = work
+    else:
+        for work_id in [w.work_id for w in Works.query.all()]:
+            if work_id in [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == int(cat_id))]:
+                work = work_info(work_id)
+                if work['reg_tour'] is not None:
+                    reg_works[work_id] = work
+    return reg_works
 
 
 def get_criteria(year):
@@ -580,16 +603,17 @@ def analysis_results():
     analysis_res = dict()
     criteria = db.session.query(RevCriteria).all()
     rev_ana = db.session.query(RevAnalysis)
-    cats = db.session.query(Categories).all()
-    for cat in cats:
-        cat_works = get_works(cat.cat_id)
-        analysis_res.update(cat_works)
-    for work in analysis_res.keys():
-        if work in [w.work_id for w in RevAnalysis.query.all()]:
-            for criterion in criteria:
-                val = rev_ana.filter(RevAnalysis.work_id == work)
-                value = val.filter(RevAnalysis.criterion_id == criterion.criterion_id).first().value_id
-                analysis_res[work].update({criterion.criterion_id: value})
+    for cat_id in [c.cat_id for c in Categories.query.all()]:
+        cat_reg_works = regional_works(cat_id)
+        for work in cat_reg_works.keys():
+            if work in [w.work_id for w in RevAnalysis.query.all()]:
+                for criterion in criteria:
+                    if criterion.criterion_id in [ana.criterion_id for ana
+                                                  in RevAnalysis.query.filter(RevAnalysis.work_id == work).all()]:
+                        val = rev_ana.filter(RevAnalysis.work_id == work)
+                        value = val.filter(RevAnalysis.criterion_id == criterion.criterion_id).first().value_id
+                        cat_reg_works[work].update({criterion.criterion_id: value})
+        analysis_res[cat_id] = cat_reg_works
     crit_vals = get_criteria(curr_year)
     for work in analysis_res.keys():
         rk = 0
@@ -602,23 +626,28 @@ def analysis_results():
 
 
 def analysis_nums():
-    ana_res = analysis_results()
-    c, cats = categories_info()
+    ana_res = dict()
+    for cat_id in [c.cat_id for c in Categories.query.all()]:
+        cat_reg_works = regional_works(cat_id)
+        ana_res[cat_id] = cat_reg_works
     ana_nums = dict()
-    for key in cats.keys():
-        ana_nums[key] = dict()
-        ana_nums[key]['cat_id'] = cats[key]['id']
-        ana_nums[key]['cat_name'] = cats[key]['name']
-        ana_nums[key]['analysed'] = 0
-        cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cats[key]['id'])]
-        ana_nums[key]['regional_applied'] = 0
-        for work in cat_works:
-            if Works.query.filter(Works.work_id == work).first().reg_tour is not None:
-                ana_nums[key]['regional_applied'] += 1
-        for k in ana_res.keys():
-            if ana_res[k]['cat_id'] == cats[key]['id'] and ana_res[k]['analysis'] is True:
-                ana_nums[key]['analysed'] += 1
-        ana_nums[key]['left'] = ana_nums[key]['regional_applied'] - ana_nums[key]['analysed']
+    for cat in ana_res.keys():
+        if ana_res[cat] != {}:
+            for work_id in ana_res[cat].keys():
+                ana_nums[cat] = dict()
+                ana_nums[cat]['cat_id'] = ana_res[cat][work_id]['cat_id']
+                ana_nums[cat]['cat_name'] = ana_res[cat][work_id]['cat_name']
+                ana_nums[cat]['analysed'] = len([w for w in ana_res[cat] if ana_res[cat][w]['analysis'] is True])
+
+                # cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat)]
+                ana_nums[cat]['regional_applied'] = len(ana_res[cat])
+                # for work in cat_works:
+                #     if Works.query.filter(Works.work_id == work).first().reg_tour is not None:
+                #         ana_nums[cat]['regional_applied'] += 1
+                # for k in ana_res.keys():
+                #     if ana_res[k]['cat_id'] == cat and ana_res[k]['analysis'] is True:
+                #         ana_nums[cat]['analysed'] += 1
+                ana_nums[cat]['left'] = ana_nums[cat]['regional_applied'] - ana_nums[cat]['analysed']
     return ana_nums
 
 
