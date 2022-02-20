@@ -15,7 +15,7 @@
                     {% for k in criteria[key]['values'] %}
                     <option class="container-fluid bg-2"
                             {% if analysis != None %}
-                            {% if criteria[key]['values'][k] %}
+                            {% if analysis[criteria[key]['id']] %}
                             {% if analysis[criteria[key]['id']]['val_id'] == criteria[key]['values'][k]['value_id'] %}
                             selected="true"
                             {% endif %}
