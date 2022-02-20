@@ -482,7 +482,10 @@ def work_info(work_id):
     work['work_id'] = work_id
     work['work_name'] = work_db.work_name
     if work_id in [w.work_id for w in RevAnalysis.query.all()]:
-        work['analysis'] = True
+        if len(RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()) == len(RevCriteria.query.all()):
+            work['analysis'] = True
+        else:
+            work['analysis'] = 'part'
     elif work_id in [w.work_id for w in PreAnalysis.query.all()]:
         pre = db.session.query(PreAnalysis).filter(PreAnalysis.work_id == work_id).first()
         if pre.has_review is False:
@@ -1546,8 +1549,6 @@ def review_analysis(work_id):
     analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
     pre_ana = get_pre_analysis(work_id)
-    print(criteria)
-    print(analysis)
     if pre_ana is None:
         return redirect(url_for('.pre_analysis', work_id=work_id))
     return render_template('rev_analysis/review_analysis.html', work=work, analysis=analysis, criteria=criteria,
@@ -1608,20 +1609,21 @@ def write_analysis():
     work_id = int(request.form['work_id'])
     criteria_ids = [criterion.criterion_id for criterion in RevCriteria.query.all()]
     for criterion_id in criteria_ids:
-        value = int(request.form[str(criterion_id)])
-        if work_id in [w.work_id for w in RevAnalysis.query.all()]:
-            if criterion_id in [c.criterion_id for c in RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()]:
-                d = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
-                d.filter(RevAnalysis.criterion_id == criterion_id).update({RevAnalysis.value_id: value})
-                db.session.commit()
+        if str(criterion_id) in request.form.keys():
+            value = int(request.form[str(criterion_id)])
+            if work_id in [w.work_id for w in RevAnalysis.query.all()]:
+                if criterion_id in [c.criterion_id for c in RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()]:
+                    d = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
+                    d.filter(RevAnalysis.criterion_id == criterion_id).update({RevAnalysis.value_id: value})
+                    db.session.commit()
+                else:
+                    crit_value = RevAnalysis(work_id, criterion_id, value)
+                    db.session.add(crit_value)
+                    db.session.commit()
             else:
                 crit_value = RevAnalysis(work_id, criterion_id, value)
                 db.session.add(crit_value)
                 db.session.commit()
-        else:
-            crit_value = RevAnalysis(work_id, criterion_id, value)
-            db.session.add(crit_value)
-            db.session.commit()
     cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     return redirect(url_for('.category_page', cat_id=cat_id))
 

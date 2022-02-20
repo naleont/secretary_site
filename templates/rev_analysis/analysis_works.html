@@ -26,7 +26,8 @@ or (session['secretary'] == True and  session['cat_id'] == category['id']) %}
         </td>
     </tr>
     {% for key in works %}
-    {% if works[key]['analysis'] == False and works[key]['reg_tour'] != None %}
+    {% if works[key]['analysis'] == False and works[key]['reg_tour'] != None
+    or works[key]['analysis'] == 'part' and works[key]['reg_tour'] != None%}
 
         <tr>
             <td align="center" valign="bottom">
