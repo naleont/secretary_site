@@ -10,7 +10,7 @@
         {% for key in criteria %}
         <span class="required">{{ criteria[key]['name'] }}</span><br>
                 <p><select name="{{ criteria[key]['id'] }}" required>
-                    <option class="container-fluid bg-2" {% if analysis == None %}
+                    <option class="container-fluid bg-2" {% if analysis == None or not analysis[criteria[key]['id']] %}
                     selected="true" {% endif %} disabled>Не выбрано</option>
                     {% for k in criteria[key]['values'] %}
                     <option class="container-fluid bg-2"
