@@ -587,9 +587,11 @@ def analysis_results():
     for work in analysis_res.keys():
         if work in [w.work_id for w in RevAnalysis.query.all()]:
             for criterion in criteria:
-                val = rev_ana.filter(RevAnalysis.work_id == work)
-                value = val.filter(RevAnalysis.criterion_id == criterion.criterion_id).first().value_id
-                analysis_res[work].update({criterion.criterion_id: value})
+                if criterion.criterion_id in [c.criterion_id for c
+                                              in RevAnalysis.query.filter(RevAnalysis.work_id == work)]:
+                    val = rev_ana.filter(RevAnalysis.work_id == work)
+                    value = val.filter(RevAnalysis.criterion_id == criterion.criterion_id).first().value_id
+                    analysis_res[work].update({criterion.criterion_id: value})
     crit_vals = get_criteria(curr_year)
     for work in analysis_res.keys():
         rk = 0
