@@ -28,15 +28,15 @@
         <td align="center"><b>
             {{ criteria[key]['weight'] }}
         </b></td>
-        <td>
+        <td><a href="/edit_criterion/{{ criteria[key]['id'] }}">
             {{ criteria[key]['name'] }}
-        </td>
+        </a></td>
         <td>
             {{ criteria[key]['description'] }}
         </td>
-        <td>
+        <td><a href="/edit_value/{{ criteria[key]['values'][k]['value_id'] }}">
             {{ criteria[key]['values'][k]['val_name'] }}
-        </td>
+        </a></td>
         <td align="center"><b>
             {{ criteria[key]['values'][k]['val_weight'] }}
         </b></td>

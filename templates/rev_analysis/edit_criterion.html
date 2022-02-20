@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/write_criterion" method="POST">
+    <fieldset>
+        <legend><h2>Редактировать критерий</h2></legend>
+            <input type="hidden" value="{{ criterion['id'] }}" name="id">
+        <span class="required">Название критерия</span><br>
+            <input type="text" size="100" name="name" required value="{{ criterion['name'] }}"><br><br>
+        <span>Описание критерия</span><br>
+            <input type="text" size="100" name="description" value="{{ criterion['description'] }}"><br><br>
+        <span>Вес критерия</span><br>
+        <p>
+            <select name="weight" required>
+                <option class="container-fluid bg-2" value="1" {% if criterion['weight'] == 1 %} selected="true"
+                {% endif %}>1</option>
+                <option class="container-fluid bg-2" value="2" {% if criterion['weight'] == 2 %} selected="true"
+                {% endif %}>2</option>
+                <option class="container-fluid bg-2" value="3" {% if criterion['weight'] == 3 %} selected="true"
+                {% endif %}>3</option>
+            </select>
+        </p><br><br>
+        <input class="button" type="submit" value="Сохранить"><br>
+    </fieldset>
+</form>
+
+{% endblock %}

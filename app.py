@@ -1506,6 +1506,59 @@ def adding_criteria():
     return redirect(url_for('.analysis_criteria'))
 
 
+@app.route('/edit_criterion/<crit_id>')
+def edit_criterion(crit_id):
+    criterion = get_criteria(curr_year)[int(crit_id)]
+    return render_template('rev_analysis/edit_criterion.html', criterion=criterion)
+
+
+@app.route('/write_criterion', methods=['POST'])
+def write_criterion():
+    crit_id = int(request.form['id'])
+    crit_name = request.form['name']
+    if 'description' in request.form.keys():
+        description = request.form['description']
+    else:
+        description = None
+    crit_weight = int(request.form['weight'])
+    if crit_id in [c.criterion_id for c in RevCriteria.query.all()]:
+        db.session.query(RevCriteria).filter(RevCriteria.criterion_id == crit_id
+                                             ).update({RevCriteria.criterion_name: crit_name,
+                                                       RevCriteria.criterion_description: description,
+                                                       RevCriteria.weight: crit_weight})
+        db.session.commit()
+    return redirect(url_for('.analysis_criteria'))
+
+
+@app.route('/edit_value/<val_id>')
+def edit_value(val_id):
+    val = db.session.query(RevCritValues).filter(RevCritValues.value_id == int(val_id)).first()
+    value = dict()
+    value['id'] = val.value_id
+    value['name'] = val.value_name
+    value['comment'] = val.comment
+    value['weight'] = val.weight
+    return render_template('rev_analysis/edit_value.html', value=value)
+
+
+@app.route('/write_value', methods=['POST'])
+def write_value():
+    val_id = int(request.form['id'])
+    val_name = request.form['name']
+    if 'comment' in request.form.keys():
+        comment = request.form['description']
+    else:
+        comment = None
+    val_weight = int(request.form['weight'])
+    if val_id in [v.value_id for v in RevCritValues.query.all()]:
+        db.session.query(RevCritValues).filter(RevCritValues.value_id == val_id
+                                               ).update({RevCritValues.value_name: val_name,
+                                                         RevCritValues.comment: comment,
+                                                         RevCritValues.weight: val_weight})
+        db.session.commit()
+    return redirect(url_for('.analysis_criteria'))
+
+
 @app.route('/add_values')
 def add_values():
     if check_access(url='/add_values') < 10:
@@ -1566,15 +1619,24 @@ def pre_analysis(work_id):
 def write_pre_analysis():
     work_id = request.form['work_id']
     work_id = int(work_id)
-    if request.form['good_work'] == 'True':
-        good_work = True
+    if 'good_work' in request.form.keys():
+        if request.form['good_work'] == 'True':
+            good_work = True
+        else:
+            good_work = False
     else:
-        good_work = False
-    research = request.form['research']
-    if request.form['has_review'] == 'True':
-        has_review = True
+        good_work = None
+    if 'research' in request.form.keys():
+        research = request.form['research']
     else:
-        has_review = False
+        research = None
+    if 'has_review' in request.form.keys():
+        if request.form['has_review'] == 'True':
+            has_review = True
+        else:
+            has_review = False
+    else:
+        has_review = None
     if work_id in [w.work_id for w in PreAnalysis.query.all()]:
         db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).update(
             {PreAnalysis.good_work: good_work, PreAnalysis.research: research,
@@ -1612,7 +1674,8 @@ def write_analysis():
         if str(criterion_id) in request.form.keys():
             value = int(request.form[str(criterion_id)])
             if work_id in [w.work_id for w in RevAnalysis.query.all()]:
-                if criterion_id in [c.criterion_id for c in RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()]:
+                if criterion_id in [c.criterion_id for c in
+                                    RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()]:
                     d = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
                     d.filter(RevAnalysis.criterion_id == criterion_id).update({RevAnalysis.value_id: value})
                     db.session.commit()
@@ -1625,7 +1688,7 @@ def write_analysis():
                 db.session.add(crit_value)
                 db.session.commit()
     cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
-    return redirect(url_for('.category_page', cat_id=cat_id))
+    return redirect(url_for('.analysis_works', cat_id=cat_id))
 
 
 @app.route('/add_works', defaults={'works_added': None, 'works_edited': None})

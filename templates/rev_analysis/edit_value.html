@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/write_value" method="POST">
+    <fieldset>
+        <legend><h2>Редактировать критерий</h2></legend>
+            <input type="hidden" value="{{ value['id'] }}" name="id">
+        <span class="required">Название критерия</span><br>
+            <input type="text" size="100" name="name" required value="{{ value['name'] }}"><br><br>
+        <span>Описание критерия</span><br>
+            <input type="text" size="100" name="description" value="{{ value['comment'] }}"><br><br>
+        <span>Вес критерия</span><br>
+        <p>
+            <select name="weight" required>
+                <option class="container-fluid bg-2" value="1" {% if value['weight'] == 1 %} selected="true"
+                {% endif %}>1</option>
+                <option class="container-fluid bg-2" value="2" {% if value['weight'] == 2 %} selected="true"
+                {% endif %}>2</option>
+                <option class="container-fluid bg-2" value="3" {% if value['weight'] == 3 %} selected="true"
+                {% endif %}>3</option>
+                <option class="container-fluid bg-2" value="4" {% if value['weight'] == 4 %} selected="true"
+                {% endif %}>4</option>
+                <option class="container-fluid bg-2" value="5" {% if value['weight'] == 5 %} selected="true"
+                {% endif %}>5</option>
+            </select>
+        </p><br><br>
+        <input class="button" type="submit" value="Сохранить"><br>
+    </fieldset>
+</form>
+
+{% endblock %}
