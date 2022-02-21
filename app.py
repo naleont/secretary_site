@@ -740,6 +740,7 @@ def logout():
     session.pop('type', None)
     session.pop('profile', None)
     session.pop('secretary', None)
+    session.pop('supervisor', None)
     session.pop('cat_id', None)
     session.pop('approved', None)
     session.pop('application', None)
@@ -1332,7 +1333,7 @@ def users_list(query):
             for val in [val for val in access_types.values() if val >= access_types[query]]:
                 for u in Users.query.filter(Users.user_type == list(access_types.keys()
                                                                     )[list(access_types.values()).index(val)
-                ]).order_by(Users.user_id.desc()).all():
+                                                                      ]).order_by(Users.user_id.desc()).all():
                     users[u.user_id] = get_user_info(u.user_id)
     return render_template('user_management/users_list.html', users=users)
 
@@ -1347,6 +1348,7 @@ def search_user():
 @app.route('/user_page/<user>', defaults={'message': None})
 @app.route('/user_page/<user>/<message>')
 def user_page(user, message):
+    renew_session()
     if check_access(url='/user_page/' + user) < 3:
         return redirect(url_for('.no_access'))
     user_info = get_user_info(user)
@@ -1361,6 +1363,7 @@ def user_page(user, message):
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
 def assign_user_type(user):
+    renew_session()
     assign_type = request.values.get('assign_type', str)
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
     user_db.user_type = assign_type
@@ -1370,6 +1373,7 @@ def assign_user_type(user):
 
 @app.route('/remove_secretary/<user_id>/<cat_id>')
 def remove_secretary(user_id, cat_id):
+    renew_session()
     if check_access(url='/remove_secretary/' + user_id + '/' + cat_id) < 8:
         return redirect(url_for('.no_access'))
     cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
@@ -1389,6 +1393,7 @@ def category_page(cat_id):
 
 @app.route('/news_list')
 def news_list():
+    renew_session()
     if check_access(url='/news_list') < 8:
         return redirect(url_for('.no_access'))
     news = all_news()
@@ -1398,6 +1403,7 @@ def news_list():
 @app.route('/edit_news', defaults={'news_id': None})
 @app.route('/edit_news/<news_id>')
 def edit_news(news_id):
+    renew_session()
     if check_access(url='/edit_news/' + news_id) < 8:
         return redirect(url_for('.no_access'))
     if news_id == 'None' or news_id is None:
@@ -1409,6 +1415,7 @@ def edit_news(news_id):
 
 @app.route('/editing_news', methods=['POST'])
 def editing_news():
+    renew_session()
     news = dict()
     news_id = int(request.form['news_id'])
     news['title'] = request.form['title']
@@ -1428,6 +1435,7 @@ def editing_news():
 
 @app.route('/publish_news/<news_id>')
 def publish_news(news_id):
+    renew_session()
     if check_access(url='/publish_news/' + news_id) < 8:
         return redirect(url_for('.no_access'))
     news = db.session.query(News).filter(News.news_id == news_id).first()
@@ -1441,6 +1449,7 @@ def publish_news(news_id):
 
 @app.route('/supervisor_user/<user_id>', methods=['GET'])
 def supervisor_user(user_id):
+    renew_session()
     sup_id = request.values.get('user_supervisor')
     user_id = int(user_id)
     user = db.session.query(Users).filter(Users.user_id == user_id).first()
@@ -1467,6 +1476,7 @@ def supervisor_user(user_id):
 
 @app.route('/rev_analysis_management')
 def rev_analysis_management():
+    renew_session()
     if check_access(url='/rev_analysis_management') < 10:
         return redirect(url_for('.no_access'))
     return render_template('rev_analysis/analysis_management.html')
@@ -1474,6 +1484,9 @@ def rev_analysis_management():
 
 @app.route('/analysis_state')
 def analysis_state():
+    renew_session()
+    if check_access(url='/analysis_state') < 5:
+        return redirect(url_for('.no_access'))
     analysis_res = analysis_results()
     ana_nums = analysis_nums()
     return render_template('rev_analysis/analysis_state.html', analysis_res=analysis_res, ana_nums=ana_nums)
@@ -1481,6 +1494,7 @@ def analysis_state():
 
 @app.route('/analysis_criteria')
 def analysis_criteria():
+    renew_session()
     if check_access(url='/analysis_criteria') < 8:
         return redirect(url_for('.no_access'))
     criteria = get_criteria(curr_year)
@@ -1489,6 +1503,7 @@ def analysis_criteria():
 
 @app.route('/add_criteria')
 def add_criteria():
+    renew_session()
     if check_access(url='/add_criteria') < 10:
         return redirect(url_for('.no_access'))
     return render_template('rev_analysis/add_criteria.html')
@@ -1496,6 +1511,7 @@ def add_criteria():
 
 @app.route('/adding_criteria', methods=['POST'])
 def adding_criteria():
+    renew_session()
     data = request.form['data']
     for line in data.split('\n'):
         if line != '':
@@ -1512,12 +1528,16 @@ def adding_criteria():
 
 @app.route('/edit_criterion/<crit_id>')
 def edit_criterion(crit_id):
+    renew_session()
+    if check_access(url='/edit_criterion' + crit_id) < 10:
+        return redirect(url_for('.no_access'))
     criterion = get_criteria(curr_year)[int(crit_id)]
     return render_template('rev_analysis/edit_criterion.html', criterion=criterion)
 
 
 @app.route('/write_criterion', methods=['POST'])
 def write_criterion():
+    renew_session()
     crit_id = int(request.form['id'])
     crit_name = request.form['name']
     if 'description' in request.form.keys():
@@ -1536,6 +1556,9 @@ def write_criterion():
 
 @app.route('/edit_value/<val_id>')
 def edit_value(val_id):
+    renew_session()
+    if check_access(url='/edit_value' + val_id) < 10:
+        return redirect(url_for('.no_access'))
     val = db.session.query(RevCritValues).filter(RevCritValues.value_id == int(val_id)).first()
     value = dict()
     value['id'] = val.value_id
@@ -1547,6 +1570,7 @@ def edit_value(val_id):
 
 @app.route('/write_value', methods=['POST'])
 def write_value():
+    renew_session()
     val_id = int(request.form['id'])
     val_name = request.form['name']
     if 'comment' in request.form.keys():
@@ -1565,6 +1589,7 @@ def write_value():
 
 @app.route('/add_values')
 def add_values():
+    renew_session()
     if check_access(url='/add_values') < 10:
         return redirect(url_for('.no_access'))
     return render_template('rev_analysis/add_values.html')
@@ -1572,6 +1597,7 @@ def add_values():
 
 @app.route('/adding_values', methods=['POST'])
 def adding_values():
+    renew_session()
     data = request.form['data']
     for line in data.split('\n'):
         if line != '':
@@ -1594,6 +1620,9 @@ def adding_values():
 
 @app.route('/analysis_works/<cat_id>')
 def analysis_works(cat_id):
+    renew_session()
+    if check_access(url='/analysis_works' + cat_id) < 5:
+        return redirect(url_for('.no_access'))
     works = get_works(cat_id)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
@@ -1604,6 +1633,9 @@ def analysis_works(cat_id):
 
 @app.route('/review_analysis/<work_id>')
 def review_analysis(work_id):
+    renew_session()
+    if check_access(url='/review_analysis' + work_id) < 5:
+        return redirect(url_for('.no_access'))
     work = work_info(work_id)
     analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
@@ -1616,6 +1648,9 @@ def review_analysis(work_id):
 
 @app.route('/pre_analysis/<work_id>')
 def pre_analysis(work_id):
+    renew_session()
+    if check_access(url='/pre_analysis' + work_id) < 6:
+        return redirect(url_for('.no_access'))
     work = work_info(work_id)
     pre = get_pre_analysis(int(work_id))
     return render_template('/rev_analysis/pre_analysis.html', work=work, pre_ana=pre)
@@ -1623,6 +1658,7 @@ def pre_analysis(work_id):
 
 @app.route('/write_pre_analysis', methods=['POST'])
 def write_pre_analysis():
+    renew_session()
     work_id = request.form['work_id']
     work_id = int(work_id)
     if 'good_work' in request.form.keys():
@@ -1666,6 +1702,9 @@ def write_pre_analysis():
 
 @app.route('/analysis_form/<work_id>')
 def analysis_form(work_id):
+    renew_session()
+    if check_access(url='/analysis_form' + work_id) < 6:
+        return redirect(url_for('.no_access'))
     criteria = get_criteria(curr_year)
     work = work_info(work_id)
     analysis = get_analysis(int(work_id))
@@ -1674,6 +1713,7 @@ def analysis_form(work_id):
 
 @app.route('/write_analysis', methods=['POST'])
 def write_analysis():
+    renew_session()
     work_id = int(request.form['work_id'])
     criteria_ids = [criterion.criterion_id for criterion in RevCriteria.query.all()]
     for criterion_id in criteria_ids:
@@ -1700,11 +1740,15 @@ def write_analysis():
 @app.route('/add_works', defaults={'works_added': None, 'works_edited': None})
 @app.route('/add_works/<works_added>/<works_edited>')
 def add_works(works_added, works_edited):
+    renew_session()
+    if check_access(url='/add_works') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('works/add_works.html', works_added=works_added, works_edited=works_edited)
 
 
 @app.route('/many_works', methods=['POST'])
 def many_works():
+    renew_session()
     text = '{"works": ' + request.form['text'].strip('\n') + '}'
     works_added = 0
     works_edited = 0
@@ -1785,7 +1829,6 @@ def many_works():
         else:
             work_status = WorkStatuses(work_id, status_id)
             db.session.add(work_status)
-            edited = True
         db.session.commit()
         if work_id in [w.work_id for w in WorkCategories.query.all()]:
             if cat_id is None:
@@ -1800,7 +1843,6 @@ def many_works():
             if cat_id is not None:
                 work_cat = WorkCategories(work_id, cat_id)
                 db.session.add(work_cat)
-                edited = True
         db.session.commit()
         if edited is True:
             works_edited += 1
