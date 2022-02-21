@@ -9,6 +9,7 @@
 or (session['supervisor'] == True and  session['cat_id'] == category['id'])
 or (session['secretary'] == True and  session['cat_id'] == category['id']) %}
 
+{% if need_analysis == True %}
 <h4 class="alarm">Анализ не заполнен</h4>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
@@ -57,6 +58,9 @@ or (session['secretary'] == True and  session['cat_id'] == category['id']) %}
     {% endif %}
     {% endfor %}
 </table>
+{% else %}
+<h4>Нет работ, требующих заполнения анализа</h4>
+{% endif %}
 
 <h4 class="blue_no_border">Анализ заполнен</h4>
 <table frame="void" border="2px" bordercolor="#4962A4">
@@ -99,7 +103,7 @@ or (session['secretary'] == True and  session['cat_id'] == category['id']) %}
                 </a>
             </td>
             <td>
-                {{ works[key]['region'] }}
+                {{ works[key]['reg_tour'] }}
             </td>
         </tr>
     {% endif %}

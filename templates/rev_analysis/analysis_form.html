@@ -5,7 +5,7 @@
 <form action="/write_analysis" method = 'POST'>
     <fieldset>
         <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
-        <h4><b>{{ work['work_name'] }}</b></h4></legend>
+        <h4><b>"{{ work['work_name'] }}"</b></h4></legend>
         <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
         {% for key in criteria %}
         <span class="required">{{ criteria[key]['name'] }}</span><br>
@@ -31,9 +31,13 @@
                         {{ criteria[key]['values'][k]['val_name'] }}</option>
                     {% endfor %}
                 </select></p>
+        {% if criteria[key]['val_comment'] == True %}
+        <span class="comment"><b>Пояснения:</b><br></span>
+        {% endif %}
         {% for k in criteria[key]['values'] %}
         {% if criteria[key]['values'][k]['comment'] %}
-        <span class="comment">{{ criteria[key]['values'][k]['val_name'] }} -
+        <span class="comment">
+            "{{ criteria[key]['values'][k]['val_name'] }}" -
             {{ criteria[key]['values'][k]['comment'] }}</span><br>
         {% endif %}
         {% endfor %}<br>

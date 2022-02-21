@@ -5,7 +5,7 @@
 <form action="/write_pre_analysis" method = 'POST'>
     <fieldset>
         <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
-        <h4><b>{{ work['work_name'] }}</b></h4></legend>
+        <h4><b>"{{ work['work_name'] }}"</b></h4></legend>
         <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
         <span class="required">Была бы работа допущена до 2 тура, если бы проходила через рецензирование экспертами
         вашей секции?</span><br>

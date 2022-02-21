@@ -537,6 +537,10 @@ def get_criteria(year):
             v['comment'] = value.comment
             v['val_weight'] = value.weight
             values[val_id] = v
+            if v['comment'] is not None and v['comment'] != '':
+                crit_info['val_comment'] = True
+            else:
+                crit_info['val_comment'] = False
         crit_info['values'] = values
         crit_info['val_num'] = len(values)
         criteria[crit_id] = crit_info
@@ -1593,7 +1597,9 @@ def analysis_works(cat_id):
     works = get_works(cat_id)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
-    return render_template('rev_analysis/analysis_works.html', works=works, category=category)
+    need_analysis = check_analysis(cat_id)
+    return render_template('rev_analysis/analysis_works.html', works=works, category=category,
+                           need_analysis=need_analysis)
 
 
 @app.route('/review_analysis/<work_id>')
