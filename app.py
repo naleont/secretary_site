@@ -81,9 +81,12 @@ def check_access(url):
         elif session['type'] == 'org':
             session['access'] = 8
             return 8
+        elif 'supervisor' in session.keys() and session['supervisor'] is True:
+            session['access'] = 6
+            return 6
         elif 'secretary' in session.keys() and session['secretary'] is True:
-            session['access'] = 7
-            return 7
+            session['access'] = 5
+            return 5
         elif session['type'] == 'team':
             session['access'] = 3
             return 3
@@ -1621,7 +1624,7 @@ def adding_values():
 @app.route('/analysis_works/<cat_id>')
 def analysis_works(cat_id):
     renew_session()
-    if check_access(url='/analysis_works' + cat_id) < 5:
+    if check_access(url='/analysis_works/' + cat_id) < 5:
         return redirect(url_for('.no_access'))
     works = get_works(cat_id)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
