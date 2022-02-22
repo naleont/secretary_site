@@ -60,6 +60,8 @@ def renew_session():
                 cat_id = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
                                                      ).first().cat_id
                 session['cat_id'] = cat_id
+        else:
+            session['supervisor'] = False
         if user in [p.user_id for p in Profile.query.all()]:
             session['profile'] = True
         if user in [a.user_id for a in Application.query.filter(Application.year == curr_year)]:
@@ -611,7 +613,6 @@ def analysis_results():
 
 
 def analysis_nums():
-    ana_res = analysis_results()
     c, cats = categories_info()
     ana_nums = dict()
     for key in cats.keys():
@@ -622,11 +623,11 @@ def analysis_nums():
         cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cats[key]['id'])]
         ana_nums[key]['regional_applied'] = 0
         for work in cat_works:
-            if Works.query.filter(Works.work_id == work).first().reg_tour is not None:
+            work_db = db.session.query(Works).filter(Works.work_id == work).first()
+            if work_db.reg_tour is not None:
                 ana_nums[key]['regional_applied'] += 1
-        for k in ana_res.keys():
-            if ana_res[k]['cat_id'] == cats[key]['id'] and ana_res[k]['analysis'] is True:
-                ana_nums[key]['analysed'] += 1
+                if work_info(work)['analysis'] is True:
+                    ana_nums[key]['analysed'] += 1
         ana_nums[key]['left'] = ana_nums[key]['regional_applied'] - ana_nums[key]['analysed']
     return ana_nums
 

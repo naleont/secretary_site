@@ -3,13 +3,16 @@
 {% block content %}
 <h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
 <h4><b>"{{ work['work_name'] }}"</b></h4>
-<a href="/pre_analysis/{{ work['work_id'] }}"><button>
-    {% if work['analysis'] == True or pre_ana != None %}
-        Редактировать анализ
-    {% elif work['analysis'] == False %}
-        Заполнить анализ
-    {% endif %}
-</button></a><br><br>
+{% if session['type'] == 'admin' or session['type'] == 'org' or session['type'] == 'manager'
+or (session['supervisor'] == True and session['cat_id'] == work['cat_id']) %}
+    <a href="/pre_analysis/{{ work['work_id'] }}"><button>
+        {% if work['analysis'] == True or pre_ana != None %}
+            Редактировать анализ
+        {% elif work['analysis'] == False %}
+            Заполнить анализ
+        {% endif %}
+    </button></a><br><br>
+{% endif %}
 
 {% if pre_ana != None %}
 <table frame="void" border="2px" bordercolor="#4962A4">
