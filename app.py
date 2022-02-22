@@ -615,6 +615,10 @@ def analysis_results():
 def analysis_nums():
     c, cats = categories_info()
     ana_nums = dict()
+    all_stats = dict()
+    all_stats['regionals'] = 0
+    all_stats['analysed'] = 0
+    regions = []
     for key in cats.keys():
         ana_nums[key] = dict()
         ana_nums[key]['cat_id'] = cats[key]['id']
@@ -626,10 +630,15 @@ def analysis_nums():
             work_db = db.session.query(Works).filter(Works.work_id == work).first()
             if work_db.reg_tour is not None:
                 ana_nums[key]['regional_applied'] += 1
+                all_stats['regionals'] += 1
+                regions.append(work_db.reg_tour)
                 if work_info(work)['analysis'] is True:
                     ana_nums[key]['analysed'] += 1
+                    all_stats['analysed'] += 1
         ana_nums[key]['left'] = ana_nums[key]['regional_applied'] - ana_nums[key]['analysed']
-    return ana_nums
+    all_stats['left'] = all_stats['regionals'] - ana_nums[key]['analysed']
+    all_stats['regions'] = len(set(regions))
+    return ana_nums, all_stats
 
 
 def check_analysis(cat_id):
@@ -1493,8 +1502,8 @@ def analysis_state():
     renew_session()
     if check_access(url='/analysis_state') < 5:
         return redirect(url_for('.no_access'))
-    ana_nums = analysis_nums()
-    return render_template('rev_analysis/analysis_state.html', ana_nums=ana_nums)
+    ana_nums, all_stats = analysis_nums()
+    return render_template('rev_analysis/analysis_state.html', ana_nums=ana_nums, all_stats=all_stats)
 
 
 @app.route('/analysis_criteria')
