@@ -37,7 +37,12 @@
         </td>
     </tr>
 {% for key in categories %}
-    <tr bgcolor="#C5E3F3">
+    <tr
+        {% if categories[key]['id'] == session['cat_id'] %}
+            bgcolor="#ACD6EE"
+        {% else %}
+            bgcolor="#C5E3F3"
+        {% endif %}>
         <td>
             <a href="/category_page/{{ categories[key]['id'] }}">{{ categories[key]['name'] }}</a>
         </td>
