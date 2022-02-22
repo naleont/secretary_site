@@ -594,9 +594,11 @@ def analysis_results():
     for work in analysis_res.keys():
         if work in [w.work_id for w in RevAnalysis.query.all()]:
             for criterion in criteria:
-                val = rev_ana.filter(RevAnalysis.work_id == work)
-                value = val.filter(RevAnalysis.criterion_id == criterion.criterion_id).first().value_id
-                analysis_res[work].update({criterion.criterion_id: value})
+                if criterion.criterion_id in \
+                        [w.criterion_id for w in RevAnalysis.query.filter(RevAnalysis.work_id == work).all()]:
+                    val = rev_ana.filter(RevAnalysis.work_id == work)
+                    value = val.filter(RevAnalysis.criterion_id == criterion.criterion_id).first().value_id
+                    analysis_res[work].update({criterion.criterion_id: value})
     crit_vals = get_criteria(curr_year)
     for work in analysis_res.keys():
         rk = 0
@@ -1336,7 +1338,7 @@ def users_list(query):
             for val in [val for val in access_types.values() if val >= access_types[query]]:
                 for u in Users.query.filter(Users.user_type == list(access_types.keys()
                                                                     )[list(access_types.values()).index(val)
-                                                                      ]).order_by(Users.user_id.desc()).all():
+                ]).order_by(Users.user_id.desc()).all():
                     users[u.user_id] = get_user_info(u.user_id)
     return render_template('user_management/users_list.html', users=users)
 
@@ -1490,9 +1492,8 @@ def analysis_state():
     renew_session()
     if check_access(url='/analysis_state') < 5:
         return redirect(url_for('.no_access'))
-    analysis_res = analysis_results()
     ana_nums = analysis_nums()
-    return render_template('rev_analysis/analysis_state.html', analysis_res=analysis_res, ana_nums=ana_nums)
+    return render_template('rev_analysis/analysis_state.html', ana_nums=ana_nums)
 
 
 @app.route('/analysis_criteria')
