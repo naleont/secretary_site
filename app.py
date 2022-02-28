@@ -614,7 +614,7 @@ def analysis_results():
     return analysis_res
 
 
-async def analysis_nums():
+def analysis_nums():
     c, cats = categories_info()
     ana_nums = dict()
     all_stats = dict()
