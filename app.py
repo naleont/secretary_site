@@ -636,7 +636,7 @@ def analysis_nums():
                     ana_nums[key]['analysed'] += 1
                     all_stats['analysed'] += 1
         ana_nums[key]['left'] = ana_nums[key]['regional_applied'] - ana_nums[key]['analysed']
-    all_stats['left'] = all_stats['regionals'] - ana_nums[key]['analysed']
+    all_stats['left'] = all_stats['regionals'] - all_stats['analysed']
     all_stats['regions'] = len(set(regions))
     return ana_nums, all_stats
 
