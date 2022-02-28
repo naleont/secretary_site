@@ -11,6 +11,8 @@ import os
 from cryptography.fernet import Fernet
 from flask_mail import Mail, Message
 from sqlalchemy import update, delete
+import asyncio
+
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -612,7 +614,7 @@ def analysis_results():
     return analysis_res
 
 
-def analysis_nums():
+async def analysis_nums():
     c, cats = categories_info()
     ana_nums = dict()
     all_stats = dict()
