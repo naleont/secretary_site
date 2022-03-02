@@ -1448,11 +1448,11 @@ def editing_news():
             db.session.query(News).filter(News.news_id == news_id).update(
                 {News.title: news['title'], News.content: news['content'],
                  News.access: news['access']})
-        else:
-            news['publish'] = False
-            new_news = News(news['title'], news['content'], news['access'], news['publish'])
-            db.session.add(new_news)
-        db.session.commit()
+    else:
+        news['publish'] = False
+        new_news = News(news['title'], news['content'], news['access'], news['publish'])
+        db.session.add(new_news)
+    db.session.commit()
     return redirect(url_for('.news_list'))
 
 
