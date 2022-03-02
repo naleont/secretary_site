@@ -34,7 +34,7 @@
             bgcolor="#FFFFB9"
         {% endif %}>
         <td>
-            {% if session['type'] == 'admin' or session['type'] == 'org' or session['type'] == 'manager'
+            {% if session['type'] in ['admin', 'org', 'manager']
             or (session['supervisor'] == True and  session['cat_id'] == ana_nums[key]['cat_id'])
             or (session['secretary'] == True and  session['cat_id'] == ana_nums[key]['cat_id']) %}
                 <a href="/analysis_works/{{ ana_nums[key]['cat_id'] }}">{{ ana_nums[key]['cat_name'] }}</a>

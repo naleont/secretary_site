@@ -663,6 +663,17 @@ def check_analysis(cat_id):
     return False
 
 
+def no_fee_nums():
+    cats_no, cats = categories_info()
+    total = 0
+    for cat in cats.values():
+        works = get_works_no_fee(cat['id'])
+        cat['works'] = ', '.join([str(w) for w in works.keys()])
+        cat['works_no'] = len(works)
+        total += cat['works_no']
+    return total, cats
+
+
 # Главная страница
 @app.route('/')
 def main_page():
@@ -1888,7 +1899,8 @@ def many_works():
 def top_100():
     if check_access(url='/top_100') < 5:
         return redirect(url_for('.no_access'))
-    return render_template('works/top_100.html')
+    total, no_fee = no_fee_nums()
+    return render_template('works/top_100.html', no_fee=no_fee, total=total)
 
 
 @app.route('/works_for_free/<cat_id>', methods=['POST'])

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Работы, участвующие без оргвзноса</h2>
+
+<h4>Всего для бесплатного участия отмечено {{ total }} работ.</h4>
+<br>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center"><b>
+            Секция
+        </b></td>
+        <td align="center"><b>
+            Отмечено
+        </b></td>
+        <td align="center"><b>
+            Список работ
+        </b></td>
+    </tr>
+    {% for key in no_fee %}
+    <tr>
+        <td>
+            {% if session['type'] in ['admin', 'org', 'manager']
+            or (session['supervisor'] == True and  session['cat_id'] == ana_nums[key]['cat_id'])
+            or (session['secretary'] == True and  session['cat_id'] == ana_nums[key]['cat_id']) %}
+                <a href="/category_page/{{ no_fee[key]['id'] }}">{{ no_fee[key]['name'] }}</a>
+            {% else %}
+                <a href="/category_page/{{ no_fee[key]['id'] }}">{{ no_fee[key]['name'] }}</a>
+            {% endif %}
+        </td>
+        <td align="center">
+            {{ no_fee[key]['works_no'] }}
+        </td>
+        <td align="center">
+            {{ no_fee[key]['works'] }}
+        </td>
+    {% endfor %}
+</table>
+<br>
+{% endblock %}
