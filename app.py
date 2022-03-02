@@ -1895,6 +1895,7 @@ def top_100():
 def works_for_free(cat_id):
     works = request.form['works']
     works_list = []
+    success = False
     if ',' in works:
         works_list.extend(works.split(','))
     else:
@@ -1905,21 +1906,27 @@ def works_for_free(cat_id):
             work = int(work.strip())
             if work in [w.work_id for w in Works.query.all()]:
                 work_db = db.session.query(Works).filter(Works.work_id == work).first()
-                if WorkStatuses.query.filter(WorkStatuses.work_id == work).first().status_id < 2:
-                    errors[work] = 'работа не прошла на Конкурс'
-                else:
-                    if work_db.reg_tour:
-                        errors[work] = 'работа регионального тура, нельзя отменить оргвзнос'
+                if work_db.work_id in [w.work_id for w
+                                       in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]:
+                    if WorkStatuses.query.filter(WorkStatuses.work_id == work).first().status_id < 2:
+                        errors[work] = 'работа не прошла на Конкурс'
                     else:
-                        if work not in [w.work_id for w in WorksNoFee.query.all()]:
-                            wnf = WorksNoFee(work_db.work_id)
-                            db.session.add(wnf)
-                            db.session.commit()
+                        if work_db.reg_tour:
+                            errors[work] = 'работа регионального тура, нельзя отменить оргвзнос'
+                        else:
+                            if work not in [w.work_id for w in WorksNoFee.query.all()]:
+                                wnf = WorksNoFee(work_db.work_id)
+                                db.session.add(wnf)
+                                db.session.commit()
+                                success = True
+                else:
+                    errors[work] = 'работа не из вашей секции'
             else:
                 errors[work] = 'работа не найдена'
-        except Exception as e:
+        except Exception:
+            if success is False and work not in errors.keys():
+                errors[work] = 'некорректный номер работы'
             pass
-            # errors[work] = 'некорректный номер работы'
     errs = ''
     if errors != {}:
         for work, error in errors.items():
