@@ -4,7 +4,7 @@ from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
-    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses
+    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee
 import re
 import datetime
 import os
@@ -12,7 +12,6 @@ from cryptography.fernet import Fernet
 from flask_mail import Mail, Message
 from sqlalchemy import update, delete
 import asyncio
-
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -511,12 +510,23 @@ def get_works(cat_id):
     works = dict()
     cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == cat_id
                                                         ).order_by(WorkCategories.work_id).all()
-    works_db = db.session.query(Works)
     for work in cat_works:
-        work_db = works_db.filter(Works.work_id == work.work_id).first()
+        work_db = db.session.query(Works).filter(Works.work_id == work.work_id).first()
         w_no = work_db.work_id
         works[w_no] = work_info(w_no)
     return works
+
+
+def get_works_no_fee(cat_id):
+    works_no_fee = {}
+    cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == cat_id
+                                                        ).order_by(WorkCategories.work_id).all()
+    for work in cat_works:
+        if work.work_id in [w.work_id for w in WorksNoFee.query.all()]:
+            work_db = db.session.query(Works).filter(Works.work_id == work.work_id).first()
+            w_no = work_db.work_id
+            works_no_fee[w_no] = work_info(w_no)
+    return works_no_fee
 
 
 def get_criteria(year):
@@ -1400,12 +1410,15 @@ def remove_secretary(user_id, cat_id):
     return redirect(url_for('.user_page', user=user_id))
 
 
-@app.route('/category_page/<cat_id>')
-def category_page(cat_id):
+@app.route('/category_page/<cat_id>', defaults={'errors': None})
+@app.route('/category_page/<cat_id>/<errors>')
+def category_page(cat_id, errors):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
     need_analysis = check_analysis(cat_id)
-    return render_template('categories/category_page.html', category=category, need_analysis=need_analysis)
+    works_no_fee = get_works_no_fee(cat_id)
+    return render_template('categories/category_page.html', category=category, need_analysis=need_analysis,
+                           errors=errors, works_no_fee=works_no_fee)
 
 
 @app.route('/news_list')
@@ -1869,6 +1882,59 @@ def many_works():
         if edited:
             works_edited += 1
     return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
+
+
+@app.route('/top_100')
+def top_100():
+    if check_access(url='/top_100') < 5:
+        return redirect(url_for('.no_access'))
+    return render_template('works/top_100.html')
+
+
+@app.route('/works_for_free/<cat_id>', methods=['POST'])
+def works_for_free(cat_id):
+    works = request.form['works']
+    works_list = []
+    if ',' in works:
+        works_list.extend(works.split(','))
+    else:
+        works_list.append(works)
+    errors = {}
+    for work in works_list:
+        try:
+            work = int(work.strip())
+            if work in [w.work_id for w in Works.query.all()]:
+                work_db = db.session.query(Works).filter(Works.work_id == work).first()
+                if WorkStatuses.query.filter(WorkStatuses.work_id == work).first().status_id < 2:
+                    errors[work] = 'работа не прошла на Конкурс'
+                else:
+                    if work_db.reg_tour:
+                        errors[work] = 'работа регионального тура, нельзя отменить оргвзнос'
+                    else:
+                        if work not in [w.work_id for w in WorksNoFee.query.all()]:
+                            wnf = WorksNoFee(work_db.work_id)
+                            db.session.add(wnf)
+                            db.session.commit()
+            else:
+                errors[work] = 'работа не найдена'
+        except Exception as e:
+            pass
+            # errors[work] = 'некорректный номер работы'
+    errs = ''
+    if errors != {}:
+        for work, error in errors.items():
+            errs += str(work) + ' - ' + error + '\n'
+    else:
+        errs = None
+    return redirect(url_for('.category_page', cat_id=cat_id, errors=errs))
+
+
+@app.route('/remove_no_fee/<cat_id>/<work_id>')
+def remove_no_fee(cat_id, work_id):
+    work = db.session.query(WorksNoFee).filter(WorksNoFee.work_id == work_id).first()
+    db.session.delete(work)
+    db.session.commit()
+    return redirect(url_for('.category_page', cat_id=cat_id))
 
 
 if __name__ == '__main__':

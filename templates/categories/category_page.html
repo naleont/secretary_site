@@ -29,7 +29,7 @@
             {% endif %}
             {% endif %}
         </td>
-        {% if session['type'] == 'admin' or session['type'] == 'org' or session['type'] == 'manager'
+        {% if session['type'] in ['admin', 'org', 'manager']
         or (session['supervisor'] == True and session['cat_id'] == category['id'])
         or (session['secretary'] == True and session['cat_id'] == category['id']) %}
             <td width="auto"><a href="/analysis_works/{{ category['id'] }}">
@@ -38,4 +38,61 @@
         {% endif %}
     </tr>
 </table>
+
+
+{% if session['type'] in ['admin', 'org', 'manager']
+or (session['supervisor'] == True and session['cat_id'] == category['id'])
+or (session['secretary'] == True and session['cat_id'] == category['id']) %}
+<h3>Работы, участвующие без оргвзноса</h3>
+<p>3-5 работ от каждой секции получат возможность участвовать во 2 туре Конкурса без оплаты оргвзноса.
+    Добавьте работы ниже, чтобы включить их в список.
+    Работы региональных туров в список не включаются и от оргвзноса не освобождаются.</p>
+<div class="alarm">
+    {% if errors != None %}
+    <span>Не удалось добавить работы:</span><br>
+    {{ errors }}
+    {% endif %}
+</div>
+<form action="/works_for_free/{{ category['id'] }}" method="post">
+    <fieldset>
+        <span class="comment">Для добавления работ, с которых не будет взиматься оргвзнос,
+            укажите их номера в поле ниже через запятую</span><br><br>
+        <input type="text" name="works" size="70">
+        <input class="button" type="submit" value="Добавить">
+    </fieldset>
+</form><br>
+
+{% if works_no_fee != {} %}
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center">
+            <b>Номер</b>
+        </td>
+        <td align="center">
+            <b>Название</b>
+        </td>
+        <td align="center">
+            <b>Убрать</b>
+        </td>
+    </tr>
+    {% for key in works_no_fee %}
+    <tr>
+        <td>
+            {{ works_no_fee[key]['work_id'] }}
+        </td>
+        <td>
+            {{ works_no_fee[key]['work_name'] }}
+        </td>
+        <td align="center" vertical-align="bottom">
+            <a href="/remove_no_fee/{{ category['id'] }}/{{ works_no_fee[key]['work_id'] }}" class="alarm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table><br>
+{% endif %}
+{% endif %}
 {% endblock %}

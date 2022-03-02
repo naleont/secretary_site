@@ -204,9 +204,10 @@
 <div class="container-fluid text-center full-height">
   <div class="row content">
     <div class="col-sm-2 sidenav light-blue">
-    {% if session['supervisor'] == True or session['secretary'] == True or session['type'] == 'org' or
-        session['type'] == 'manager' or session['type'] == 'admin' %}
+    {% if session['supervisor'] == True or session['secretary'] == True or
+        session['type'] in ['org', 'manager', 'admin'] %}
       <p><a href="/analysis_state">Анализ рецензий</a></p>
+      <p><a href="/top_100">100 работ с бесплатным участием</a></p>
     {% endif %}
       <p><a href="/secretary_job">Что такое работа секретаря секции?</a></p>
 <!--      <p><a href="/secretary_reminder">Памятка секретаря</a></p>-->

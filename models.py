@@ -364,3 +364,13 @@ class WorkStatuses(db.Model):
     def __init__(self, work_id, status_id):
         self.work_id = work_id
         self.status_id = status_id
+
+
+class WorksNoFee(db.Model):
+    __tablename__ = 'works_no_fee'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+
+    def __init__(self, work_id):
+        self.work_id = work_id
