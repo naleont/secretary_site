@@ -1438,19 +1438,21 @@ def edit_news(news_id):
 def editing_news():
     renew_session()
     news = dict()
-    news_id = int(request.form['news_id'])
+    news_id = request.form['news_id']
     news['title'] = request.form['title']
     news['content'] = request.form['content']
     news['access'] = request.form['access']
-    if news_id in [n.news_id for n in News.query.all()]:
-        db.session.query(News).filter(News.news_id == news_id).update(
-            {News.title: news['title'], News.content: news['content'],
-             News.access: news['access']})
-    else:
-        news['publish'] = False
-        new_news = News(news['title'], news['content'], news['access'], news['publish'])
-        db.session.add(new_news)
-    db.session.commit()
+    if news_id != 'None':
+        news_id = int(news_id)
+        if news_id in [n.news_id for n in News.query.all()]:
+            db.session.query(News).filter(News.news_id == news_id).update(
+                {News.title: news['title'], News.content: news['content'],
+                 News.access: news['access']})
+        else:
+            news['publish'] = False
+            new_news = News(news['title'], news['content'], news['access'], news['publish'])
+            db.session.add(new_news)
+        db.session.commit()
     return redirect(url_for('.news_list'))
 
 
