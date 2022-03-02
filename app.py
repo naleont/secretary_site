@@ -1421,9 +1421,13 @@ def news_list():
 @app.route('/edit_news/<news_id>')
 def edit_news(news_id):
     renew_session()
-    if check_access(url='/edit_news/' + news_id) < 8:
-        return redirect(url_for('.no_access'))
-    if news_id == 'None' or news_id is None:
+    if news_id:
+        if check_access(url='/edit_news/' + news_id) < 8:
+            return redirect(url_for('.no_access'))
+    else:
+        if check_access(url='/edit_news/') < 8:
+            return redirect(url_for('.no_access'))
+    if news_id == 'None' or not news_id:
         news = {'news_id': None}
     else:
         news = one_news(news_id)
@@ -1847,7 +1851,7 @@ def many_works():
             db.session.add(work_status)
         db.session.commit()
         if work_id in [w.work_id for w in WorkCategories.query.all()]:
-            if cat_id is None:
+            if not cat_id:
                 work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
                 db.session.delete(work_cat)
                 edited = True
@@ -1856,11 +1860,11 @@ def many_works():
                                                         ).update({WorkCategories.cat_id: cat_id})
                 edited = True
         else:
-            if cat_id is not None:
+            if cat_id:
                 work_cat = WorkCategories(work_id, cat_id)
                 db.session.add(work_cat)
         db.session.commit()
-        if edited is True:
+        if edited:
             works_edited += 1
     return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
 
