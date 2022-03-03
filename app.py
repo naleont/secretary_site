@@ -1920,7 +1920,7 @@ def works_for_free(cat_id):
                 work_db = db.session.query(Works).filter(Works.work_id == work).first()
                 if work_db.work_id in [w.work_id for w
                                        in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]:
-                    if WorkStatuses.query.filter(WorkStatuses.work_id == work).first().status_id < 6:
+                    if WorkStatuses.query.filter(WorkStatuses.work_id == work).first().status_id < 2:
                         errors[work] = 'работа не прошла на Конкурс'
                     else:
                         if work_db.reg_tour:
