@@ -317,14 +317,16 @@ class PreAnalysis(db.Model):
     good_work = db.Column('good_work', db.Boolean)
     research = db.Column('research', db.Text)
     has_review = db.Column('has_review', db.Boolean)
+    rev_type = db.Column('rev_type', db.Text)
     work_comment = db.Column('work_comment', db.Boolean)
     rev_comment = db.Column('rev_comment', db.Boolean)
 
-    def __init__(self, work_id, good_work, research, has_review, work_comment, rev_comment):
+    def __init__(self, work_id, good_work, research, has_review, rev_type, work_comment, rev_comment):
         self.work_id = work_id
         self.good_work = good_work
         self.research = research
         self.has_review = has_review
+        self.rev_type = rev_type
         self.work_comment = work_comment
         self.rev_comment = rev_comment
 

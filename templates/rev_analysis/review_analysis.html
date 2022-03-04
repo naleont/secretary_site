@@ -48,7 +48,9 @@ or (session['supervisor'] == True and session['cat_id'] == work['cat_id']) %}
         <td>
             {% if pre_ana['has_review'] == True %}
             Да
-            {% elif pre_ana['has_review'] == False %}
+            {% elif pre_ana['has_review'] == False and pre_ana['rev_type'] == 'points' %}
+            Только баллы по критериям
+            {% elif pre_ana['has_review'] == False and pre_ana['rev_type'] == None %}
             Нет
             {% endif %}
         </td>

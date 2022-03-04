@@ -571,6 +571,7 @@ def get_pre_analysis(work_id):
         pre['good_work'] = pre_ana.good_work
         pre['research'] = pre_ana.research
         pre['has_review'] = pre_ana.has_review
+        pre['rev_type'] = pre_ana.rev_type
         pre['work_comment'] = pre_ana.work_comment
         pre['rev_comment'] = pre_ana.rev_comment
     else:
@@ -754,20 +755,21 @@ def logging():
     if user is None:
         return render_template('registration, logging and applications/login.html', wrong='user')
     # Проверка соответствия пароля записи в БД. Если совпал, записываем сессию пользователя
-    if decrypt(user.password) == password:
-        app.permanent_session_lifetime = datetime.timedelta(hours=1)
-        session.permanent = True
-        session['user_id'] = user.user_id
     else:
-        # Если пароль не совпал, выводим страницу авторизации с ошибкой
-        return redirect(url_for('.login', wrong='password'))
-    user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
-    user.last_login = datetime.datetime.now()
-    db.session.commit()
-    if 'url' in session.keys():
-        return redirect(session['url'])
-    else:
-        return redirect(url_for('.main_page'))
+        if decrypt(user.password) == password:
+            app.permanent_session_lifetime = datetime.timedelta(hours=1)
+            session.permanent = True
+            session['user_id'] = user.user_id
+        else:
+            # Если пароль не совпал, выводим страницу авторизации с ошибкой
+            return redirect(url_for('.login', wrong='password'))
+        user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
+        user.last_login = datetime.datetime.now()
+        db.session.commit()
+        if 'url' in session.keys():
+            return redirect(session['url'])
+        else:
+            return redirect(url_for('.main_page'))
 
 
 # Выход из учетной записи
@@ -1721,17 +1723,23 @@ def write_pre_analysis():
     if 'has_review' in request.form.keys():
         if request.form['has_review'] == 'True':
             has_review = True
+            rev_type = None
+        elif request.form['has_review'] == 'points':
+            has_review = False
+            rev_type = 'points'
         else:
             has_review = False
+            rev_type = None
     else:
         has_review = None
+        rev_type = None
     if work_id in [w.work_id for w in PreAnalysis.query.all()]:
         db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).update(
             {PreAnalysis.good_work: good_work, PreAnalysis.research: research,
-             PreAnalysis.has_review: has_review})
+             PreAnalysis.has_review: has_review, PreAnalysis.rev_type: rev_type})
         db.session.commit()
     else:
-        pre_ana = PreAnalysis(work_id, good_work, research, has_review, None, None)
+        pre_ana = PreAnalysis(work_id, good_work, research, has_review, rev_type, None, None)
         db.session.add(pre_ana)
         db.session.commit()
     if has_review is True:
