@@ -27,8 +27,8 @@
     <tr>
         <td>
             {% if session['type'] in ['admin', 'org', 'manager']
-            or (session['supervisor'] == True and  session['cat_id'] == ana_nums[key]['cat_id'])
-            or (session['secretary'] == True and  session['cat_id'] == ana_nums[key]['cat_id']) %}
+            or (session['supervisor'] == True and  session['cat_id'] == no_fee[key]['cat_id'])
+            or (session['secretary'] == True and  session['cat_id'] == no_fee[key]['cat_id']) %}
                 <a href="/category_page/{{ no_fee[key]['id'] }}">{{ no_fee[key]['name'] }}</a>
             {% else %}
                 <a href="/category_page/{{ no_fee[key]['id'] }}">{{ no_fee[key]['name'] }}</a>
