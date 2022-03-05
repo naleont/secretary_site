@@ -1370,7 +1370,7 @@ def users_list(query):
             for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all():
                 users[u.secretary_id] = get_user_info(u.secretary_id)
         elif query == 'supervisor':
-            for u in SupervisorUser.query.order_by(SupervisorUser.supervisor_id.desc()).all():
+            for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif query in access_types.keys():
             for val in [val for val in access_types.values() if val >= access_types[query]]:
