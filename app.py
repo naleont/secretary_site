@@ -1373,11 +1373,15 @@ def users_list(query):
             for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif query in access_types.keys():
+            us = []
             for val in [val for val in access_types.values() if val >= access_types[query]]:
                 for u in Users.query.filter(Users.user_type == list(access_types.keys()
                                                                     )[list(access_types.values()).index(val)
                 ]).order_by(Users.user_id.desc()).all():
-                    users[u.user_id] = get_user_info(u.user_id)
+                    us.append(u.user_id)
+                us.sort(reverse=True)
+                for u in us:
+                    users[u] = get_user_info(u)
     return render_template('user_management/users_list.html', users=users)
 
 
