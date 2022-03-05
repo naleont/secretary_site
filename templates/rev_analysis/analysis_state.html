@@ -4,8 +4,36 @@
 
 <h2>Состояние анализа рецензий</h2>
 
-<h4>Подано <b>{{ all_stats['regionals'] }}</b> работ с <b>{{ all_stats['regions'] }}</b> региональных туров.
-    Проанализировано <b>{{ all_stats['analysed'] }}</b> работ. Осталось <b>{{ all_stats['left'] }}</b> работ.</h4>
+<h4>Подано <b>{{ all_stats['regionals'] }}</b>
+    {% if all_stats['regionals'] % 10 == 1 %}
+    работа
+    {% elif all_stats['regionals'] % 10 in [2, 3, 4] %}
+    работы
+    {% elif all_stats['regionals'] % 10 in [5, 6, 7, 8, 9, 0] %}
+    работ
+    {% endif %}
+    с <b>{{ all_stats['regions'] }}</b>
+    {% if all_stats['regionals'] % 10 == 1 %}
+    регионального тура.
+    {% elif all_stats['regionals'] % 10 in [2, 3, 4, 5, 6, 7, 8, 9, 0] %}
+    региональных туров.
+    {% endif %}
+    Проанализировано <b>{{ all_stats['analysed'] }}</b>
+    {% if all_stats['regionals'] % 10 == 1 %}
+    работа.
+    {% elif all_stats['regionals'] % 10 in [2, 3, 4] %}
+    работы.
+    {% elif all_stats['regionals'] % 10 in [5, 6, 7, 8, 9, 0] %}
+    работ.
+    {% endif %}
+    Осталось <b>{{ all_stats['left'] }}</b>
+    {% if all_stats['regionals'] % 10 == 1 %}
+    работа.
+    {% elif all_stats['regionals'] % 10 in [2, 3, 4] %}
+    работы.
+    {% elif all_stats['regionals'] % 10 in [5, 6, 7, 8, 9, 0] %}
+    работ.
+    {% endif %}</h4>
 <br>
 
 <table frame="void" border="2px" bordercolor="#4962A4">
