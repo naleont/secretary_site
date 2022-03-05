@@ -1379,9 +1379,9 @@ def users_list(query):
                                                                     )[list(access_types.values()).index(val)
                 ]).order_by(Users.user_id.desc()).all():
                     us.append(u.user_id)
-                us.sort(reverse=True)
-                for u in us:
-                    users[u] = get_user_info(u)
+            us.sort(reverse=True)
+            for u in us:
+                users[u] = get_user_info(u)
     return render_template('user_management/users_list.html', users=users)
 
 
