@@ -5,33 +5,33 @@
 <h2>Состояние анализа рецензий</h2>
 
 <h4>Подано <b>{{ all_stats['regionals'] }}</b>
-    {% if all_stats['regionals'] % 10 == 1 %}
+    {% if all_stats['regionals'] % 10 == 1 and all_stats['regionals'] != 11 %}
     работа
-    {% elif all_stats['regionals'] % 10 in [2, 3, 4] %}
+    {% elif all_stats['regionals'] % 10 in [2, 3, 4] and all_stats['regionals'] not in [12, 13, 14] %}
     работы
-    {% elif all_stats['regionals'] % 10 in [5, 6, 7, 8, 9, 0] %}
+    {% elif all_stats['regionals'] % 10 in [5, 6, 7, 8, 9, 0] or all_stats['regionals'] in [11, 12, 13, 14] %}
     работ
     {% endif %}
     с <b>{{ all_stats['regions'] }}</b>
-    {% if all_stats['regionals'] % 10 == 1 %}
+    {% if all_stats['regions'] % 10 == 1 and all_stats['regions'] != 11 %}
     регионального тура.
-    {% elif all_stats['regionals'] % 10 in [2, 3, 4, 5, 6, 7, 8, 9, 0] %}
+    {% elif all_stats['regions'] % 10 in [2, 3, 4, 5, 6, 7, 8, 9, 0] %}
     региональных туров.
     {% endif %}
     Проанализировано <b>{{ all_stats['analysed'] }}</b>
-    {% if all_stats['regionals'] % 10 == 1 %}
+    {% if all_stats['analysed'] % 10 == 1 and all_stats['analysed'] != 11 %}
     работа.
-    {% elif all_stats['regionals'] % 10 in [2, 3, 4] %}
+    {% elif all_stats['analysed'] % 10 in [2, 3, 4] and all_stats['analysed'] not in [12, 13, 14] %}
     работы.
-    {% elif all_stats['regionals'] % 10 in [5, 6, 7, 8, 9, 0] %}
+    {% elif all_stats['analysed'] % 10 in [5, 6, 7, 8, 9, 0] or all_stats['analysed'] in [11, 12, 13, 14] %}
     работ.
     {% endif %}
     Осталось <b>{{ all_stats['left'] }}</b>
-    {% if all_stats['regionals'] % 10 == 1 %}
+    {% if all_stats['left'] % 10 == 1 and all_stats['left'] != 11 %}
     работа.
-    {% elif all_stats['regionals'] % 10 in [2, 3, 4] %}
+    {% elif all_stats['left'] % 10 in [2, 3, 4] and all_stats['left'] not in [12, 13, 14] %}
     работы.
-    {% elif all_stats['regionals'] % 10 in [5, 6, 7, 8, 9, 0] %}
+    {% elif all_stats['left'] % 10 in [5, 6, 7, 8, 9, 0] or all_stats['left'] in [11, 12, 13, 14] %}
     работ.
     {% endif %}</h4>
 <br>
