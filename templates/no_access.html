@@ -9,7 +9,7 @@
     <h3>У вас нет доступа к этой странице.</h3>
 {% endif %}
 
-{% if session['access'] == 0 and message != 'register_first' %}
+{% if not session['access'] or session['access'] == 0 and message != 'register_first' %}
 <h4>Авторизуйтесь</h4>
     {% if wrong == 'user' %}
     <div class="alarm">
