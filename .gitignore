@@ -1,5 +1,6 @@
 secret.key
 team_db.db
+mail_data.py
 /venv
 check.py
 plan.txt
@@ -11,4 +12,3 @@ team_db.db-journal
 vernadsky.info.json
 check.ipynb
 test_db.db
-mail_data.py
