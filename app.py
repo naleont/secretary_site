@@ -5,6 +5,7 @@ from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
     CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee
+import mail_data
 import re
 import datetime
 import os
@@ -20,14 +21,15 @@ db.app = app
 db.init_app(app)
 db.create_all()
 
-app.config['SECRET_KEY'] = 'hello'
+app.config['SECRET_KEY'] = mail_data.mail['SECRET_KEY']
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'team@vernadsky.info'
-app.config['MAIL_PASSWORD'] = 'TeamVernadsky'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_SERVER'] = mail_data.mail['MAIL_SERVER']
+app.config['MAIL_PORT'] = mail_data.mail['MAIL_PORT']
+app.config['MAIL_USERNAME'] = mail_data.mail['MAIL_USERNAME']
+app.config['MAIL_PASSWORD'] = mail_data.mail['MAIL_PASSWORD']
+app.config['MAIL_USE_TLS'] = mail_data.mail['MAIL_USE_TLS']
+app.config['MAIL_USE_SSL'] = mail_data.mail['MAIL_USE_SSL']
+
 mail = Mail(app)
 
 tel_unneeded = '-() '
