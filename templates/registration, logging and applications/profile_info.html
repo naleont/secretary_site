@@ -28,20 +28,19 @@ year
 <p class="alarm">Перед подачей заявки в команду необходимо <a href="/edit_profile">заполнить данные профиля</a>.</p>
 {% endif %}
 
-{% if session['secretary'] == True or session['type'] == 'manager' or session['type'] == 'org'
-or session['type'] == 'admin' %}
+{% if session['secretary'] == True or session['type'] in ['manager', 'org', 'admin'] %}
 <b><a href="https://vk.me/join/Fxb4PJ6/87Crw4RuDDOwK2cPn_doRnU3x8I=" target="_blank">Вступить в беседу секретарей VK</a></b>
 {% endif %}
 
 <!--{% if session['type'] == 'team' %}-->
 <!--<a href="" target="_blank">Группа организаторов XXIX Чтений</a>-->
 <!--{% endif %}-->
-
+<br>
 <table class="profile" cellspacing="5px">
     <tr>
         <td align="left" valign="bottom">
             {% if session['application'] != True %}
-            <a href="/team_application"><button>Подать заявку в команду</button></a>
+            <a href="/team_application"><button>Подать заявку в команду<br>(секретари и волонтеры)</button></a>
             {% endif %}
         </td><td align="left" valign="bottom">
             <a href="/my_applications"><button>Мои заявки в команду</button></a>
