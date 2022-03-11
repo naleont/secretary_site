@@ -23,6 +23,8 @@
                 {% endif %}>Нет, это проект</option>
                 <option class="container-fluid bg-2" {% if pre_ana['research'] == "Нет, это реферат" %} selected="true"
                 {% endif %}>Нет, это реферат</option>
+                <option class="container-fluid bg-2" {% if pre_ana['research'] == "Нет, это особый жанр" %} selected="true"
+                {% endif %}>Нет, это особый жанр</option>
                 <option class="container-fluid bg-2" {% if pre_ana['research'] == "Выявлен плагиат!" %} selected="true"
                 {% endif %}>Выявлен плагиат!</option>
             </select></p>
