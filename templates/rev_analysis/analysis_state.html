@@ -15,7 +15,7 @@
     с <b>{{ all_stats['regions'] }}</b>
     {% if all_stats['regions'] % 10 == 1 and all_stats['regions'] != 11 %}
     регионального тура.
-    {% elif all_stats['regions'] % 10 in [2, 3, 4, 5, 6, 7, 8, 9, 0] %}
+    {% elif all_stats['regions'] % 10 in [2, 3, 4, 5, 6, 7, 8, 9, 0] or all_stats['regions'] == 11 %}
     региональных туров.
     {% endif %}
     Проанализировано <b>{{ all_stats['analysed'] }}</b>
