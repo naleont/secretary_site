@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %} Админка {% endblock %}
+
+{% block content %}
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center"><b>
+            Номер работы
+        </b></td>
+        <td align="center"><b>
+            Название
+        </b></td>
+        <td align="center"><b>
+            Авторы
+        </b></td>
+    </tr>
+    {% for cat in cats %}
+    <tr>
+        <td colspan="3" align="center"><b>
+            {{ cat['cat_name'] }}
+        </b></td>
+    </tr>
+    {% if cat['works'] != [] %}
+    {% for work in cat['works'] %}
+    <tr>
+        <td>
+            {{ work['work_id'] }}
+        </td>
+        <td>
+            {{ work['work_name'] }}
+        </td>
+        <td>
+            {{ work['authors'] }}
+        </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr>
+        <td colspan="3" align="center">
+            Нет работ
+        </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+
+{% endblock %}

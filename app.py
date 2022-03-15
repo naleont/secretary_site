@@ -1973,5 +1973,21 @@ def remove_no_fee(cat_id, work_id):
     return redirect(url_for('.category_page', cat_id=cat_id))
 
 
+@app.route('/no_fee_list')
+def no_fee_list():
+    cats = []
+    for cat in Categories.query.join(CatDirs).order_by(CatDirs.dir_id, CatDirs.contest_id, Categories.cat_name).all():
+        cat_db = db.session.query(Categories).filter(Categories.cat_id == cat.cat_id).first()
+        works = []
+        for work_id in [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_db.cat_id).all()]:
+            if work_id in [w.work_id for w in WorksNoFee.query.all()]:
+                work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
+                works.append({'work_id': work_id, 'work_name': work_db.work_name,
+                              'authors': ', '.join([str(work_db.author_1_name), str(work_db.author_2_name),
+                                                    str(work_db.author_3_name)]).replace(', None', '')})
+        cats.append({'cat_id': cat_db.cat_id, 'cat_name': cat_db.cat_name, 'works': works})
+    return render_template('works/no_fee_list.html', cats=cats)
+
+
 if __name__ == '__main__':
     app.run(debug=False)
