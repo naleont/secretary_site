@@ -1989,5 +1989,11 @@ def no_fee_list():
     return render_template('works/no_fee_list.html', cats=cats)
 
 
+@app.route('/invoice')
+def invoice():
+
+    return render_template('knowledge/org/invoice.html')
+
+
 if __name__ == '__main__':
     app.run(debug=False)
