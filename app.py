@@ -1991,7 +1991,8 @@ def no_fee_list():
 
 @app.route('/invoice')
 def invoice():
-
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/invoice.html')
 
 
