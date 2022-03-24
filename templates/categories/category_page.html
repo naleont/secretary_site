@@ -23,7 +23,7 @@
             {% endif %}
             {% if category['secretary'] %}
             {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
-            Секретарь: <a href="/user_page/{{ category['supervisor_id'] }}">{{ category['secretary'] }}</a><br>
+            Секретарь: <a href="/user_page/{{ category['secretary_id'] }}">{{ category['secretary'] }}</a><br>
             {% else %}
             Секретарь: {{ category['secretary'] }}<br>
             {% endif %}

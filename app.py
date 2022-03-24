@@ -1439,6 +1439,7 @@ def category_page(cat_id, errors):
     renew_session()
     need_analysis = check_analysis(cat_id)
     works_no_fee = get_works_no_fee(cat_id)
+    print(category)
     return render_template('categories/category_page.html', category=category, need_analysis=need_analysis,
                            errors=errors, works_no_fee=works_no_fee)
 
