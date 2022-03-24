@@ -193,6 +193,8 @@ def get_user_info(user):
         user_info['secretary'] = True
         user_info['cat_id'] = [c.cat_id for c in db.session.query(CatSecretaries).filter(
             CatSecretaries.secretary_id == user).all()]
+    else:
+        user_info['cat_id'] = []
     if user in [s.user_id for s in SupervisorUser.query.all()]:
         user_info['supervisor_id'] = SupervisorUser.query.filter(SupervisorUser.user_id == user).first().supervisor_id
     return user_info
