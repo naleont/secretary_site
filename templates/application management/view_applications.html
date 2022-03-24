@@ -6,7 +6,7 @@
 <h2>Заявки в команду</h2>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
-        <td rowspan="2" align="center"></td>
+        <td rowspan="2" align="center" width="30%"></td>
 <!--        <td rowspan="2" align="center"><b>Секр</b></td>-->
         <td rowspan="2" align="center"><b>Роль</b></td>
         <td colspan="3" align="center"><b>Секция</b></td>
@@ -25,7 +25,7 @@
     </tr>
 {% for key in applications %}
     <tr>
-        <td width="20%">
+        <td>
             <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
         </td>
 <!--        <td align="center">-->
@@ -45,19 +45,19 @@
             {% elif applications[key]['role'] == None %}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_1_id']
+        <td {% if applications[key]['category_1_id'] in users[applications[key]['user_id']]['cat_id']
                 and applications[key]['category_1_id'] %} bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_1'] != None %}
             {{ applications[key]['category_1_short'] }}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_2_id']
+        <td {% if applications[key]['category_2_id'] in users[applications[key]['user_id']]['cat_id']
                 and applications[key]['category_2_id'] %} bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_2'] != None %}
             {{ applications[key]['category_2_short'] }}
             {% endif %}
         </td>
-        <td {% if users[applications[key]['user_id']]['cat_id'] == applications[key]['category_3_id']
+        <td {% if applications[key]['category_3_id'] in users[applications[key]['user_id']]['cat_id']
                 and applications[key]['category_3_id'] %} bgcolor="#BBDAB8" {% endif %}>
             {% if applications[key]['category_3'] != None %}
             {{ applications[key]['category_3_short'] }}
