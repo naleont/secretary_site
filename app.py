@@ -191,8 +191,8 @@ def get_user_info(user):
         user_info['last_login'] = user_db.last_login.strftime('%d.%m.%Y %H:%M:%S')
     if user in [u.secretary_id for u in CatSecretaries.query.all()]:
         user_info['secretary'] = True
-        user_info['cat_id'] = db.session.query(CatSecretaries).filter(
-            CatSecretaries.secretary_id == user).first().cat_id
+        user_info['cat_id'] = [c.cat_id for c in db.session.query(CatSecretaries).filter(
+            CatSecretaries.secretary_id == user).all()]
     if user in [s.user_id for s in SupervisorUser.query.all()]:
         user_info['supervisor_id'] = SupervisorUser.query.filter(SupervisorUser.user_id == user).first().supervisor_id
     return user_info
@@ -1439,7 +1439,6 @@ def category_page(cat_id, errors):
     renew_session()
     need_analysis = check_analysis(cat_id)
     works_no_fee = get_works_no_fee(cat_id)
-    print(category)
     return render_template('categories/category_page.html', category=category, need_analysis=need_analysis,
                            errors=errors, works_no_fee=works_no_fee)
 

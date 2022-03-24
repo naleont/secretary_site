@@ -80,16 +80,19 @@
     {% if session['type'] == 'manager' or session['type'] == 'admin' %}
     {% if user['secretary'] == True %}
     <tr>
-        <td>
+        <td rowspan="{{ user['cat_id']|length }}">
             Секция
         </td>
-        <td colspan="2">
-            {{ categories[user['cat_id']]['name'] }}
-        </td>
-        <td width="10%">
-            <a href="/remove_secretary/{{ user['user_id'] }}/{{ user['cat_id'] }}">
-                <button class="blue" type="button">Снять</button></a>
-        </td>
+            {% for cat in user['cat_id'] %}
+                <td colspan="2">
+                    {{ categories[cat]['name'] }}
+                </td>
+                <td width="10%">
+                    <a href="/remove_secretary/{{ user['user_id'] }}/{{ cat }}">
+                        <button class="blue" type="button">Снять</button></a>
+                </td>
+        </tr><tr>
+            {% endfor %}
     </tr>
     {% endif %}
     <tr>
