@@ -10,6 +10,11 @@
             <a href="/team_application"><button class="big-button"><h4>Стать секретарем секции или волонтером</h4></button></a>
       </div><br>
 {% endif %}
+{% if session['supervisor'] == True %}
+      <div align="center">
+            <a href="/analysis_works/{{ session['cat_id'] }}"><button class="big-button"><h4>Заполнить анализ рецензий</h4></button></a>
+      </div><br>
+{% endif %}
 <p>Пока что на сайте пустовато, но со временем здесь появятся описание работы секретарей, задачи и все
       необходимые инструкции.{% if session['application'] != True %} А пока что можно <a href="/team_application">
             подать заявку в команду</a>.{% endif %}</p>
