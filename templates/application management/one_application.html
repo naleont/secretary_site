@@ -63,7 +63,9 @@
         <td colspan="2">
             ФИО
         </td><td colspan="2">
-        {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
+            <a href="/user_page/{{ users[key]['user_id'] }}">
+            {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
+            </a>
         </td>
     </tr>
     <tr>
