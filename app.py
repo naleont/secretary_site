@@ -1998,5 +1998,10 @@ def invoice():
     return render_template('knowledge/org/invoice.html')
 
 
+@app.route('/mailru-domaingYeYQftapWicUoCA.html')
+def mailru():
+    return render_template('mailru-domaingYeYQftapWicUoCA.html')
+
+
 if __name__ == '__main__':
     app.run(debug=False)
