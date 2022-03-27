@@ -2,6 +2,7 @@
 
 {% block content %}
 
+<h2>Ссылки для загрузки презентаций</h2>
 {% for key in categories %}
 <a href="{{ categories[key]['drive_link'] }}" target="_blank">{{ categories[key]['name'] }}</a><br>
 {% endfor %}
