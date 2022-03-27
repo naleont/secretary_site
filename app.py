@@ -2014,7 +2014,6 @@ def invoice():
 @app.route('/drive_links')
 def drive_links():
     count, categories = categories_info()
-    print(categories)
     return render_template('categories/drive_links.html', categories=categories)
 
 
