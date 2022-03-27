@@ -2011,5 +2011,12 @@ def invoice():
     return render_template('knowledge/org/invoice.html')
 
 
+@app.route('/drive_links')
+def drive_links():
+    count, categories = categories_info()
+    print(categories)
+    return render_template('categories/drive_links.html', categories=categories)
+
+
 if __name__ == '__main__':
     app.run(debug=False)

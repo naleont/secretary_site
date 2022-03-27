@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for key in categories %}
+<a href="{{ categories[key]['drive_link'] }}" target="_blank">{{ categories[key]['name'] }}</a><br>
+{% endfor %}
+<br>
+
+{% endblock %}
