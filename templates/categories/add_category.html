@@ -11,6 +11,11 @@
         <input size="100" name="category_name" type="text" value="{{ category['name'] }}" required><br><br>
     <span class="required">Короткое название</span><br>
         <input size="50" name="short_name" type="text" value="{{ category['short_name'] }}" required><br><br>
+    <span class="required">ID секции на сайте</span><br>
+        <input size="50" name="cat_site_id" type="text" {% if category['cat_site_id'] != None %}
+        value="{{ category['cat_site_id'] }}" {% endif %} required><br><br>
+    <span class="required">Ссылка на облачную папку секции</span><br>
+        <input size="50" name="drive_link" type="text" {% if category['drive_link'] != None %} value="{{ category['drive_link'] }}" {% endif %} required><br><br>
     <span class="required">Направление</span><br>
         {% for key in directions %}
         <input size="30" name="direction" type="radio" value={{ directions[key]['id'] }}

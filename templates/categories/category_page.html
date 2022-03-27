@@ -28,6 +28,10 @@
             Секретарь: {{ category['secretary'] }}<br>
             {% endif %}
             {% endif %}
+            {% if category['drive_link'] %}
+            <a href="{{ category['drive_link'] }}" target="_blank">Папка с презентациями секции</a>
+            {% endif %}
+
         </td>
         {% if session['type'] in ['admin', 'org', 'manager']
         or (session['supervisor'] == True and session['cat_id'] == category['id'])
@@ -40,6 +44,7 @@
 </table>
 
 
+{% if show_top_100 == True %}
 {% if session['type'] in ['admin', 'org', 'manager']
 or (session['supervisor'] == True and session['cat_id'] == category['id'])
 or (session['secretary'] == True and session['cat_id'] == category['id']) %}
@@ -93,6 +98,7 @@ or (session['secretary'] == True and session['cat_id'] == category['id']) %}
     </tr>
     {% endfor %}
 </table><br>
+{% endif %}
 {% endif %}
 {% endif %}
 {% endblock %}

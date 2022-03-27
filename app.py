@@ -268,7 +268,8 @@ def write_category(cat_info):
     if cat_info['cat_id'] in [cat.cat_id for cat in Categories.query.all()]:
         db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).update(
             {Categories.year: curr_year, Categories.cat_name: cat_info['cat_name'],
-             Categories.short_name: cat_info['short_name'], Categories.tg_channel: cat_info['tg_channel']})
+             Categories.short_name: cat_info['short_name'], Categories.tg_channel: cat_info['tg_channel'],
+             Categories.cat_site_id: cat_info['cat_site_id'], Categories.drive_link: cat_info['drive_link']})
         if cat_info['cat_id'] in [cat_dir.cat_id for cat_dir in CatDirs.query.all()]:
             db.session.query(CatDirs).filter(CatDirs.cat_id == cat_info['cat_id']).update(
                 {CatDirs.cat_id: cat_info['cat_id'], CatDirs.dir_id: cat_info['direction'],
@@ -285,7 +286,8 @@ def write_category(cat_info):
             cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
             db.session.add(cat)
     else:
-        cat = Categories(curr_year, cat_info['cat_name'], cat_info['short_name'], cat_info['tg_channel'])
+        cat = Categories(curr_year, cat_info['cat_name'], cat_info['short_name'], cat_info['tg_channel'],
+                         cat_info['cat_site_id'], cat_info['drive_link'])
         db.session.add(cat)
         db.session.commit()
         categ = db.session.query(Categories).filter(Categories.cat_name == cat_info['cat_name']).first()
@@ -335,6 +337,8 @@ def one_category(categ):
     contest = db.session.query(Contests).filter(Contests.contest_id == cat_dir.contest_id).first()
     cat['contest'] = contest.contest_name
     cat['cont_id'] = contest.contest_id
+    cat['drive_link'] = categ.drive_link
+    cat['cat_site_id'] = categ.cat_site_id
     if db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).first():
         sup_id = db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).first().supervisor_id
         sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == sup_id).first()
@@ -1064,6 +1068,14 @@ def edited_category():
     cat_info['tg_channel'] = re.sub(r'https://t.me/|@', '', request.form['tg_channel'])
     cat_info['direction'] = int(request.form['direction'])
     cat_info['contest'] = int(request.form['contest'])
+    if 'cat_site_id' in request.form.keys():
+        cat_info['cat_site_id'] = int(request.form['cat_site_id'])
+    else:
+        cat_info['cat_site_id'] = None
+    if 'drive_link' in request.form.keys():
+        cat_info['drive_link'] = request.form['drive_link']
+    else:
+        cat_info['drive_link'] = None
     write_category(cat_info)
     renew_session()
     return redirect(url_for('.categories_list'))
@@ -1441,8 +1453,9 @@ def category_page(cat_id, errors):
     renew_session()
     need_analysis = check_analysis(cat_id)
     works_no_fee = get_works_no_fee(cat_id)
+    show_top_100 = False
     return render_template('categories/category_page.html', category=category, need_analysis=need_analysis,
-                           errors=errors, works_no_fee=works_no_fee)
+                           errors=errors, works_no_fee=works_no_fee, show_top_100=show_top_100)
 
 
 @app.route('/news_list')

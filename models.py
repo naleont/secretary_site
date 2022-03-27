@@ -124,13 +124,15 @@ class Categories(db.Model):
     cat_name = db.Column('cat_name', db.Text)
     short_name = db.Column('short_name', db.Text)
     tg_channel = db.Column('tg_channel', db.Text)
+    drive_link = db.Column('drive_link', db.Text)
 
-    def __init__(self, year, cat_name, short_name, tg_channel, cat_site_id):
+    def __init__(self, year, cat_name, short_name, tg_channel, cat_site_id, drive_link):
         self.year = year
         self.cat_name = cat_name
         self.short_name = short_name
         self.tg_channel = tg_channel
         self.id_from_site = cat_site_id
+        self.drive_link = drive_link
 
 
 class CatDirs(db.Model):
