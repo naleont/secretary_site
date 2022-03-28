@@ -16,22 +16,29 @@
         <td align="center">
             <b>Участвует</b>
         </td>
-        <td align="center">
+        <td align="center" width="17%">
             <b>Защита</b>
         </td>
     </tr>
     {% for key in works %}
     <tr>
         <td>
-            {{ works[key]['work_id'] }}
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ works[key]['site_id'] }}">
+                {{ works[key]['work_id'] }}</a>
         </td>
         <td>
-            {{ works[key]['work_name'] }}
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ works[key]['site_id'] }}">
+                {{ works[key]['work_name'] }}</a>
         </td>
         <td align="center">
             {% if works[key]['appl_no'] != False %}
             Да
             {% endif %}
+        </td>
+        <td align="center">
+            <button class="blue">Вт</button>
+            <button class="blue">Ср</button>
+            <button class="blue">Чт</button>
         </td>
     </tr>
     {% endfor %}
