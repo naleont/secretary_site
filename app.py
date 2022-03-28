@@ -35,6 +35,20 @@ mail = Mail(app)
 tel_unneeded = '-() '
 curr_year = 2022
 
+days = {'1': 'Пн', '2': 'Вт', '3': 'Ср', '4': 'Чт', '5': 'Пт', '6': 'Сб', '7': 'Вс'}
+months = {'01': 'Янв',
+          '02': 'Фев',
+          '03': 'Мар',
+          '04': 'Апр',
+          '05': 'Май',
+          '06': 'Июн',
+          '07': 'Июл',
+          '08': 'Авг',
+          '09': 'Сен',
+          '10': 'Окт',
+          '11': 'Ноя',
+          '12': 'Дек'}
+
 access_types = {'guest': 0,
                 'user': 1,
                 'approved_user': 2,
@@ -354,6 +368,18 @@ def one_category(categ):
         cat['secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
         cat['secretary_email'] = user.email
         cat['secretary_tel'] = user.tel
+    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
+    dates = []
+    if dates_db.day_1:
+        dates.append(days[dates_db.day_1.strftime('%w')] + ' ' + dates_db.day_1.strftime('%d') + ' ' +
+                     months[dates_db.day_1.strftime('%m')])
+    if dates_db.day_2:
+        dates.append(days[dates_db.day_2.strftime('%w')] + ' ' + dates_db.day_2.strftime('%d') + ' ' +
+                     months[dates_db.day_2.strftime('%m')])
+    if dates_db.day_3:
+        dates.append(days[dates_db.day_3.strftime('%w')] + ' ' + dates_db.day_3.strftime('%d') + ' ' +
+                     months[dates_db.day_3.strftime('%m')])
+    cat['dates'] = ', '.join(dates)
     return cat
 
 
