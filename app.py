@@ -540,14 +540,23 @@ def work_info(work_id):
     return work
 
 
-def get_works(cat_id):
+def get_works(cat_id, status):
+    # в status пишется, работы, допущенные до какого тура, мы ищем
+    if status == 1:
+        stat = ['Допущена до 1-го тура', 'Направлена на рецензирование', 'Отрецензирована',
+                'Окончила 1-й тур. Не допущена до 2-го тура', 'Допущена до 2-го тура']
+    elif status == 2:
+        stat = ['Допущена до 2-го тура']
     works = dict()
     cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == cat_id
                                                         ).order_by(WorkCategories.work_id).all()
     for work in cat_works:
         work_db = db.session.query(Works).filter(Works.work_id == work.work_id).first()
         w_no = work_db.work_id
-        works[w_no] = work_info(w_no)
+        status_id = WorkStatuses.query.filter(WorkStatuses.work_id == w_no).first().status_id
+        if ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id).first().status_name \
+                in stat:
+            works[w_no] = work_info(w_no)
     return works
 
 
@@ -638,7 +647,7 @@ def analysis_results():
     rev_ana = db.session.query(RevAnalysis)
     cats = db.session.query(Categories).all()
     for cat in cats:
-        cat_works = get_works(cat.cat_id)
+        cat_works = get_works(cat.cat_id, 1)
         analysis_res.update(cat_works)
     for work in analysis_res.keys():
         if work in [w.work_id for w in RevAnalysis.query.all()]:
@@ -675,7 +684,10 @@ def analysis_nums():
         ana_nums[key]['regional_applied'] = 0
         for work in cat_works:
             work_db = db.session.query(Works).filter(Works.work_id == work).first()
-            if work_db.reg_tour is not None:
+            status_id = WorkStatuses.query.filter(WorkStatuses.work_id == work_db.work_id).first().status_id
+            status = ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id
+                                                        ).first().status_name
+            if work_db.reg_tour is not None and status != 'Не прошла на конкурс':
                 ana_nums[key]['regional_applied'] += 1
                 all_stats['regionals'] += 1
                 regions.append(work_db.reg_tour)
@@ -689,7 +701,7 @@ def analysis_nums():
 
 
 def check_analysis(cat_id):
-    works = get_works(cat_id)
+    works = get_works(cat_id, 1)
     for key in works:
         if works[key]['reg_tour'] is not None \
                 and ('analysis' not in works[key].keys()
@@ -1721,7 +1733,7 @@ def analysis_works(cat_id):
     renew_session()
     if check_access(url='/analysis_works/' + cat_id) < 5:
         return redirect(url_for('.no_access'))
-    works = get_works(cat_id)
+    works = get_works(cat_id, 1)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
     need_analysis = check_analysis(cat_id)
@@ -2089,7 +2101,6 @@ def save_report_dates():
         else:
             day_3 = None
         dates.append({'cat_id': cat_id, 'day_1': day_1, 'day_2': day_2, 'day_3': day_3})
-        success = 'Даты добавлены'
     for date in dates:
         if date['cat_id'] in [c.cat_id for c in ReportDates.query.all()]:
             db.session.query(ReportDates).filter(ReportDates.cat_id == date['cat_id']
@@ -2101,7 +2112,15 @@ def save_report_dates():
             rep_d = ReportDates(date['cat_id'], date['day_1'], date['day_2'], date['day_3'])
             db.session.add(rep_d)
             db.session.commit()
+
+        success = 'Даты добавлены'
     return redirect(url_for('.set_report_dates', message=success))
+
+
+@app.route('/reports_order/<cat_id>')
+def reports_order(cat_id):
+    works = get_works(cat_id, 2)
+    return render_template('online_reports/reports_order.html', works=works)
 
 
 if __name__ == '__main__':

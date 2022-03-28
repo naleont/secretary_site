@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Список работ на секции</h2>
+{{ works|length }}
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center">
+            <b>Номер</b>
+        </td>
+        <td align="center">
+            <b>Название</b>
+        </td>
+    </tr>
+    {% for key in works %}
+    <tr>
+        <td>
+            {{ works[key]['work_id'] }}
+        </td>
+        <td>
+            {{ works[key]['work_name'] }}
+        </td>
+    </tr>
+    {% endfor %}
+</table><br>
+
+{% endblock %}
