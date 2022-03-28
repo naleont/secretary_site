@@ -4,7 +4,7 @@ from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
-    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee
+    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee, ReportDates
 import mail_data
 import re
 import datetime
@@ -2015,6 +2015,67 @@ def invoice():
 def drive_links():
     count, categories = categories_info()
     return render_template('categories/drive_links.html', categories=categories)
+
+
+@app.route('/set_report_dates', defaults={'message': None})
+@app.route('/set_report_dates/<message>')
+def set_report_dates(message):
+    c, cats = categories_info()
+    cat_dates = []
+    for cat in cats.values():
+        c_dates = {'cat_id': cat['id'], 'cat_name': cat['name']}
+        if cat['id'] in [c.cat_id for c in ReportDates.query.all()]:
+            dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
+            if dates_db.day_1:
+                c_dates['day_1'] = dates_db.day_1.strftime('%Y-%m-%d')
+            else:
+                c_dates['day_1'] = None
+            if dates_db.day_2:
+                c_dates['day_2'] = dates_db.day_2.strftime('%Y-%m-%d')
+            else:
+                c_dates['day_2'] = None
+            if dates_db.day_3:
+                c_dates['day_3'] = dates_db.day_3.strftime('%Y-%m-%d')
+            else:
+                c_dates['day_3'] = None
+        else:
+            c_dates['day_1'] = None
+            c_dates['day_2'] = None
+            c_dates['day_3'] = None
+        cat_dates.append(c_dates)
+    return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=message)
+
+
+@app.route('/save_report_dates', methods=['POST'])
+def save_report_dates():
+    dates = []
+    for cat_id in [c.cat_id for c in Categories.query.all()]:
+        if str(cat_id) + '_day_1' in request.form.keys() and request.form[str(cat_id) + '_day_1'] != '':
+            day_1 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_1'], '%Y-%m-%d').date()
+        else:
+            day_1 = None
+        if str(cat_id) + '_day_2' in request.form.keys() and request.form[str(cat_id) + '_day_2'] != '':
+            day_2 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_2'], '%Y-%m-%d').date()
+        else:
+            day_2 = None
+        if str(cat_id) + '_day_3' in request.form.keys() and request.form[str(cat_id) + '_day_3'] != '':
+            day_3 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_3'], '%Y-%m-%d').date()
+        else:
+            day_3 = None
+        dates.append({'cat_id': cat_id, 'day_1': day_1, 'day_2': day_2, 'day_3': day_3})
+        success = 'Даты добавлены'
+    for date in dates:
+        if date['cat_id'] in [c.cat_id for c in ReportDates.query.all()]:
+            db.session.query(ReportDates).filter(ReportDates.cat_id == date['cat_id']
+                                                 ).update({ReportDates.day_1: date['day_1'],
+                                                           ReportDates.day_2: date['day_2'],
+                                                           ReportDates.day_3: date['day_3']})
+            db.session.commit()
+        else:
+            rep_d = ReportDates(date['cat_id'], date['day_1'], date['day_2'], date['day_3'])
+            db.session.add(rep_d)
+            db.session.commit()
+    return redirect(url_for('.set_report_dates', message=success))
 
 
 if __name__ == '__main__':

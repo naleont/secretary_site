@@ -378,3 +378,19 @@ class WorksNoFee(db.Model):
 
     def __init__(self, work_id):
         self.work_id = work_id
+
+
+class ReportDates(db.Model):
+    __tablename__ = 'report_dates'
+    __table_args__ = (PrimaryKeyConstraint('cat_id'),)
+
+    cat_id = db.Column('cat_id', db.Integer, ForeignKey('categories.cat_id'))
+    day_1 = db.Column('day_1', db.Date)
+    day_2 = db.Column('day_2', db.Date)
+    day_3 = db.Column('day_3', db.Date)
+
+    def __init__(self, cat_id, day_1, day_2, day_3):
+        self.cat_id = cat_id
+        self.day_1 = day_1
+        self.day_2 = day_2
+        self.day_3 = day_3
