@@ -3,7 +3,8 @@
 {% block content %}
 
 <h2>Список работ на секции</h2>
-{{ works|length }}
+Работ допущено до 2 тура: <b>{{ works|length }}</b><br>
+Вероятно участвующих работ: <b>{{ participating }}</b>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
         <td align="center">
@@ -11,6 +12,12 @@
         </td>
         <td align="center">
             <b>Название</b>
+        </td>
+        <td align="center">
+            <b>Участвует</b>
+        </td>
+        <td align="center">
+            <b>Защита</b>
         </td>
     </tr>
     {% for key in works %}
@@ -20,6 +27,11 @@
         </td>
         <td>
             {{ works[key]['work_name'] }}
+        </td>
+        <td align="center">
+            {% if works[key]['appl_no'] != False %}
+            Да
+            {% endif %}
         </td>
     </tr>
     {% endfor %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2><b>Добавить работы </b>
+    <a target="_blank" href="https://vernadsky.info/personal_office/requests_2/?report=20&year={{ year }}">
+        (Копировать отсюда)</a></h2>
+<form action="/many_applications" method = 'POST'>
+    <fieldset>
+        <textarea cols="120" rows="10" name="text"></textarea><br><br>
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+{% endblock %}

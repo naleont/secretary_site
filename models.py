@@ -394,3 +394,17 @@ class ReportDates(db.Model):
         self.day_1 = day_1
         self.day_2 = day_2
         self.day_3 = day_3
+
+
+class Applications2Tour(db.Model):
+    __tablename__ = 'applications_2_tour'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    appl_no = db.Column('appl_no', db.Integer)
+    arrived = db.Column('arrived', db.Boolean)
+
+    def __init__(self, work_id, appl_no, arrived):
+        self.work_id = work_id
+        self.appl_no = appl_no
+        self.arrived = arrived

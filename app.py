@@ -4,7 +4,8 @@ from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
-    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee, ReportDates
+    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee, ReportDates, \
+    Applications2Tour
 import mail_data
 import re
 import datetime
@@ -537,6 +538,13 @@ def work_info(work_id):
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     work['reg_tour'] = work_db.reg_tour
     work['site_id'] = work_db.work_site_id
+    if work_id in [w.work_id for w in Applications2Tour.query.all()]:
+        appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()
+        work['appl_no'] = appl_db.appl_no
+        work['arrived'] = appl_db.arrived
+    else:
+        work['appl_no'] = False
+        work['arrived'] = False
     return work
 
 
@@ -1862,6 +1870,14 @@ def add_works(works_added, works_edited):
     return render_template('works/add_works.html', works_added=works_added, works_edited=works_edited)
 
 
+@app.route('/applications_2_tour')
+def applications_2_tour():
+    renew_session()
+    if check_access(url='/add_works') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('works/applications_2_tour.html', year=curr_year)
+
+
 @app.route('/many_works', methods=['POST'])
 def many_works():
     renew_session()
@@ -1963,6 +1979,31 @@ def many_works():
         if edited:
             works_edited += 1
     return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
+
+
+@app.route('/many_applications', methods=['POST'])
+def many_applications():
+    renew_session()
+    text = '{"works": ' + request.form['text'].strip('\n') + '}'
+
+    works = json.loads(text)
+    w = works['works']
+    works_applied = []
+    for n in w:
+        works = [{'work': int(a['number']), 'appl': int(n['id'])} for a in n['works']]
+        works_applied.extend(works)
+    for work in works_applied:
+        if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
+            db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
+                                                       ).first().update({Applications2Tour.appl_no: work['appl'],
+                                                                         Applications2Tour.arrived: work['appl']})
+            db.session.commit()
+        else:
+            wo = Works.query.filter(Works.work_id == work['work']).first().work_id
+            appl = Applications2Tour(wo, work['appl'], False)
+            db.session.add(appl)
+            db.session.commit()
+    return redirect(url_for('.applications_2_tour'))
 
 
 @app.route('/top_100')
@@ -2120,7 +2161,11 @@ def save_report_dates():
 @app.route('/reports_order/<cat_id>')
 def reports_order(cat_id):
     works = get_works(cat_id, 2)
-    return render_template('online_reports/reports_order.html', works=works)
+    participating = 0
+    for work in works.keys():
+        if works[work]['appl_no']:
+            participating += 1
+    return render_template('online_reports/reports_order.html', works=works, participating=participating)
 
 
 if __name__ == '__main__':
