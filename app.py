@@ -5,7 +5,7 @@ from flask import render_template, request, redirect, url_for, session
 from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
     Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
     CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee, ReportDates, \
-    Applications2Tour
+    Applications2Tour, ReportOrder
 import mail_data
 import re
 import datetime
@@ -2165,7 +2165,39 @@ def reports_order(cat_id):
     for work in works.keys():
         if works[work]['appl_no']:
             participating += 1
-    return render_template('online_reports/reports_order.html', works=works, participating=participating)
+    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+    c_dates = {}
+    if dates_db.day_1:
+        c_dates['day_1'] = days[dates_db.day_1.strftime('%w')]
+    if dates_db.day_2:
+        c_dates['day_2'] = days[dates_db.day_2.strftime('%w')]
+    if dates_db.day_3:
+        c_dates['day_3'] = days[dates_db.day_3.strftime('%w')]
+    return render_template('online_reports/reports_order.html', works=works, participating=participating,
+                           c_dates=c_dates)
+
+
+@app.route('/work_date/<cat_id>/<work_id>/<day>')
+def work_date(cat_id, work_id, day):
+    work_id = int(work_id)
+    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
+    last_order = 1
+    for work in cat_works:
+        if work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
+            order = db.session.query(ReportOrder).filter(ReportOrder.work_id == work,
+                                                         ReportOrder.report_day == day).first().order
+            if order >= last_order:
+                last_order = order + 1
+    if work_id in [w.work_id for w in ReportOrder.query.all()]:
+        db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id
+                                             ).update({ReportOrder.report_day: day,
+                                                       ReportOrder.order: last_order})
+        db.session.commit()
+    else:
+        o = ReportOrder(work_id, day, last_order)
+        db.session.add(o)
+        db.session.commit()
+    return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
 if __name__ == '__main__':

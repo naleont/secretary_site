@@ -408,3 +408,18 @@ class Applications2Tour(db.Model):
         self.work_id = work_id
         self.appl_no = appl_no
         self.arrived = arrived
+
+
+class ReportOrder(db.Model):
+    __tablename__ = 'report_order'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    report_day = db.Column('report_day', db.Text)
+    order = db.Column('order', db.Integer)
+
+    def __init__(self, work_id, report_day, order):
+        self.work_id = work_id
+        self.report_day = report_day
+        self.order = order
+

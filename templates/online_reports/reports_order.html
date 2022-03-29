@@ -36,9 +36,21 @@
             {% endif %}
         </td>
         <td align="center">
-            <button class="blue">Вт</button>
-            <button class="blue">Ср</button>
-            <button class="blue">Чт</button>
+            {% if c_dates['day_1'] %}
+                <a href="/work_date/{{ works[key]['cat_id'] }}/{{ works[key]['work_id'] }}/day_1">
+                    <button class="blue">{{ c_dates['day_1'] }}</button>
+                </a>
+            {% endif %}
+            {% if c_dates['day_2'] %}
+                <a href="/work_date/{{ works[key]['cat_id'] }}/{{ works[key]['work_id'] }}/day_2">
+                    <button class="blue">{{ c_dates['day_2'] }}</button>
+                </a>
+            {% endif %}
+            {% if c_dates['day_3'] %}
+                <a href="/work_date/{{ works[key]['cat_id'] }}/{{ works[key]['work_id'] }}/day_3">
+                    <button class="blue">{{ c_dates['day_3'] }}</button>
+                </a>
+            {% endif %}
         </td>
     </tr>
     {% endfor %}
