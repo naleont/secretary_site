@@ -754,24 +754,25 @@ def no_fee_nums():
 
 def check_order(cat_works):
     for d in [d.report_day for d in ReportOrder.query.all()]:
-        prev_order = 0
-        wo = {}
-        order_dict = {}
-        for work in cat_works:
-            if work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == d
-                                                                    ).order_by(ReportOrder.order).all()]:
-                order = db.session.query(ReportOrder).filter(ReportOrder.work_id == work,
-                                                             ReportOrder.report_day == d).first().order
-                wo[work] = order
-                order_dict = {w: o for w, o in sorted(wo.items(), key=lambda item: item[1])}
-        if order_dict != {}:
-            for w, o in order_dict.items():
-                prev_order += 1
-                if o != prev_order:
-                    db.session.query(ReportOrder).filter(ReportOrder.work_id == w
-                                                         ).update({
-                        ReportOrder.order: prev_order})
-                    db.session.commit()
+        if [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == d).all()]:
+            prev_order = 0
+            wo = {}
+            order_dict = {}
+            for work in cat_works:
+                if work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == d
+                                                                        ).order_by(ReportOrder.order).all()]:
+                    order = db.session.query(ReportOrder).filter(ReportOrder.work_id == work,
+                                                                 ReportOrder.report_day == d).first().order
+                    wo[work] = order
+                    order_dict = {w: o for w, o in sorted(wo.items(), key=lambda item: item[1])}
+            if order_dict != {}:
+                for w, o in order_dict.items():
+                    prev_order += 1
+                    if o != prev_order:
+                        db.session.query(ReportOrder).filter(ReportOrder.work_id == w
+                                                             ).update({
+                            ReportOrder.order: prev_order})
+                        db.session.commit()
 
 
 # Главная страница
@@ -2289,6 +2290,7 @@ def unorder(cat_id, work_id):
     if work_id in [w.work_id for w in ReportOrder.query.all()]:
         work = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
         db.session.delete(work)
+        db.session.commit()
     cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
     check_order(cat_works)
     return redirect(url_for('.reports_order', cat_id=cat_id))
