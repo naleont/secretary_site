@@ -2,6 +2,7 @@ secret.key
 team_db.db
 mail_data.py
 /venv
+/static/files/schedules
 check.py
 plan.txt
 DROP.py

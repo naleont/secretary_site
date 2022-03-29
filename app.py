@@ -2,10 +2,7 @@ import json
 
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
-from models import db, Users, Supervisors, Categories, Application, Profile, CatSupervisors, CatSecretaries, \
-    Directions, Contests, CatDirs, News, SupervisorUser, Works, WorkCategories, RevCriteria, RevCritValues, \
-    CriteriaValues, RevAnalysis, PreAnalysis, ParticipationStatuses, WorkStatuses, WorksNoFee, ReportDates, \
-    Applications2Tour, ReportOrder
+from models import *
 import mail_data
 import re
 import datetime
@@ -14,6 +11,7 @@ from cryptography.fernet import Fernet
 from flask_mail import Mail, Message
 from sqlalchemy import update, delete
 import asyncio
+from flask import send_file
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -2221,7 +2219,7 @@ def reports_order(cat_id):
         d_1 = {'d': 'day_1'}
         d_1['day'] = days[dates_db.day_1.strftime('%w')]
         d_1['day_full'] = days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
-                            months_full[dates_db.day_1.strftime('%m')]
+                          months_full[dates_db.day_1.strftime('%m')]
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_1':
@@ -2234,7 +2232,7 @@ def reports_order(cat_id):
         d_2 = {'d': 'day_2'}
         d_2['day'] = days[dates_db.day_2.strftime('%w')]
         d_2['day_full'] = days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
-                                months_full[dates_db.day_2.strftime('%m')]
+                          months_full[dates_db.day_2.strftime('%m')]
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_2':
@@ -2247,7 +2245,7 @@ def reports_order(cat_id):
         d_3 = {'d': 'day_3'}
         d_3['day'] = days[dates_db.day_3.strftime('%w')]
         d_3['day_full'] = days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
-                                months_full[dates_db.day_3.strftime('%m')]
+                          months_full[dates_db.day_3.strftime('%m')]
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_3':
@@ -2257,7 +2255,8 @@ def reports_order(cat_id):
             d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
         c_dates.append(d_3)
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
-                           participating=participating, c_dates=c_dates, approved_for_2=approved_for_2)
+                           participating=participating, c_dates=c_dates, approved_for_2=approved_for_2,
+                           cat_id=cat_id)
 
 
 @app.route('/work_date/<cat_id>/<work_id>/<day>')
@@ -2316,6 +2315,52 @@ def reorder(cat_id, work_id, direction):
     cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
     check_order(cat_works)
     return redirect(url_for('.reports_order', cat_id=cat_id))
+
+
+@app.route('/download_schedule/<cat_id>')
+def download_schedule(cat_id):
+    works = get_works(cat_id, 2)
+    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+    c_dates = []
+    if dates_db.day_1:
+        d_1 = {'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+               months_full[dates_db.day_1.strftime('%m')]}
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_1':
+                day_works.append(work)
+        d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_1)
+    if dates_db.day_2:
+        d_2 = {'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
+               months_full[dates_db.day_2.strftime('%m')]}
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_2':
+                day_works.append(work)
+        d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_2)
+    if dates_db.day_3:
+        d_3 = {'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+               months_full[dates_db.day_3.strftime('%m')]}
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_3':
+                day_works.append(work)
+        d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_3)
+    lines = []
+    for day in c_dates:
+        lines.append(day['day_full'])
+        for work in day['works']:
+            lines.append(str(work['report_order']) + '\t' + str(work['work_id']) + ' - ' + work['work_name'])\
+            # + ' - ' + work['authors'])
+        lines.append('')
+    cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
+    path = 'static/files/schedules/' + 'Расписание ' + cat_name + '.txt'
+    with open(path, 'w', encoding='utf-8') as f:
+        f.writelines([line + '\n' for line in lines])
+    return send_file(path, as_attachment=True)
 
 
 if __name__ == '__main__':
