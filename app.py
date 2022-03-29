@@ -2226,7 +2226,8 @@ def reports_order(cat_id):
             if 'report_day' in work.keys() and work['report_day'] == 'day_1':
                 day_works.append(work)
         d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        d_1['max_order'] = max([w['report_order'] for w in d_1['works']])
+        if [w['report_order'] for w in d_1['works']] != []:
+            d_1['max_order'] = max([w['report_order'] for w in d_1['works']])
         c_dates.append(d_1)
     if dates_db.day_2:
         d_2 = {'d': 'day_2'}
@@ -2238,7 +2239,8 @@ def reports_order(cat_id):
             if 'report_day' in work.keys() and work['report_day'] == 'day_2':
                 day_works.append(work)
         d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        d_2['max_order'] = max([w['report_order'] for w in d_2['works']])
+        if [w['report_order'] for w in d_2['works']] != []:
+            d_2['max_order'] = max([w['report_order'] for w in d_2['works']])
         c_dates.append(d_2)
     if dates_db.day_3:
         d_3 = {'d': 'day_3'}
@@ -2250,7 +2252,8 @@ def reports_order(cat_id):
             if 'report_day' in work.keys() and work['report_day'] == 'day_3':
                 day_works.append(work)
         d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
+        if [w['report_order'] for w in d_3['works']] != []:
+            d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
         c_dates.append(d_3)
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
                            participating=participating, c_dates=c_dates, approved_for_2=approved_for_2)
