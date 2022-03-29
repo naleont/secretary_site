@@ -2226,6 +2226,7 @@ def reports_order(cat_id):
             if 'report_day' in work.keys() and work['report_day'] == 'day_1':
                 day_works.append(work)
         d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        d_1['max_order'] = max([w['report_order'] for w in d_1['works']])
         c_dates.append(d_1)
     if dates_db.day_2:
         d_2 = {'d': 'day_2'}
@@ -2237,6 +2238,7 @@ def reports_order(cat_id):
             if 'report_day' in work.keys() and work['report_day'] == 'day_2':
                 day_works.append(work)
         d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        d_2['max_order'] = max([w['report_order'] for w in d_2['works']])
         c_dates.append(d_2)
     if dates_db.day_3:
         d_3 = {'d': 'day_3'}
@@ -2248,6 +2250,7 @@ def reports_order(cat_id):
             if 'report_day' in work.keys() and work['report_day'] == 'day_3':
                 day_works.append(work)
         d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
         c_dates.append(d_3)
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
                            participating=participating, c_dates=c_dates, approved_for_2=approved_for_2)
@@ -2283,6 +2286,28 @@ def unorder(cat_id, work_id):
     if work_id in [w.work_id for w in ReportOrder.query.all()]:
         work = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
         db.session.delete(work)
+    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
+    check_order(cat_works)
+    return redirect(url_for('.reports_order', cat_id=cat_id))
+
+
+@app.route('/reorder/<cat_id>/<work_id>/<direction>')
+def reorder(cat_id, work_id, direction):
+    order_db = db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).first()
+    order_1 = order_db.order
+    day = order_db.report_day
+    if direction == 'up':
+        order_2 = order_1 - 1
+    else:
+        order_2 = order_1 + 1
+    db.session.query(ReportOrder).filter(ReportOrder.report_day == day
+                                         ).filter(ReportOrder.order == order_2
+                                                  ).update({ReportOrder.order: order_1})
+    db.session.commit()
+    db.session.query(ReportOrder).filter(ReportOrder.report_day == day
+                                         ).filter(ReportOrder.work_id == work_id
+                                                  ).update({ReportOrder.order: order_2})
+    db.session.commit()
     cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
     check_order(cat_works)
     return redirect(url_for('.reports_order', cat_id=cat_id))

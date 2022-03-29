@@ -6,8 +6,8 @@
 <h3>{{ day['day_full'] }}</h3>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
-        <td align="center"><b>
-            Очередь
+        <td align="center" width="9%"><b>
+
         </b></td>
         <td align="center"><b>
             П/п
@@ -22,6 +22,9 @@
             Название
         </b></td>
         <td align="center"><b>
+            Выступил
+        </b></td>
+        <td align="center"><b>
             Участвует
         </b></td>
         <td align="center"><b>
@@ -32,14 +35,20 @@
     <tr>
         <td align="center">
             <div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
-            </svg>
+            {% if work['report_order'] != 1 %}
+            <a class="green-text" href="/reorder/{{ work['cat_id'] }}/{{ work['work_id'] }}/up">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+                </svg></a>
+            {% endif %}
             &nbsp
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-            </svg>
-                </div>
+            {% if work['report_order'] != day['max_order'] %}
+            <a class="green-text" href="/reorder/{{ work['cat_id'] }}/{{ work['work_id'] }}/down">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                </svg></a>
+            {% endif %}
+            </div>
         </td>
         <td align="center">
             {{ work['report_order'] }}
@@ -53,6 +62,9 @@
         <td>
             {{ work['work_name'] }}
         </td>
+        <td>
+
+        </td>
         <td align="center">
             {% if work['appl_no'] != False %}
             Да
@@ -63,8 +75,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                   <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
                   <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
-                </svg>
-            </a>
+                </svg></a>
         </td>
     </tr>
     {% endfor %}
@@ -109,8 +120,7 @@
         <td align="center">
             {% for day in c_dates %}
                 <a href="/work_date/{{ work['cat_id'] }}/{{ work['work_id'] }}/day['d']">
-                    <button class="blue">{{ day['day'] }}</button>
-                </a>
+                    <button class="blue">{{ day['day'] }}</button></a>
             {% endfor %}
         </td>
     </tr>
