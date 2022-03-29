@@ -2,8 +2,79 @@
 
 {% block content %}
 
-<h2>Список работ на секции</h2>
-Работ допущено до 2 тура: <b>{{ works|length }}</b><br>
+{% for day in c_dates %}
+<h3>{{ day['day_full'] }}</h3>
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center"><b>
+            Очередь
+        </b></td>
+        <td align="center"><b>
+            П/п
+        </b></td>
+        <td align="center"><b>
+            Время
+        </b></td>
+        <td align="center"><b>
+            Номер
+        </b></td>
+        <td align="center"><b>
+            Название
+        </b></td>
+        <td align="center"><b>
+            Участвует
+        </b></td>
+        <td align="center"><b>
+            Снять
+        </b></td>
+    </tr>
+    {% for work in day['works']%}
+    <tr>
+        <td align="center">
+            <div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+            </svg>
+            &nbsp
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+            </svg>
+                </div>
+        </td>
+        <td align="center">
+            {{ work['report_order'] }}
+        </td>
+        <td>
+
+        </td>
+        <td>
+            {{ work['work_id'] }}
+        </td>
+        <td>
+            {{ work['work_name'] }}
+        </td>
+        <td align="center">
+            {% if work['appl_no'] != False %}
+            Да
+            {% endif %}
+        </td>
+        <td align="center">
+            <a class="alarm" href="/unorder/{{ work['cat_id'] }}/{{ work['work_id'] }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
+                  <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
+                </svg>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<br>
+{% endfor %}
+
+
+<h2>Нераспределенные работы</h2>
+Работ допущено до 2 тура: <b>{{ approved_for_2 }}</b><br>
 Вероятно участвующих работ: <b>{{ participating }}</b>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
@@ -20,37 +91,27 @@
             <b>Защита</b>
         </td>
     </tr>
-    {% for key in works %}
-    <tr>
+    {% for work in works_unordered %}
+    <tr bgcolor="#faebd7">
         <td>
-            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ works[key]['site_id'] }}">
-                {{ works[key]['work_id'] }}</a>
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                {{ work['work_id'] }}</a>
         </td>
         <td>
-            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ works[key]['site_id'] }}">
-                {{ works[key]['work_name'] }}</a>
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                {{ work['work_name'] }}</a>
         </td>
         <td align="center">
-            {% if works[key]['appl_no'] != False %}
+            {% if work['appl_no'] != False %}
             Да
             {% endif %}
         </td>
         <td align="center">
-            {% if c_dates['day_1'] %}
-                <a href="/work_date/{{ works[key]['cat_id'] }}/{{ works[key]['work_id'] }}/day_1">
-                    <button class="blue">{{ c_dates['day_1'] }}</button>
+            {% for day in c_dates %}
+                <a href="/work_date/{{ work['cat_id'] }}/{{ work['work_id'] }}/day['d']">
+                    <button class="blue">{{ day['day'] }}</button>
                 </a>
-            {% endif %}
-            {% if c_dates['day_2'] %}
-                <a href="/work_date/{{ works[key]['cat_id'] }}/{{ works[key]['work_id'] }}/day_2">
-                    <button class="blue">{{ c_dates['day_2'] }}</button>
-                </a>
-            {% endif %}
-            {% if c_dates['day_3'] %}
-                <a href="/work_date/{{ works[key]['cat_id'] }}/{{ works[key]['work_id'] }}/day_3">
-                    <button class="blue">{{ c_dates['day_3'] }}</button>
-                </a>
-            {% endif %}
+            {% endfor %}
         </td>
     </tr>
     {% endfor %}

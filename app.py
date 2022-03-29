@@ -37,6 +37,13 @@ tel_unneeded = '-() '
 curr_year = 2022
 
 days = {'1': 'Пн', '2': 'Вт', '3': 'Ср', '4': 'Чт', '5': 'Пт', '6': 'Сб', '0': 'Вс'}
+days_full = {'1': 'Понедельник',
+             '2': 'Вторник',
+             '3': 'Среда',
+             '4': 'Четверг',
+             '5': 'Пятница',
+             '6': 'Суббота',
+             '0': 'Воскресенье'}
 months = {'01': 'Янв',
           '02': 'Фев',
           '03': 'Мар',
@@ -49,6 +56,18 @@ months = {'01': 'Янв',
           '10': 'Окт',
           '11': 'Ноя',
           '12': 'Дек'}
+months_full = {'01': 'Января',
+               '02': 'Февраля',
+               '03': 'Марта',
+               '04': 'Апреля',
+               '05': 'Мая',
+               '06': 'Июня',
+               '07': 'Июля',
+               '08': 'Августа',
+               '09': 'Сентября',
+               '10': 'Октября',
+               '11': 'Ноября',
+               '12': 'Декабря'}
 
 access_types = {'guest': 0,
                 'user': 1,
@@ -545,6 +564,10 @@ def work_info(work_id):
     else:
         work['appl_no'] = False
         work['arrived'] = False
+    if work_id in [w.work_id for w in ReportOrder.query.all()]:
+        report = db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).first()
+        work['report_day'] = report.report_day
+        work['report_order'] = report.order
     return work
 
 
@@ -727,6 +750,28 @@ def no_fee_nums():
         cat['works_no'] = len(works)
         total += cat['works_no']
     return total, cats
+
+
+def check_order(cat_works):
+    for d in [d.report_day for d in ReportOrder.query.all()]:
+        prev_order = 0
+        wo = {}
+        order_dict = {}
+        for work in cat_works:
+            if work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == d
+                                                                    ).order_by(ReportOrder.order).all()]:
+                order = db.session.query(ReportOrder).filter(ReportOrder.work_id == work,
+                                                             ReportOrder.report_day == d).first().order
+                wo[work] = order
+                order_dict = {w: o for w, o in sorted(wo.items(), key=lambda item: item[1])}
+        if order_dict != {}:
+            for w, o in order_dict.items():
+                prev_order += 1
+                if o != prev_order:
+                    db.session.query(ReportOrder).filter(ReportOrder.work_id == w
+                                                         ).update({
+                        ReportOrder.order: prev_order})
+                    db.session.commit()
 
 
 # Главная страница
@@ -2162,19 +2207,50 @@ def save_report_dates():
 def reports_order(cat_id):
     works = get_works(cat_id, 2)
     participating = 0
+    works_unordered = []
+    approved_for_2 = len(works)
     for work in works.keys():
         if works[work]['appl_no']:
             participating += 1
+        if works[work]['work_id'] not in [w.work_id for w in ReportOrder.query.all()]:
+            works_unordered.append(works[work])
     dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
-    c_dates = {}
+    c_dates = []
     if dates_db.day_1:
-        c_dates['day_1'] = days[dates_db.day_1.strftime('%w')]
+        d_1 = {'d': 'day_1'}
+        d_1['day'] = days[dates_db.day_1.strftime('%w')]
+        d_1['day_full'] = days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+                            months_full[dates_db.day_1.strftime('%m')]
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_1':
+                day_works.append(work)
+        d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_1)
     if dates_db.day_2:
-        c_dates['day_2'] = days[dates_db.day_2.strftime('%w')]
+        d_2 = {'d': 'day_2'}
+        d_2['day'] = days[dates_db.day_2.strftime('%w')]
+        d_2['day_full'] = days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
+                                months_full[dates_db.day_2.strftime('%m')]
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_2':
+                day_works.append(work)
+        d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_2)
     if dates_db.day_3:
-        c_dates['day_3'] = days[dates_db.day_3.strftime('%w')]
-    return render_template('online_reports/reports_order.html', works=works, participating=participating,
-                           c_dates=c_dates)
+        d_3 = {'d': 'day_3'}
+        d_3['day'] = days[dates_db.day_3.strftime('%w')]
+        d_3['day_full'] = days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+                                months_full[dates_db.day_3.strftime('%m')]
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_3':
+                day_works.append(work)
+        d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_3)
+    return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
+                           participating=participating, c_dates=c_dates, approved_for_2=approved_for_2)
 
 
 @app.route('/work_date/<cat_id>/<work_id>/<day>')
@@ -2197,6 +2273,18 @@ def work_date(cat_id, work_id, day):
         o = ReportOrder(work_id, day, last_order)
         db.session.add(o)
         db.session.commit()
+    check_order(cat_works)
+    return redirect(url_for('.reports_order', cat_id=cat_id))
+
+
+@app.route('/unorder/<cat_id>/<work_id>')
+def unorder(cat_id, work_id):
+    work_id = int(work_id)
+    if work_id in [w.work_id for w in ReportOrder.query.all()]:
+        work = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
+        db.session.delete(work)
+    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
+    check_order(cat_works)
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
