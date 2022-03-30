@@ -38,7 +38,7 @@
     </tr>
 {% for key in categories %}
     <tr
-        {% if categories[key]['id'] == session['cat_id'] %}
+        {% if categories[key]['id'] in session['cat_id'] %}
             bgcolor="#ACD6EE"
         {% else %}
             bgcolor="#C5E3F3"

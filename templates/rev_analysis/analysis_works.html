@@ -6,8 +6,8 @@
 <br>
 
 {% if session['type'] == 'admin' or session['type'] == 'org' or session['type'] == 'manager'
-or (session['supervisor'] == True and  session['cat_id'] == category['id'])
-or (session['secretary'] == True and  session['cat_id'] == category['id']) %}
+or (session['supervisor'] == True and category['id'] in session['cat_id'])
+or (session['secretary'] == True and category['id'] in session['cat_id']) %}
 
 {% if need_analysis == True %}
 <h4 class="alarm">Анализ не заполнен</h4>
