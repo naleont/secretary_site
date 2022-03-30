@@ -52,7 +52,7 @@
 
 {% if show_top_100 == True %}
 {% if session['type'] in ['admin', 'org', 'manager']
-or (session['supervisor'] == True and category['id'] in session['cat_id'] == )
+or (session['supervisor'] == True and category['id'] in session['cat_id'])
 or (session['secretary'] == True and category['id'] in session['cat_id']) %}
 <h3>Работы, участвующие без оргвзноса</h3>
 <p>2-4 лучшие работы от каждой секции получат возможность участвовать во 2 туре Конкурса без оплаты оргвзноса.
