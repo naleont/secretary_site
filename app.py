@@ -81,20 +81,20 @@ access_types = {'guest': 0,
 def renew_session():
     if 'user_id' in session.keys():
         user_db = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
-        cat_sec = db.session.query(CatSecretaries).filter(CatSecretaries.secretary_id == session['user_id']).first()
+        cat_sec = db.session.query(CatSecretaries).filter(CatSecretaries.secretary_id == session['user_id']).all()
         user = session['user_id']
         session['type'] = user_db.user_type
         session['approved'] = user_db.approved
         if user in [u.secretary_id for u in CatSecretaries.query.all()]:
             session['secretary'] = True
-            session['cat_id'] = cat_sec.cat_id
+            session['cat_id'] = [c.cat_id for c in cat_sec]
         if user in [u.user_id for u in SupervisorUser.query.all()]:
             session['supervisor'] = True
             supervisor = SupervisorUser.query.filter(SupervisorUser.user_id == user).first()
             if supervisor.supervisor_id in [s.supervisor_id for s in CatSupervisors.query.all()]:
-                cat_id = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
-                                                     ).first().cat_id
-                session['cat_id'] = cat_id
+                cat_sup = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
+                                                      ).all()
+                session['cat_id'] = [c.cat_id for c in cat_sup]
         else:
             session['supervisor'] = False
         if user in [p.user_id for p in Profile.query.all()]:
@@ -2324,7 +2324,7 @@ def download_schedule(cat_id):
     c_dates = []
     if dates_db.day_1:
         d_1 = {'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
-               months_full[dates_db.day_1.strftime('%m')]}
+                           months_full[dates_db.day_1.strftime('%m')]}
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_1':
@@ -2333,7 +2333,7 @@ def download_schedule(cat_id):
         c_dates.append(d_1)
     if dates_db.day_2:
         d_2 = {'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
-               months_full[dates_db.day_2.strftime('%m')]}
+                           months_full[dates_db.day_2.strftime('%m')]}
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_2':
@@ -2342,7 +2342,7 @@ def download_schedule(cat_id):
         c_dates.append(d_2)
     if dates_db.day_3:
         d_3 = {'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
-               months_full[dates_db.day_3.strftime('%m')]}
+                           months_full[dates_db.day_3.strftime('%m')]}
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_3':
@@ -2353,8 +2353,8 @@ def download_schedule(cat_id):
     for day in c_dates:
         lines.append(day['day_full'])
         for work in day['works']:
-            lines.append(str(work['report_order']) + '\t' + str(work['work_id']) + ' - ' + work['work_name'])\
-            # + ' - ' + work['authors'])
+            lines.append(str(work['report_order']) + '\t' + str(work['work_id']) + ' - ' + work['work_name']) \
+                # + ' - ' + work['authors'])
         lines.append('')
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
     path = 'static/files/schedules/' + 'Расписание ' + cat_name + '.txt'
