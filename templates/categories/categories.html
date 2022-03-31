@@ -38,8 +38,10 @@
     </tr>
 {% for key in categories %}
     <tr
+        {% if 'cat_id' in session.keys() %}
         {% if categories[key]['id'] in session['cat_id'] %}
             bgcolor="#ACD6EE"
+        {% endif %}
         {% else %}
             bgcolor="#C5E3F3"
         {% endif %}>
