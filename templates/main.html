@@ -12,7 +12,7 @@
 {% endif %}
 {% if session['supervisor'] == True %}
       <div align="center">
-            <a href="/analysis_works/{{ session['cat_id'] }}"><button class="big-button"><h4>Заполнить анализ рецензий</h4></button></a>
+            <a href="/analysis_works/{{ session['cat_id'][0] }}"><button class="big-button"><h4>Заполнить анализ рецензий</h4></button></a>
       </div><br>
 {% endif %}
 <p>Пока что на сайте пустовато, но со временем здесь появятся описание работы секретарей, задачи и все
