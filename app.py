@@ -1469,8 +1469,9 @@ def users_list(query):
         elif tel in [u.tel for u in Users.query.all()]:
             for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
-        elif query in [u.last_name for u in Users.query.all()]:
-            for u in Users.query.filter(Users.last_name == query).order_by(Users.user_id.desc()).all():
+        elif query.lower() in [u.last_name.lower() for u in Users.query.all()]:
+            q = ''.join([query[0].upper()] + [s.lower() for s in query[1:]])
+            for u in Users.query.filter(Users.last_name == q).order_by(Users.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif query == 'secretary':
             for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all():
