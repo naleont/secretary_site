@@ -218,10 +218,11 @@ class Works(db.Model):
     author_3_class = db.Column('author_3_class', db.Integer)
     teacher_name = db.Column('teacher_name', db.Text)
     reg_tour = db.Column('reg_tour', db.Text)
+    msk_time_shift = db.Column('msk_time_shift', db.Integer)
 
     def __init__(self, work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age, author_1_class,
                  author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class, teacher_name,
-                 reg_tour):
+                 reg_tour, msk_time_shift):
         self.work_id = work_id
         self.work_name = work_name
         self.work_site_id = work_site_id
@@ -238,6 +239,7 @@ class Works(db.Model):
         self.author_3_class = author_3_class
         self.teacher_name = teacher_name
         self.reg_tour = reg_tour
+        self.msk_time_shift = msk_time_shift
 
 
 class WorkCategories(db.Model):
@@ -423,3 +425,20 @@ class ReportOrder(db.Model):
         self.report_day = report_day
         self.order = order
 
+
+class Cities(db.Model):
+    __tablename__ = 'cities'
+
+    city_id = db.Column('city_id', db.Integer, primary_key=True)
+    country = db.Column('country', db.Text)
+    region = db.Column('region', db.Text)
+    area = db.Column('area', db.Text)
+    city = db.Column('city', db.Text)
+    msk_time_shift = db.Column('msk_time_shift', db.Integer)
+
+    def __init__(self, country, region, area, city, msk_time_shift):
+        self.country = country
+        self.region = region
+        self.area = area
+        self.city = city
+        self.msk_time_shift = msk_time_shift

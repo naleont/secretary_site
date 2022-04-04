@@ -1,3 +1,4 @@
+import bdb
 import json
 
 from flask import Flask
@@ -1941,6 +1942,22 @@ def many_works():
         tel = n['contacts']['phone']
         work_name = n['title']
         cat = n['section']['id']
+        country = n['organization']['country']
+        region = n['organization']['region']
+        city = n['organization']['city']
+        country_db = db.session.query(Cities)
+        if country in [c.country for c in country_db.all()]:
+            region_db = country_db.filter(Cities.country == country)
+            if region in [r.region for r in region_db.all()]:
+                city_db = region_db.filter(Cities.region == region)
+                if city in [c.city for c in city_db.all()]:
+                    timeshift = city_db.filter(Cities.city == city).first().msk_time_shift
+                else:
+                    timeshift = None
+            else:
+                timeshift = None
+        else:
+            timeshift = None
         if cat == 0:
             cat_id = None
         else:
@@ -1985,13 +2002,13 @@ def many_works():
                                                                              Works.author_3_age: author_3_age,
                                                                              Works.author_3_class: author_3_class,
                                                                              Works.teacher_name: teacher_name,
-                                                                             Works.reg_tour: reg_tour})
+                                                                             Works.reg_tour: reg_tour,
+                                                                             Works.msk_time_shift: timeshift})
             edited = True
         else:
-            work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age,
-                               author_1_class,
+            work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age, author_1_class,
                                author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class,
-                               teacher_name, reg_tour)
+                               teacher_name, reg_tour, timeshift)
             db.session.add(work_write)
             works_added += 1
         db.session.commit()
@@ -2362,6 +2379,59 @@ def download_schedule(cat_id):
     with open(path, 'w', encoding='utf-8') as f:
         f.writelines([line + '\n' for line in lines])
     return send_file(path, as_attachment=True)
+
+
+@app.route('/add_cities')
+def add_cities():
+    return render_template('works/add_cities.html')
+
+
+@app.route('/many_cities', methods=['POST'])
+def many_cities():
+    text = request.form['text']
+    lines = text.split('\n')
+    for line in lines:
+        if line != '':
+            info = line.split('\t')
+            if info[0] == '':
+                country = None
+            else:
+                country = info[0]
+            if info[1] == '':
+                region = None
+            else:
+                region = info[1]
+            if info[2] == '':
+                area = None
+            else:
+                area = info[2]
+            if info[3] == '':
+                city = None
+            else:
+                city = info[3]
+            if info[4] == '':
+                timeshift = None
+            else:
+                timeshift = int(info[4])
+
+            if city not in [c.city for c in Cities.query.all()]:
+                city_add = Cities(country, region, area, city, timeshift)
+                db.session.add(city_add)
+            else:
+                cit = db.session.query(Cities).filter(Cities.city == city)
+                if region not in [c.region for c in cit.all()]:
+                    city_add = Cities(country, region, area, city, timeshift)
+                    db.session.add(city_add)
+                elif area not in [c.area for c in cit.all()]:
+                    city_add = Cities(country, region, area, city, timeshift)
+                    db.session.add(city_add)
+                else:
+                    db.session.query(Cities).filter(Cities.region == region
+                                                    ).filter(Cities.area == area
+                                                             ).filter(Cities.city == city
+                                                                      ).update({Cities.msk_time_shift: timeshift})
+            db.session.commit()
+    return redirect(url_for('.add_cities'))
 
 
 if __name__ == '__main__':
