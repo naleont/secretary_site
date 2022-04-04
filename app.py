@@ -540,6 +540,13 @@ def work_info(work_id):
     work = dict()
     work['work_id'] = work_id
     work['work_name'] = work_db.work_name
+    work['timeshift'] = work_db.msk_time_shift
+    work['reported'] = work_db.reported
+    if work['timeshift']:
+        if work['timeshift'] >= 0:
+            work['timeshift'] = '+' + str(work['timeshift'])
+        else:
+            work['timeshift'] = str(work['timeshift'])
     if work_id in [w.work_id for w in RevAnalysis.query.all()]:
         if len(RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()) == len(RevCriteria.query.all()):
             work['analysis'] = True
@@ -2008,7 +2015,7 @@ def many_works():
         else:
             work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age, author_1_class,
                                author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class,
-                               teacher_name, reg_tour, timeshift)
+                               teacher_name, reg_tour, timeshift, None)
             db.session.add(work_write)
             works_added += 1
         db.session.commit()
@@ -2222,6 +2229,7 @@ def save_report_dates():
 
 @app.route('/reports_order/<cat_id>')
 def reports_order(cat_id):
+    cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
     works = get_works(cat_id, 2)
     participating = 0
     works_unordered = []
@@ -2274,11 +2282,69 @@ def reports_order(cat_id):
         c_dates.append(d_3)
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
                            participating=participating, c_dates=c_dates, approved_for_2=approved_for_2,
-                           cat_id=cat_id)
+                           cat_id=cat_id, cat_name=cat_name)
 
 
-@app.route('/work_date/<cat_id>/<work_id>/<day>')
-def work_date(cat_id, work_id, day):
+@app.route('/works_list_schedule/<cat_id>')
+def works_list_schedule(cat_id):
+    cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
+    works = get_works(cat_id, 2)
+    participating = 0
+    works_unordered = []
+    approved_for_2 = len(works)
+    for work in works.keys():
+        if works[work]['appl_no']:
+            participating += 1
+        if works[work]['work_id'] not in [w.work_id for w in ReportOrder.query.all()]:
+            works_unordered.append(works[work])
+    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+    c_dates = []
+    if dates_db.day_1:
+        d_1 = {'d': 'day_1'}
+        d_1['day'] = days[dates_db.day_1.strftime('%w')]
+        d_1['day_full'] = days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+                          months_full[dates_db.day_1.strftime('%m')]
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_1':
+                day_works.append(work)
+        d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        if [w['report_order'] for w in d_1['works']] != []:
+            d_1['max_order'] = max([w['report_order'] for w in d_1['works']])
+        c_dates.append(d_1)
+    if dates_db.day_2:
+        d_2 = {'d': 'day_2'}
+        d_2['day'] = days[dates_db.day_2.strftime('%w')]
+        d_2['day_full'] = days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
+                          months_full[dates_db.day_2.strftime('%m')]
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_2':
+                day_works.append(work)
+        d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        if [w['report_order'] for w in d_2['works']] != []:
+            d_2['max_order'] = max([w['report_order'] for w in d_2['works']])
+        c_dates.append(d_2)
+    if dates_db.day_3:
+        d_3 = {'d': 'day_3'}
+        d_3['day'] = days[dates_db.day_3.strftime('%w')]
+        d_3['day_full'] = days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+                          months_full[dates_db.day_3.strftime('%m')]
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_3':
+                day_works.append(work)
+        d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        if [w['report_order'] for w in d_3['works']] != []:
+            d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
+        c_dates.append(d_3)
+    return render_template('online_reports/works_list_schedule.html', works_unordered=works_unordered,
+                           participating=participating, c_dates=c_dates, approved_for_2=approved_for_2,
+                           cat_id=cat_id, cat_name=cat_name)
+
+
+@app.route('/work_date/<cat_id>/<work_id>/<day>/<page>')
+def work_date(cat_id, work_id, day, page):
     work_id = int(work_id)
     cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
     last_order = 1
@@ -2298,7 +2364,7 @@ def work_date(cat_id, work_id, day):
         db.session.add(o)
         db.session.commit()
     check_order(cat_works)
-    return redirect(url_for('.reports_order', cat_id=cat_id))
+    return redirect(url_for('.' + page, cat_id=cat_id))
 
 
 @app.route('/unorder/<cat_id>/<work_id>')
@@ -2432,6 +2498,17 @@ def many_cities():
                                                                       ).update({Cities.msk_time_shift: timeshift})
             db.session.commit()
     return redirect(url_for('.add_cities'))
+
+
+@app.route('/reported/<cat_id>/<work_id>/<action>')
+def reported(cat_id, work_id, action):
+    if action == 'check':
+        report = True
+    else:
+        report = False
+    db.session.query(Works).filter(Works.work_id == work_id).update({Works.reported: report})
+    db.session.commit()
+    return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
 if __name__ == '__main__':

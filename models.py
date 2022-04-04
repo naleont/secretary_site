@@ -219,10 +219,11 @@ class Works(db.Model):
     teacher_name = db.Column('teacher_name', db.Text)
     reg_tour = db.Column('reg_tour', db.Text)
     msk_time_shift = db.Column('msk_time_shift', db.Integer)
+    reported = db.Column('reported', db.Boolean)
 
     def __init__(self, work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age, author_1_class,
                  author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class, teacher_name,
-                 reg_tour, msk_time_shift):
+                 reg_tour, msk_time_shift, reported):
         self.work_id = work_id
         self.work_name = work_name
         self.work_site_id = work_site_id
@@ -240,6 +241,7 @@ class Works(db.Model):
         self.teacher_name = teacher_name
         self.reg_tour = reg_tour
         self.msk_time_shift = msk_time_shift
+        self.reported = reported
 
 
 class WorkCategories(db.Model):

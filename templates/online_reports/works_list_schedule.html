@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ cat_name }}</h2>
+<h2>Нераспределенные работы</h2>
+Работ допущено до 2 тура: <b>{{ approved_for_2 }}</b><br>
+Вероятно участвующих работ: <b>{{ participating }}</b>
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center">
+            <b>Номер</b>
+        </td>
+        <td align="center">
+            <b>Название</b>
+        </td>
+        <td align="center">
+            <b>MSK</b>
+        </td>
+        <td align="center" width="17%">
+            <b>Защита</b>
+        </td>
+    </tr>
+    {% for work in works_unordered %}
+    <tr bgcolor="#faebd7">
+        <td>
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                {{ work['work_id'] }}</a>
+        </td>
+        <td>
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                {{ work['work_name'] }}</a>
+        </td>
+        <td align="center">
+            {% if work['timeshift'] != None %}
+            {{ work['timeshift'] }}
+            {% endif %}
+        </td>
+        <td align="center">
+            {% for day in c_dates %}
+                <a href="/work_date/{{ work['cat_id'] }}/{{ work['work_id'] }}/{{ day['d'] }}/works_list_schedule">
+                    <button class="blue">{{ day['day'] }}</button></a>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endfor %}
+</table><br>
+
+{% endblock %}
