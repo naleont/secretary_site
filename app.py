@@ -652,6 +652,7 @@ def get_pre_analysis(work_id):
         pre['research'] = pre_ana.research
         pre['has_review'] = pre_ana.has_review
         pre['rev_type'] = pre_ana.rev_type
+        pre['pushed'] = pre_ana.pushed
         pre['work_comment'] = pre_ana.work_comment
         pre['rev_comment'] = pre_ana.rev_comment
     else:
@@ -1856,13 +1857,21 @@ def write_pre_analysis():
     else:
         has_review = None
         rev_type = None
+    if 'pushed' in request.form.keys():
+        pushed = request.form['pushed']
+        if pushed == 'True':
+            pushed = True
+        elif pushed == 'False':
+            pushed = False
+        else:
+            pushed = None
     if work_id in [w.work_id for w in PreAnalysis.query.all()]:
         db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).update(
             {PreAnalysis.good_work: good_work, PreAnalysis.research: research,
-             PreAnalysis.has_review: has_review, PreAnalysis.rev_type: rev_type})
+             PreAnalysis.has_review: has_review, PreAnalysis.rev_type: rev_type, PreAnalysis.pushed: pushed})
         db.session.commit()
     else:
-        pre_ana = PreAnalysis(work_id, good_work, research, has_review, rev_type, None, None)
+        pre_ana = PreAnalysis(work_id, good_work, research, has_review, rev_type, pushed, None, None)
         db.session.add(pre_ana)
         db.session.commit()
     if has_review is True:

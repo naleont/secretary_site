@@ -55,6 +55,18 @@ or (session['supervisor'] == True and work['cat_id'] in session['cat_id']) %}
             {% endif %}
         </td>
     </tr>
+    <tr>
+        <td>
+            Допуск работы до 2 тура продавили
+        </td>
+        <td>
+            {% if pre_ana['pushed'] == True %}
+            Да
+            {% elif pre_ana['pushed'] == False or pre_ana['pushed'] == None %}
+            Нет
+            {% endif %}
+        </td>
+    </tr>
     {% if pre_ana['has_review'] == True %}
     {% if work['analysis'] == True or work['analysis'] == 'part' %}
     <tr>

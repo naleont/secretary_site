@@ -37,6 +37,13 @@
         <input type="radio" name="has_review" value='False' required {% if pre_ana['has_review'] == False %} checked {% endif %}>
         Нет<br><br>
 
+        <span class="required">Допуск работы до 2 тура продавили</span><br>
+        <span class="comment">То есть, работа была допущена без вашего согласия</span><br>
+        <input type="radio" name="pushed" value='True' required {% if pre_ana['pushed'] == True %} checked {% endif %}>
+        Да<br>
+        <input type="radio" name="pushed" value='False' required {% if pre_ana['pushed'] == False %} checked {% endif %}>
+        Нет<br><br>
+
         <input class="button" type="submit" value="Сохранить"><br>
     </fieldset>
 </form>
