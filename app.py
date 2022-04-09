@@ -2450,7 +2450,7 @@ def download_schedule(cat_id):
                 # + ' - ' + work['authors'])
         lines.append('')
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    path = '/home/nleontovich/secretary_site/static/files/shedules/' + 'Расписание ' + cat_name + '.txt'
+    path = 'nleontovich/secretary_site/static/files/shedules/' + 'Расписание ' + cat_name + '.txt'
     with open(path, 'w', encoding='utf-8') as f:
         f.writelines([line + '\n' for line in lines])
     return send_file(path, as_attachment=True)
