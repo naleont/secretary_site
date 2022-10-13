@@ -645,6 +645,52 @@ def get_criteria(year):
     return criteria
 
 
+def reg_works(cat_id='all', status=1):
+    wks = []
+    if status == 1:
+        stat = ['Допущена до 1-го тура', 'Направлена на рецензирование', 'Отрецензирована',
+                'Окончила 1-й тур. Не допущена до 2-го тура', 'Допущена до 2-го тура']
+    elif status == 2:
+        stat = ['Допущена до 2-го тура']
+    if cat_id == 'all':
+        categories = db.session.query(Categories
+                                      ).join(CatDirs).join(Directions
+                                                           ).join(Contests).order_by(CatDirs.dir_id, CatDirs.contest_id,
+                                                                                     Categories.cat_name).all()
+        for cat in categories:
+            cat_id = cat.cat_id
+            works = {}
+            cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == cat_id
+                                                                ).order_by(WorkCategories.work_id).all()
+            for work in cat_works:
+                work_db = db.session.query(Works).filter(Works.work_id == work.work_id).first()
+                w_no = work_db.work_id
+                status_id = WorkStatuses.query.filter(WorkStatuses.work_id == w_no).first().status_id
+                if ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id).first().status_name \
+                        in stat:
+                    works[w_no] = work_info(w_no)
+                    if works[w_no]['reg_tour'] is not None:
+                        works[w_no]['pre_ana'] = get_pre_analysis(w_no)
+                        works[w_no]['rk'], works[w_no]['ana_res'] = get_analysis(w_no)
+                        wks.append(works[w_no])
+    else:
+        works = {}
+        cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == int(cat_id)
+                                                            ).order_by(WorkCategories.work_id).all()
+        for work in cat_works:
+            work_db = db.session.query(Works).filter(Works.work_id == work.work_id).first()
+            w_no = work_db.work_id
+            status_id = WorkStatuses.query.filter(WorkStatuses.work_id == w_no).first().status_id
+            if ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id).first().status_name \
+                    in stat:
+                works[w_no] = work_info(w_no)
+                if works[w_no]['reg_tour'] is not None:
+                    works[w_no]['pre_ana'] = get_pre_analysis(w_no)
+                    works[w_no]['rk'], works[w_no]['ana_res'] = get_analysis(w_no)
+                    wks.append(works[w_no])
+    return wks
+
+
 def get_pre_analysis(work_id):
     pre = dict()
     pre_ana = db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).first()
@@ -664,20 +710,26 @@ def get_pre_analysis(work_id):
 
 
 def get_analysis(work_id):
+    rk = 0
     analysis = dict()
     analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
     values_db = db.session.query(RevCritValues)
+    criteria = db.session.query(RevCriteria)
     if analysis_db is not None:
         for criterion in analysis_db:
             crit = dict()
             crit['val_id'] = criterion.value_id
             crit['val_name'] = values_db.filter(RevCritValues.value_id == crit['val_id']).first().value_name
             analysis[criterion.criterion_id] = crit
+            val_rk = values_db.filter(RevCritValues.value_id == crit['val_id']).first().weight
+            cr_rk = criteria.filter(RevCriteria.criterion_id == criterion.criterion_id).first().weight
+            c_v_rk = val_rk * cr_rk
+            rk += c_v_rk
     else:
         analysis = None
     if analysis == {}:
         analysis = None
-    return analysis
+    return rk, analysis
 
 
 def analysis_results():
@@ -869,11 +921,12 @@ def logging():
             session.permanent = True
             session['user_id'] = user.user_id
         else:
-            # Если пароль не совпал, выводим страницу авторизации с ошибкой
+            # Если пароль не совпал, выводим страницу авторизации с описанием ошибки
             return redirect(url_for('.login', wrong='password'))
         user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
         user.last_login = datetime.datetime.now()
         db.session.commit()
+        renew_session()
         if 'url' in session.keys():
             return redirect(session['url'])
         else:
@@ -1648,12 +1701,23 @@ def supervisor_user(user_id):
     return redirect(url_for('.user_page', user=user_id))
 
 
-@app.route('/rev_analysis_management')
+@app.route('/rev_analysis')
 def rev_analysis_management():
     renew_session()
-    if check_access(url='/rev_analysis_management') < 10:
+    if check_access(url='/rev_analysis') < 10:
         return redirect(url_for('.no_access'))
-    return render_template('rev_analysis/analysis_management.html')
+    return render_template('rev_analysis/analysis_menu.html')
+
+
+@app.route('/rev_analysis_results')
+def rev_analysis_results():
+    rev_criteria = get_criteria(curr_year)
+    works = reg_works('all', 1)
+    c, cats = categories_info()
+    wks = sorted(works, key=lambda d: d['reg_tour'])
+    cr_n = len(rev_criteria)
+    return render_template('rev_analysis/rev_analysis_results.html', criteria=rev_criteria, works=wks, cats=cats,
+                           cr_n=cr_n)
 
 
 @app.route('/analysis_state')
@@ -1810,7 +1874,7 @@ def review_analysis(work_id):
     if check_access(url='/review_analysis' + work_id) < 5:
         return redirect(url_for('.no_access'))
     work = work_info(work_id)
-    analysis = get_analysis(work_id)
+    rk, analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
     pre_ana = get_pre_analysis(work_id)
     if pre_ana is None:
@@ -1894,7 +1958,7 @@ def analysis_form(work_id):
         return redirect(url_for('.no_access'))
     criteria = get_criteria(curr_year)
     work = work_info(work_id)
-    analysis = get_analysis(int(work_id))
+    rk, analysis = get_analysis(int(work_id))
     return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, analysis=analysis)
 
 
@@ -2523,7 +2587,9 @@ def reported(cat_id, work_id, action):
 
 @app.route('/knowledge_main')
 def knowledge_main():
-    return render_template('knowledge-main.html')
+    now = datetime.datetime.now().date()
+    date = days_full[now.strftime('%w')] + ', ' + now.strftime('%d') + ' ' + months_full[now.strftime('%m')] + ' ' + now.strftime('%Y')
+    return render_template('knowledge-main.html', date=date)
 
 
 @app.route('/contact')

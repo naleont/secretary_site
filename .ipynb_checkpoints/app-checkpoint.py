@@ -1484,7 +1484,7 @@ def rev_analysis_management():
     renew_session()
     if check_access(url='/rev_analysis_management') < 10:
         return redirect(url_for('.no_access'))
-    return render_template('rev_analysis/analysis_management.html')
+    return render_template('rev_analysis/analysis_menu.html')
 
 
 @app.route('/analysis_state')

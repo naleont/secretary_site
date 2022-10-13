@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Анализ рецензий - итоги</h2>
+
+
+{% for key in criteria %}
+  {{ criteria[key]['id'] }} - {{ criteria[key]['name'] }}<br>
+{% endfor %}
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+  <tr>
+    <td rowspan="2"><b>
+      Тур
+    </b></td>
+    <td rowspan="2"><b>
+      Работа
+    </b></td>
+    <td rowspan="2"><b>
+      Секция
+    </b></td>
+    <td rowspan="2"><b>
+      Была бы допущена
+    </b></td>
+    <td rowspan="2"><b>
+      Соответствие формату
+    </b></td>
+    <td colspan="8" align="center"><b>
+      Рецензия
+    </b></td>
+  </tr>
+  <tr>
+    <td><b>
+      Rk
+    </b></td>
+    {% for key in criteria %}
+    <td align="center"><b>
+      {{ criteria[key]['id'] }}
+    </b></td>
+    {% endfor %}
+  </tr>
+  {% for work in works %}
+  <tr>
+    <td>
+      {{ work['reg_tour'] }}
+    </td>
+    <td>
+      {{ work['work_id'] }}
+    </td>
+    <td>
+      {{ cats[work['cat_id']]['name'] }}
+    </td>
+    <td>
+      {% if work['pre_ana']['good_work'] == True %}
+      Да
+      {% else %}
+      Нет
+      {% endif %}
+    </td>
+    <td>
+      {{ work['pre_ana']['research'] }}
+    </td>
+    <td align="center">
+      {{ work['rk'] }}
+    </td>
+    {% if work['ana_res'] != None %}
+      {% for key in work['ana_res'] %}
+      <td>
+        {{ work['ana_res'][key]['val_name'] }}
+      </td>
+      {% endfor %}
+    {% elif work['pre_ana']['has_review'] == False %}
+      <td colspan="{{ cr_n }}" class="alarm" align="center">
+        Рецензия отсутствует
+      </td>
+    {% else %}
+      <td colspan="{{ cr_n }}">
+      </td>
+    {% endif %}
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
