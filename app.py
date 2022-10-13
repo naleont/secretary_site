@@ -1714,9 +1714,10 @@ def rev_analysis_results():
     rev_criteria = get_criteria(curr_year)
     works = reg_works('all', 1)
     c, cats = categories_info()
-    wks = sorted(works, key=lambda d: d['reg_tour'])
+    wks = sorted(works, key=lambda d: d['rk'])
+    works = sorted(wks, key=lambda d: d['reg_tour'])
     cr_n = len(rev_criteria)
-    return render_template('rev_analysis/rev_analysis_results.html', criteria=rev_criteria, works=wks, cats=cats,
+    return render_template('rev_analysis/rev_analysis_results.html', criteria=rev_criteria, works=works, cats=cats,
                            cr_n=cr_n)
 
 
