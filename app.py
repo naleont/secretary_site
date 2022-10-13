@@ -1,4 +1,3 @@
-import bdb
 import json
 
 from flask import Flask
@@ -17,9 +16,11 @@ from flask import send_file
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.app_context().push()
 db.app = app
 db.init_app(app)
 db.create_all()
+
 
 app.config['SECRET_KEY'] = mail_data.mail['SECRET_KEY']
 
@@ -2518,6 +2519,11 @@ def reported(cat_id, work_id, action):
     db.session.query(Works).filter(Works.work_id == work_id).update({Works.reported: report})
     db.session.commit()
     return redirect(url_for('.reports_order', cat_id=cat_id))
+
+
+@app.route('/contact')
+def contact():
+    return render_template('knowledge/org/contact.html')
 
 
 if __name__ == '__main__':
