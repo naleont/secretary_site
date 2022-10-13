@@ -5,11 +5,11 @@
 <div class="col-sm-2 sidenav light-blue">
 {% if session['supervisor'] == True or session['secretary'] == True or
     session['type'] in ['org', 'manager', 'admin'] %}
-  <p><a href="/analysis_state">Анализ рецензий</a></p>
-  <p><a href="/top_100">Лучшие работы</a></p>
-  <p><a href="/invoice">Квитанции и договоры</a></p>
+  <p><a href="">Анализ рецензий</a></p>
+  <p><a href="">Лучшие работы</a></p>
+  <p><a href="">Квитанции и договоры</a></p>
 {% endif %}
-  <p><a href="/secretary_job">Что такое работа секретаря секции?</a></p>
+  <p><a href="/contact">Контакты оргкомитета</a></p>
 <!--      <p><a href="/secretary_reminder">Памятка секретаря</a></p>-->
 
 <!--      <p><a href="#">Меню-3</a></p>-->
@@ -18,4 +18,4 @@
   {% block content %} {% endblock %}
 </div>
 
-    {% endblock %}
+{% endblock %}

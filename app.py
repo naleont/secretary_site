@@ -2521,6 +2521,11 @@ def reported(cat_id, work_id, action):
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
+@app.route('/knowledge_main')
+def knowledge_main():
+    return render_template('knowledge-main.html')
+
+
 @app.route('/contact')
 def contact():
     return render_template('knowledge/org/contact.html')
