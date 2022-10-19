@@ -2516,7 +2516,7 @@ def download_schedule(cat_id):
                 # + ' - ' + work['authors'])
         lines.append('')
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    path = 'static/files/schedules/' + 'Расписание ' + cat_name + '.txt'
+    path = 'static/files/schedules/' + str(curr_year) + '/' + 'Расписание ' + cat_name + '.txt'
     with open(path, 'w', encoding='utf-8') as f:
         f.writelines([line + '\n' for line in lines])
     return send_file(path, as_attachment=True)
@@ -2596,6 +2596,151 @@ def knowledge_main():
 @app.route('/contact')
 def contact():
     return render_template('knowledge/org/contact.html')
+
+
+@app.route('/email')
+def email():
+    return render_template('knowledge/org/email.html')
+
+
+@app.route('/email_schedule')
+def email_schedule():
+    return render_template('knowledge/org/email_schedule.html')
+
+
+@app.route('/phone_schedule')
+def phone_schedule():
+    return render_template('knowledge/org/phone_schedule.html')
+
+
+@app.route('/working_programme')
+def working_programme():
+    return render_template('knowledge/org/working_programme.html')
+
+
+@app.route('/online_additional_contest')
+def online_additional_contest():
+    return render_template('knowledge/org/online_additional_contest.html')
+
+
+@app.route('/consult_works')
+def consult_works():
+    return render_template('knowledge/org/consult_works.html')
+
+
+@app.route('/vernadsky_olympiade')
+def vernadsky_olympiade():
+    return render_template('knowledge/org/vernadsky_olympiade.html')
+
+
+@app.route('/general')
+def general():
+    return render_template('knowledge/org/general.html')
+
+
+@app.route('/frequent_actions')
+def frequent_actions():
+    return render_template('knowledge/org/frequent_actions.html')
+
+
+@app.route('/registration_on_site')
+def registration_on_site():
+    return render_template('knowledge/org/registration_on_site.html')
+
+
+@app.route('/attach_work')
+def attach_work():
+    return render_template('knowledge/org/attach_work.html')
+
+
+@app.route('/approve_for_2_tour')
+def approve_for_2_tour():
+    return render_template('knowledge/org/approve_for_2_tour.html')
+
+
+@app.route('/contact_team')
+def contact_team():
+    return render_template('knowledge/org/contact_team.html')
+
+
+@app.route('/contact_category_supervisors')
+def contact_category_supervisors():
+    return render_template('knowledge/org/contact_category_supervisors.html')
+
+
+@app.route('/finance')
+def finance():
+    return render_template('knowledge/org/finance.html')
+
+
+@app.route('/banks_and_payments')
+def banks_and_payments():
+    return render_template('knowledge/org/banks_and_payments.html')
+
+
+@app.route('/guarantee_letters')
+def guarantee_letters():
+    return render_template('knowledge/org/guarantee_letters.html')
+
+
+@app.route('/creation_contest')
+def creation_contest():
+    return render_template('knowledge/org/creation_contest.html')
+
+
+@app.route('/session_shedule')
+def session_shedule():
+    return render_template('knowledge/org/session_shedule.html')
+
+
+@app.route('/apply_2_tour')
+def apply_2_tour():
+    return render_template('knowledge/org/apply_2_tour.html')
+
+
+@app.route('/programme')
+def programme():
+    return render_template('knowledge/org/programme.html')
+
+
+@app.route('/feedback')
+def feedback():
+    return render_template('knowledge/org/feedback.html')
+
+
+@app.route('/projects')
+def projects():
+    return render_template('knowledge/org/projects.html')
+
+
+@app.route('/source')
+def source():
+    return render_template('knowledge/org/source.html')
+
+
+@app.route('/apply_for_participant')
+def apply_for_participant():
+    return render_template('knowledge/org/apply_for_participant.html')
+
+
+@app.route('/schedule')
+def schedule():
+    return render_template('knowledge/org/schedule.html')
+
+
+@app.route('/apply_1_tour')
+def apply_1_tour():
+    return render_template('knowledge/org/apply_1_tour.html')
+
+
+@app.route('/faq')
+def faq():
+    return render_template('knowledge/org/FAQ.html')
+
+
+@app.route('/tour_2')
+def tour_2():
+    return render_template('knowledge/org/tour_2.html')
 
 
 if __name__ == '__main__':

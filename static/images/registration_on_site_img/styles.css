@@ -1,0 +1,39 @@
+.current { color: #4C8345; }
+
+.page { background-color: white; }
+
+.logo { width: 15%; display: inline-block; position: fixed; }
+
+.content { background: white; position: absolute; top: 62px; padding: 10px; padding-top: 0px; left: 15%; margin: 10px; display: inline-block; font-family: Arial; overflow: auto; width: 83%; color: #37405D; line-height: 1.5; }
+
+.nav { position: fixed; width: auto; left: 16%; top: 35px; font-family: Arial; display: inline-block; white-space: nowrap; font-size: 90%; }
+
+.nav_item { display: inline-block; margin: 2px; padding: 1% 2%; background: #CCECFF; border-radius: 5px; }
+
+.sidebar { position: fixed; left: 10px; top: 150px; bottom: 10px; width: 15%; height: auto; background: #CCECFF; overflow: auto; color: blue; border-radius: 5px; }
+
+.sidebar_item { font-family: Arial; margin-left: 10px; margin-right: 10px; margin-top: 10px; font-size: 85%; }
+
+.sidebar_subitem { font-family: Arial; font-size: 80%; margin-left: 20px; margin-right: 5px; margin-top: 7px; display: inline-block; }
+
+.sidebar_subsubitem { font-family: Arial; font-size: 90%; margin-left: 30px; margin-right: 5px; margin-top: 10px; }
+
+.home { position: absolute; bottom: 0; font-family: Arial; width: 90%; margin: 2px; padding: 5%; text-align: center; margin: 0 auto; background: #E5F5FF; color: green; border-radius: 5px; }
+
+.table { cellspacing: 0; }
+
+.heading { font-weight: bold; font-size: 110%; }
+
+.t { padding: 10px; border-bottom: solid #BFBFBF 1px; border-top: solid #BFBFBF 1px; }
+
+.t-first { padding: 10px; border-bottom: solid #BFBFBF 1px; }
+
+.t-last { padding: 10px; border-top: solid #BFBFBF 1px; }
+
+.post { background: #E5F5FF; padding: 1px 15px; border-radius: 10px; width: 83%; margin-bottom: 5px; }
+
+.post_date { font-size: 85%; font-style: italic; margin: 0px 0px 10px 20px; }
+
+.post_excerpt { margin: 0px 0px 0px 20px; top: 0; }
+
+/*# sourceMappingURL=styles.css.map */
