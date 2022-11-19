@@ -2688,6 +2688,13 @@ def approve_for_2_tour():
     return render_template('knowledge/org/approve_for_2_tour.html')
 
 
+@app.route('/approve_for_1_tour')
+def approve_for_1_tour():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/approve_for_1_tour.html')
+
+
 # ОРГКОМИТЕТ
 
 # @app.route('/contact_team')
