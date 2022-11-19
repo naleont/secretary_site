@@ -2227,13 +2227,6 @@ def no_fee_list():
     return render_template('works/no_fee_list.html', cats=cats)
 
 
-@app.route('/invoice')
-def invoice():
-    if check_access(url='/invoice') < 8:
-        return redirect(url_for('.no_access'))
-    return render_template('knowledge/org/invoice.html')
-
-
 @app.route('/drive_links')
 def drive_links():
     count, categories = categories_info()
@@ -2586,160 +2579,226 @@ def reported(cat_id, work_id, action):
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
+#БАЗА ЗНАНИЙ
+
 @app.route('/knowledge_main')
 def knowledge_main():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     now = datetime.datetime.now().date()
     date = days_full[now.strftime('%w')] + ', ' + now.strftime('%d') + ' ' + months_full[now.strftime('%m')] + ' ' + now.strftime('%Y')
     return render_template('knowledge-main.html', date=date)
 
 
+@app.route('/invoice')
+def invoice():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/invoice.html')
+
+
 @app.route('/contact')
 def contact():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/contact.html')
 
 
 @app.route('/email')
 def email():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/email.html')
 
 
 @app.route('/email_schedule')
 def email_schedule():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/email_schedule.html')
 
 
 @app.route('/phone_schedule')
 def phone_schedule():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/phone_schedule.html')
 
 
 @app.route('/working_programme')
 def working_programme():
+    if check_access(url='/invoice') < 5:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/working_programme.html')
 
 
 @app.route('/online_additional_contest')
 def online_additional_contest():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/online_additional_contest.html')
 
 
 @app.route('/consult_works')
 def consult_works():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/consult_works.html')
 
 
 @app.route('/vernadsky_olympiade')
 def vernadsky_olympiade():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/vernadsky_olympiade.html')
 
 
-@app.route('/general')
-def general():
-    return render_template('knowledge/org/general.html')
+@app.route('/general_info')
+def general_info():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/general_info.html')
 
 
 @app.route('/frequent_actions')
 def frequent_actions():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/frequent_actions.html')
 
 
 @app.route('/registration_on_site')
 def registration_on_site():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/registration_on_site.html')
 
 
 @app.route('/attach_work')
 def attach_work():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/attach_work.html')
 
 
 @app.route('/approve_for_2_tour')
 def approve_for_2_tour():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/approve_for_2_tour.html')
 
 
-@app.route('/contact_team')
-def contact_team():
-    return render_template('knowledge/org/contact_team.html')
+# ОРГКОМИТЕТ
+
+# @app.route('/contact_team')
+# def contact_team():
+#     if check_access(url='/invoice') < 8:
+#         return redirect(url_for('.no_access'))
+#     return render_template('knowledge/org/contact_team.html')
 
 
-@app.route('/contact_category_supervisors')
-def contact_category_supervisors():
-    return render_template('knowledge/org/contact_category_supervisors.html')
-
-
-@app.route('/finance')
-def finance():
-    return render_template('knowledge/org/finance.html')
+@app.route('/bank_details')
+def bank_details():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/bank_details.html')
 
 
 @app.route('/banks_and_payments')
 def banks_and_payments():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/banks_and_payments.html')
 
 
 @app.route('/guarantee_letters')
 def guarantee_letters():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/guarantee_letters.html')
 
 
-@app.route('/creation_contest')
-def creation_contest():
-    return render_template('knowledge/org/creation_contest.html')
+@app.route('/creativity_contest')
+def creativity_contest():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/creativity_contest.html')
 
 
 @app.route('/session_shedule')
 def session_shedule():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/session_shedule.html')
 
 
 @app.route('/apply_2_tour')
 def apply_2_tour():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/apply_2_tour.html')
 
 
-@app.route('/programme')
-def programme():
-    return render_template('knowledge/org/programme.html')
+@app.route('/programme_grid')
+def programme_grid():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/programme_grid.html')
 
 
 @app.route('/feedback')
 def feedback():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/feedback.html')
 
 
-@app.route('/projects')
-def projects():
-    return render_template('knowledge/org/projects.html')
+@app.route('/movement_projects')
+def movement_projects():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/movement_projects.html')
 
 
-@app.route('/source')
-def source():
-    return render_template('knowledge/org/source.html')
+@app.route('/working_resources')
+def working_resources():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/working_resources.html')
 
 
 @app.route('/apply_for_participant')
 def apply_for_participant():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/apply_for_participant.html')
 
 
-@app.route('/schedule')
-def schedule():
-    return render_template('knowledge/org/schedule.html')
+@app.route('/contest_calendar')
+def contest_calendar():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/contest_calendar.html')
 
 
 @app.route('/apply_1_tour')
 def apply_1_tour():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/apply_1_tour.html')
 
 
 @app.route('/faq')
 def faq():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/FAQ.html')
 
 
 @app.route('/tour_2')
 def tour_2():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/tour_2.html')
 
 
