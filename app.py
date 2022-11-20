@@ -2703,7 +2703,7 @@ def approve_for_1_tour():
 #         return redirect(url_for('.no_access'))
 #     return render_template('knowledge/org/contact_team.html')
 
-
+#s
 @app.route('/bank_details')
 def bank_details():
     if check_access(url='/invoice') < 8:
