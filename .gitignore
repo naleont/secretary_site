@@ -16,3 +16,4 @@ test_db.db
 /.ipynb_checkpoints
 /instance
 /templates/check.html
+ajax_models.py
