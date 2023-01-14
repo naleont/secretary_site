@@ -151,7 +151,7 @@ class CatDirs(db.Model):
 
 class Application(db.Model):
     __tablename__ = 'team_application'
-    __table_args__ = (PrimaryKeyConstraint('user_id', 'category_1', 'category_2', 'category_3'),)
+    __table_args__ = (PrimaryKeyConstraint('appl_id', 'user_id', 'category_1', 'category_2', 'category_3'),)
 
     appl_id = db.Column('appl_id', db.Integer, primary_key=True)
     user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'), unique=False)
