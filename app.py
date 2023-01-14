@@ -1425,7 +1425,7 @@ def application_process():
         taken_part = request.form['taken_part']
     else:
         taken_part = 'not_filled'
-    if session['user_id'] in [user.user_id for user in Application.query.all()]:
+    if session['user_id'] in [user.user_id for user in Application.query.filter(Application.year == curr_year).all()]:
         db.session.query(Application).filter(Application.user_id == session['user_id']).update(
             {Application.role: role, Application.category_1: category_1, Application.category_2: category_2,
              Application.category_3: category_3, Application.any_category: any_category,
