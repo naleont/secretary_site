@@ -5,22 +5,28 @@
 {% block content %}
 
   <form action="/edited_cat" method = 'POST'>
+  <legend><h2><b>Добавление/редактирование секции</b></h2></legend>
     <fieldset>
-      <legend><h2><b>Добавление/редактирование секции</b></h2></legend>
+
     <span class="required">Название секции</span><br>
         <input size="100" name="category_name" type="text" value="{{ category['name'] }}" required><br><br>
+
     <span class="required">Короткое название</span><br>
         <input size="50" name="short_name" type="text" value="{{ category['short_name'] }}" required><br><br>
-    <span class="required">ID секции на сайте</span><br>
+
+    <span>ID секции на сайте</span><br>
         <input size="50" name="cat_site_id" type="text" {% if category['cat_site_id'] != None %}
-        value="{{ category['cat_site_id'] }}" {% endif %} required><br><br>
-    <span class="required">Ссылка на облачную папку секции</span><br>
-        <input size="50" name="drive_link" type="text" {% if category['drive_link'] != None %} value="{{ category['drive_link'] }}" {% endif %} required><br><br>
+        value="{{ category['cat_site_id'] }}" {% endif %}><br><br>
+
+    <span>Ссылка на облачную папку секции</span><br>
+        <input size="50" name="drive_link" type="text" {% if category['drive_link'] != None %} value="{{ category['drive_link'] }}" {% endif %}><br><br>
+
     <span class="required">Направление</span><br>
         {% for key in directions %}
         <input size="30" name="direction" type="radio" value={{ directions[key]['id'] }}
         {% if category['dir_id'] == directions[key]['id'] %} checked {% endif %}> {{ directions[key]['name'] }}<br>
         {% endfor %}<br>
+
     <span class="required">Конкурс</span><br>
         {% for key in contests %}
         <input size="30" name="contest" type="radio" value={{ contests[key]['id'] }} {% if category['cont_id'] ==
@@ -30,7 +36,7 @@
     <span>Руководитель секции</span><br>
         <p><select name="supervisor">
             <option class="container-fluid bg-2" {% if not category['supervisor_id'] %} selected="true" {% endif %}
-            disabled>Руководитель секции</option>
+            >Руководитель секции</option>
             {% for key in supervisors %}
             <option class="container-fluid bg-2" value={{ supervisors[key]['id'] }} {% if category['supervisor_id'] ==
             supervisors[key]['id'] %} selected="true" {% endif %}>
@@ -39,7 +45,9 @@
 
     <span>Telegram-канал</span><br>
         <input size="30" name="tg_channel" type="text" value="{{ category['tg_channel'] }}"><br><br>
+
         <input size="30" name="cat_id" type="hidden" value="{{ category['id'] }}"><br><br>
+
     <input class="button" type="submit" value="Сохранить">
     </fieldset>
   </form>
