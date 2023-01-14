@@ -497,7 +497,7 @@ def one_application(application):
 
 def application_info(info_type, user, year=curr_year):
     if info_type == 'user':
-        applications = db.session.query(Application).filter(Application.user_id == user).order_by(Application.year.desc)
+        applications = db.session.query(Application).filter(Application.user_id == user).order_by(Application.year.desc())
     elif info_type == 'year':
         applications = db.session.query(Application).join(Users).filter(Application.year == year).order_by(
             Users.last_name)
