@@ -66,7 +66,7 @@
 
 {% if session['type'] == 'user' or not session['type'] %}
 <table frame="void" border="2px" bordercolor="#4962A4">
-{% for key in categories %}
+{% for cat in categories %}
     <tr bgcolor="#C5E3F3">
         <td width="45%">
             <a href="/category_page/{{ cat['id'] }}">{{ cat['name'] }}</a>
