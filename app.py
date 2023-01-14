@@ -1431,7 +1431,8 @@ def application_process():
              Application.category_3: category_3, Application.any_category: any_category,
              Application.taken_part: taken_part})
     else:
-        cat_sec = Application(session['user_id'], curr_year, role, category_1, category_2, category_3, any_category,
+        appl_id = max([appl.appl_id for appl in Application.query.all()]) + 1
+        cat_sec = Application(appl_id, session['user_id'], curr_year, role, category_1, category_2, category_3, any_category,
                               taken_part, 'False')
         db.session.add(cat_sec)
     db.session.commit()
