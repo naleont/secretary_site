@@ -82,28 +82,29 @@ access_types = {'guest': 0,
 def renew_session():
     if 'user_id' in session.keys():
         user_db = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
-        cat_sec = db.session.query(CatSecretaries).filter(CatSecretaries.secretary_id == session['user_id']).all()
-        user = session['user_id']
-        session['type'] = user_db.user_type
-        session['approved'] = user_db.approved
-        if user in [u.secretary_id for u in CatSecretaries.query.all()]:
-            session['secretary'] = True
-            session['cat_id'] = [c.cat_id for c in cat_sec]
-        if user in [u.user_id for u in SupervisorUser.query.all()]:
-            session['supervisor'] = True
-            supervisor = SupervisorUser.query.filter(SupervisorUser.user_id == user).first()
-            if supervisor.supervisor_id in [s.supervisor_id for s in CatSupervisors.query.all()]:
-                cat_sup = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
-                                                      ).all()
-                session['cat_id'] = [c.cat_id for c in cat_sup]
-        else:
-            session['supervisor'] = False
-        if user in [p.user_id for p in Profile.query.all()]:
-            session['profile'] = True
-        if user in [a.user_id for a in Application.query.filter(Application.year == curr_year)]:
-            session['application'] = True
-        else:
-            session['application'] = False
+        if user_db is not None:
+            cat_sec = db.session.query(CatSecretaries).filter(CatSecretaries.secretary_id == session['user_id']).all()
+            user = session['user_id']
+            session['type'] = user_db.user_type
+            session['approved'] = user_db.approved
+            if user in [u.secretary_id for u in CatSecretaries.query.all()]:
+                session['secretary'] = True
+                session['cat_id'] = [c.cat_id for c in cat_sec]
+            if user in [u.user_id for u in SupervisorUser.query.all()]:
+                session['supervisor'] = True
+                supervisor = SupervisorUser.query.filter(SupervisorUser.user_id == user).first()
+                if supervisor.supervisor_id in [s.supervisor_id for s in CatSupervisors.query.all()]:
+                    cat_sup = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
+                                                          ).all()
+                    session['cat_id'] = [c.cat_id for c in cat_sup]
+            else:
+                session['supervisor'] = False
+            if user in [p.user_id for p in Profile.query.all()]:
+                session['profile'] = True
+            if user in [a.user_id for a in Application.query.filter(Application.year == curr_year)]:
+                session['application'] = True
+            else:
+                session['application'] = False
     return session
 
 
