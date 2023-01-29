@@ -368,7 +368,7 @@ def write_category(cat_info):
 
 
 def one_category(categ):
-    cat = dict()
+    cat = {}
     cat_id = categ.cat_id
     cat['id'] = categ.cat_id
     cat['year'] = categ.year
