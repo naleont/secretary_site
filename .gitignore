@@ -15,7 +15,10 @@ team_db.db-journal
 vernadsky.info.json
 check.ipynb
 test_db.db
+<<<<<<<<< Temporary merge branch 1
 /.ipynb_checkpoints
 /instance
 /templates/check.html
 ajax_models.py
+=========
+>>>>>>>>> Temporary merge branch 2
