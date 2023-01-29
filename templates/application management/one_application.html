@@ -200,11 +200,15 @@
                 Одобрить</button></a>
         </td><td>
         {{ application['category_1'] }}
-        {% if not categories[application['category_1_id']]['secretary'] %}
-        (<span class="green-text">свободно</span>)
-        {% else %}
-        (<span class="alarm">занято {{ categories[application['category_1_id']]['secretary'] }}</span>)
-        {% endif %}
+        {% for cat in categories %}
+            {% if cat['id'] == application['category_1_id'] %}
+                {% if not cat['secretary'] %}
+                (<span class="green-text">свободно</span>)
+                {% else %}
+                (<span class="alarm">занято {{ categories['secretary'] }}</span>)
+                {% endif %}
+            {% endif %}
+        {% endfor %}
         </td>
         {% endif %}
     </tr>
@@ -217,11 +221,15 @@
                 Одобрить</button></a>
         </td><td>
         {{ application['category_2'] }}
-        {% if not categories[application['category_2_id']]['secretary'] %}
-        (<span class="green-text">свободно</span>)
-        {% else %}
-        (<span class="alarm">занято {{ categories[application['category_2_id']]['secretary'] }}</span>)
-        {% endif %}
+        {% for cat in categories %}
+            {% if cat['id'] == application['category_2_id'] %}
+                {% if not cat['secretary'] %}
+                (<span class="green-text">свободно</span>)
+                {% else %}
+                (<span class="alarm">занято {{ categories['secretary'] }}</span>)
+                {% endif %}
+            {% endif %}
+        {% endfor %}
         </td>
         {% endif %}
     </tr>
@@ -235,11 +243,15 @@
                 Одобрить</button></a>
         </td><td>
         {{ application['category_3'] }}
-        {% if not categories[application['category_3_id']]['secretary'] %}
-        (<span class="green-text">свободно</span>)
-        {% else %}
-        (<span class="alarm">занято {{ categories[application['category_3_id']]['secretary'] }}</span>)
-        {% endif %}
+        {% for cat in categories %}
+            {% if cat['id'] == application['category_3_id'] %}
+                {% if not cat['secretary'] %}
+                (<span class="green-text">свободно</span>)
+                {% else %}
+                (<span class="alarm">занято {{ categories['secretary'] }}</span>)
+                {% endif %}
+            {% endif %}
+        {% endfor %}
         </td>
         {% endif %}
     </tr>
@@ -284,20 +296,20 @@
             <b>Секретарь</b>
         </td>
     </tr>
-{% for key in categories %}
+{% for cat in categories %}
     <tr>
         <td>
-            <a href="/assign_category/{{ user['user_id'] }}/{{ categories[key]['id'] }}"><button class="blue">
+            <a href="/assign_category/{{ user['user_id'] }}/{{ cat['id'] }}"><button class="blue">
                 Назначить</button></a>
         </td>
         <td>
-            {{ categories[key]['short_name'] }}
+            {{ cat['short_name'] }}
         </td>
         <td>
-            <a href="/supervisor_profile/{{ categories[key]['supervisor_id'] }}">{{ categories[key]['supervisor'] }}</a>
+            <a href="/supervisor_profile/{{ cat['supervisor_id'] }}">{{ cat['supervisor'] }}</a>
         </td>
         <td>
-            <a href="/secretary_profile/{{ categories[key]['secretary_id'] }}">{{ categories[key]['secretary'] }}</a>
+            <a href="/secretary_profile/{{ cat['secretary_id'] }}">{{ cat['secretary'] }}</a>
         </td>
     </tr>
 {% endfor %}

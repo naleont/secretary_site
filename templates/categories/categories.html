@@ -36,28 +36,28 @@
             <b>Секретарь</b>
         </td>
     </tr>
-{% for key in categories %}
+{% for cat in categories %}
     <tr
         {% if 'cat_id' in session.keys() %}
-        {% if categories[key]['id'] in session['cat_id'] %}
+        {% if cat['id'] in session['cat_id'] %}
             bgcolor="#ACD6EE"
         {% endif %}
         {% else %}
             bgcolor="#C5E3F3"
         {% endif %}>
         <td>
-            <a href="/category_page/{{ categories[key]['id'] }}">{{ categories[key]['name'] }}</a>
+            <a href="/category_page/{{ cat['id'] }}">{{ cat['name'] }}</a>
         </td>
         <td>
-            {% if categories[key]['tg_channel'] %}
-            <a href="https://t.me/{{ categories[key]['tg_channel'] }}">@{{ categories[key]['tg_channel'] }}</a>
+            {% if cat['tg_channel'] %}
+            <a href="https://t.me/{{ cat['tg_channel'] }}">@{{ cat['tg_channel'] }}</a>
             {% endif %}
         </td>
         <td>
-            <a href="/supervisor_profile/{{ categories[key]['supervisor_id'] }}">{{ categories[key]['supervisor'] }}</a>
+            <a href="/supervisor_profile/{{ cat['supervisor_id'] }}">{{ cat['supervisor'] }}</a>
         </td>
         <td>
-            <a href="/user_page/{{ categories[key]['secretary_id'] }}">{{ categories[key]['secretary'] }}</a>
+            <a href="/user_page/{{ cat['secretary_id'] }}">{{ cat['secretary'] }}</a>
         </td>
     </tr>
 {% endfor %}
@@ -66,18 +66,18 @@
 
 {% if session['type'] == 'user' or not session['type'] %}
 <table frame="void" border="2px" bordercolor="#4962A4">
-{% for key in categories %}
+{% for cat in categories %}
     <tr bgcolor="#C5E3F3">
         <td width="45%">
-            <a href="/category_page/{{ categories[key]['id'] }}">{{ categories[key]['name'] }}</a>
+            <a href="/category_page/{{ cat['id'] }}">{{ cat['name'] }}</a>
         </td>
         <td>
-            {% if categories[key]['tg_channel'] %}
-            <a target="_blank" href="https://t.me/{{ categories[key]['tg_channel'] }}">@{{ categories[key]['tg_channel'] }}</a>
+            {% if cat['tg_channel'] %}
+            <a target="_blank" href="https://t.me/{{ cat['tg_channel'] }}">@{{ cat['tg_channel'] }}</a>
             {% endif %}
         </td>
         <td>
-            {{ categories[key]['supervisor'] }}
+            {{ cat['supervisor'] }}
         </td>
     </tr>
 {% endfor %}

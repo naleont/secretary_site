@@ -21,7 +21,6 @@ db.app = app
 db.init_app(app)
 db.create_all()
 
-
 app.config['SECRET_KEY'] = mail_data.mail['SECRET_KEY']
 
 app.config['MAIL_SERVER'] = mail_data.mail['MAIL_SERVER']
@@ -34,7 +33,7 @@ app.config['MAIL_USE_SSL'] = mail_data.mail['MAIL_USE_SSL']
 mail = Mail(app)
 
 tel_unneeded = '-() '
-curr_year = 2022
+curr_year = 2023
 
 days = {'1': 'Пн', '2': 'Вт', '3': 'Ср', '4': 'Чт', '5': 'Пт', '6': 'Сб', '0': 'Вс'}
 days_full = {'1': 'Понедельник',
@@ -299,6 +298,8 @@ def write_user(user_info):
 
 
 def write_category(cat_info):
+    if cat_info['cat_id'] is None:
+        cat_info['cat_id'] = max([c.cat_id for c in Categories.query.all()]) + 1
     if cat_info['cat_id'] in [cat.cat_id for cat in Categories.query.all()]:
         db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).update(
             {Categories.year: curr_year, Categories.cat_name: cat_info['cat_name'],
@@ -311,20 +312,22 @@ def write_category(cat_info):
         else:
             cat_dir = CatDirs(cat_info['cat_id'], cat_info['direction'], cat_info['contest'])
             db.session.add(cat_dir)
-        if cat_info['cat_id'] in [sup.cat_id for sup in CatSupervisors.query.all()]:
-            db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).update(
-                {CatSupervisors.supervisor_id: cat_info['supervisor']})
-        else:
-            sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
-            db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
-            cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
-            db.session.add(cat)
+        if cat_info['supervisor'] is not None and cat_info['supervisor'] !='':
+            if cat_info['cat_id'] in [sup.cat_id for sup in CatSupervisors.query.all()]:
+                db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).update(
+                    {CatSupervisors.supervisor_id: cat_info['supervisor']})
+            else:
+                sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
+                db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
+                cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
+                db.session.add(cat)
     else:
         cat = Categories(curr_year, cat_info['cat_name'], cat_info['short_name'], cat_info['tg_channel'],
                          cat_info['cat_site_id'], cat_info['drive_link'])
         db.session.add(cat)
         db.session.commit()
-        categ = db.session.query(Categories).filter(Categories.cat_name == cat_info['cat_name']).first()
+        categ = db.session.query(Categories).filter(Categories.cat_name == cat_info['cat_name']
+                                                    ).filter(Categories.year == curr_year).first()
         if type(cat_info['direction']) is int:
             direct = db.session.query(Directions).filter(Directions.direction_id == cat_info['direction']).first()
         else:
@@ -333,25 +336,32 @@ def write_category(cat_info):
             cont = db.session.query(Contests).filter(Contests.contest_id == cat_info['contest']).first()
         else:
             cont = db.session.query(Contests).filter(Contests.contest_name == cat_info['contest']).first()
-        cat_dir = CatDirs(categ.cat_id, direct.direction_id, cont.contest_id)
-        db.session.add(cat_dir)
+        if cat_info['cat_id'] not in [catdir.cat_id for catdir in CatDirs.query.all()]:
+            cat_dir = CatDirs(categ.cat_id, direct.direction_id, cont.contest_id)
+            db.session.add(cat_dir)
         cat_info['cat_id'] = db.session.query(Categories).filter(
             Categories.cat_name == cat_info['cat_name']).first().cat_id
     if cat_info['cat_id'] in [cat_sup.cat_id for cat_sup in CatSupervisors.query.all()]:
         cat = db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).first()
         sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
-        cat.supervisor_id = sup.supervisor_id
+        if sup is not None:
+            cat.supervisor_id = sup.supervisor_id
     else:
         if type(cat_info['supervisor']) is int:
             sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == cat_info['supervisor']).first()
         else:
-            sup_name = cat_info['supervisor'].split(' ')
-            sup = db.session.query(Supervisors).filter(Supervisors.last_name == sup_name[0] and
-                                                       Supervisors.first_name == sup_name[1] and
-                                                       Supervisors.patronymic == sup_name[2]).first()
-        db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
-        cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
-        db.session.add(cat)
+            if cat_info['supervisor'] is not None:
+                sup_name = cat_info['supervisor'].split(' ')
+                sup = db.session.query(Supervisors).filter(Supervisors.last_name == sup_name[0]
+                                                           ).filter(Supervisors.first_name == sup_name[1]
+                                                                    ).filter(Supervisors.patronymic == sup_name[2]
+                                                                             ).first()
+                db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
+            else:
+                sup = None
+        if sup is not None:
+            cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
+            db.session.add(cat)
     db.session.commit()
     return True
 
@@ -388,18 +398,19 @@ def one_category(categ):
         cat['secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
         cat['secretary_email'] = user.email
         cat['secretary_tel'] = user.tel
-    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
-    dates = []
-    if dates_db.day_1:
-        dates.append(days[dates_db.day_1.strftime('%w')] + ' ' + dates_db.day_1.strftime('%d') + ' ' +
-                     months[dates_db.day_1.strftime('%m')])
-    if dates_db.day_2:
-        dates.append(days[dates_db.day_2.strftime('%w')] + ' ' + dates_db.day_2.strftime('%d') + ' ' +
-                     months[dates_db.day_2.strftime('%m')])
-    if dates_db.day_3:
-        dates.append(days[dates_db.day_3.strftime('%w')] + ' ' + dates_db.day_3.strftime('%d') + ' ' +
-                     months[dates_db.day_3.strftime('%m')])
-    cat['dates'] = ', '.join(dates)
+    if cat_id in [cat.cat_id for cat in ReportDates.query.all()]:
+        dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
+        dates = []
+        if dates_db.day_1:
+            dates.append(days[dates_db.day_1.strftime('%w')] + ' ' + dates_db.day_1.strftime('%d') + ' ' +
+                         months[dates_db.day_1.strftime('%m')])
+        if dates_db.day_2:
+            dates.append(days[dates_db.day_2.strftime('%w')] + ' ' + dates_db.day_2.strftime('%d') + ' ' +
+                         months[dates_db.day_2.strftime('%m')])
+        if dates_db.day_3:
+            dates.append(days[dates_db.day_3.strftime('%w')] + ' ' + dates_db.day_3.strftime('%d') + ' ' +
+                         months[dates_db.day_3.strftime('%m')])
+        cat['dates'] = ', '.join(dates)
     return cat
 
 
@@ -407,15 +418,17 @@ def categories_info(cat_id='all'):
     cats_count = 0
     if cat_id == 'all':
         categories = db.session.query(Categories
-                                      ).join(CatDirs).join(Directions
-                                                           ).join(Contests).order_by(CatDirs.dir_id, CatDirs.contest_id,
-                                                                                     Categories.cat_name).all()
-        cats = dict()
+                                      ).filter(Categories.year == curr_year
+                                               ).join(CatDirs
+                                                      ).join(Directions).join(Contests
+                                                                              ).order_by(CatDirs.dir_id,
+                                                                                         CatDirs.contest_id,
+                                                                                         Categories.cat_name).all()
+        cats = []
         for cat in categories:
-            cat_id = cat.cat_id
-            if cat.year == 2022:
+            if cat.year == curr_year:
                 cats_count += 1
-                cats[cat_id] = one_category(cat)
+                cats.append(one_category(cat))
     else:
         category = db.session.query(Categories).filter(Categories.cat_id == cat_id).first()
         cats = one_category(category)
@@ -485,12 +498,12 @@ def one_application(application):
 
 def application_info(info_type, user, year=curr_year):
     if info_type == 'user':
-        applications = db.session.query(Application).filter(Application.user_id == user).order_by(Application.year)
+        applications = db.session.query(Application).filter(Application.user_id == user).order_by(Application.year.desc())
     elif info_type == 'year':
         applications = db.session.query(Application).join(Users).filter(Application.year == year).order_by(
             Users.last_name)
     elif info_type == 'user-year':
-        applications = db.session.query(Application).filter(Application.user_id == user and Application.year == year)
+        applications = db.session.query(Application).filter(Application.user_id == user).filter(Application.year == year)
     else:
         applications = None
     appl = dict()
@@ -1177,7 +1190,7 @@ def admin():
 def categories_list():
     cats_count, cats = categories_info()
     with_secretary = db.session.query(CatSecretaries).count()
-    no_secr = cats_count - with_secretary
+    no_secr = cats_count - with_secretary + 34
     renew_session()
     return render_template('categories/categories.html', cats_count=cats_count, categories=cats, no_secr=no_secr)
 
@@ -1185,6 +1198,8 @@ def categories_list():
 @app.route('/edit_category', defaults={'cat_id': None})
 @app.route('/edit_category/<cat_id>')
 def edit_category(cat_id):
+    if cat_id is None:
+        cat_id = ''
     if check_access(url='/edit_category/' + cat_id) < 10:
         return redirect(url_for('.no_access'))
     sups = get_supervisors()
@@ -1202,7 +1217,7 @@ def edit_category(cat_id):
         conts[dir_id] = dict()
         conts[dir_id]['id'] = cont.contest_id
         conts[dir_id]['name'] = cont.contest_name
-    if cat_id is not None:
+    if cat_id is not None and cat_id != '':
         category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     else:
         category = None
@@ -1214,15 +1229,24 @@ def edit_category(cat_id):
 @app.route('/edited_cat', methods=['POST'])
 def edited_category():
     cat_info = dict()
-    cat_info['cat_id'] = int(request.form['cat_id'])
+    cat_id = request.form['cat_id']
+    if cat_id != '' and cat_id is not None:
+        cat_info['cat_id'] = int(cat_id)
+    else:
+        cat_info['cat_id'] = None
     cat_info['cat_name'] = request.form['category_name']
     cat_info['short_name'] = request.form['short_name']
-    cat_info['supervisor'] = int(request.form['supervisor'])
+    supervisor = request.form['supervisor']
+    if supervisor != 'Руководитель секции':
+        cat_info['supervisor'] = int(supervisor)
+    else:
+        cat_info['supervisor'] = None
     cat_info['tg_channel'] = re.sub(r'https://t.me/|@', '', request.form['tg_channel'])
     cat_info['direction'] = int(request.form['direction'])
     cat_info['contest'] = int(request.form['contest'])
-    if 'cat_site_id' in request.form.keys():
-        cat_info['cat_site_id'] = int(request.form['cat_site_id'])
+    cat_site_id = request.form['cat_site_id']
+    if cat_site_id != '' and cat_site_id is not None:
+        cat_info['cat_site_id'] = int(cat_site_id)
     else:
         cat_info['cat_site_id'] = None
     if 'drive_link' in request.form.keys():
@@ -1263,6 +1287,8 @@ def many_categs():
             else:
                 cat_info['direction'] = direction
             cat_info['contest'] = c[5].strip('\r')
+            cat_info['cat_site_id'] = ''
+            cat_info['drive_link'] = ''
             write_category(cat_info)
     return redirect(url_for('.categories_list'))
 
@@ -1271,8 +1297,8 @@ def many_categs():
 def supervisors():
     sups = get_supervisors()
     c, cats = categories_info()
-    relevant = [cats[k]['supervisor_id'] for k in cats.keys()]
-    relevant.append(21)
+    relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
+    relevant.append(21) #Добавление Свешниковой
     renew_session()
     return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access(url='/supervisors'),
                            relevant=relevant)
@@ -1295,8 +1321,9 @@ def edit_supervisor(sup_id):
 def edited_supervisor():
     supervisor = personal_info_form()
     supervisor['sup_info'] = request.form['supervisor_info']
-    if request.form['supervisor_id'] != '':
-        supervisor_id = int(request.form['supervisor_id'])
+    sup_id = request.form['supervisor_id']
+    if sup_id != '' and sup_id is not None and '\r\n' not in sup_id:
+        supervisor_id = int(sup_id)
         if supervisor_id in [sup.supervisor_id for sup in Supervisors.query.all()]:
             db.session.query(Supervisors).filter(Supervisors.supervisor_id == supervisor_id).update(
                 {Supervisors.last_name: supervisor['last_name'], Supervisors.first_name: supervisor['first_name'],
@@ -1399,13 +1426,14 @@ def application_process():
         taken_part = request.form['taken_part']
     else:
         taken_part = 'not_filled'
-    if session['user_id'] in [user.user_id for user in Application.query.all()]:
+    if session['user_id'] in [user.user_id for user in Application.query.filter(Application.year == curr_year).all()]:
         db.session.query(Application).filter(Application.user_id == session['user_id']).update(
             {Application.role: role, Application.category_1: category_1, Application.category_2: category_2,
              Application.category_3: category_3, Application.any_category: any_category,
              Application.taken_part: taken_part})
     else:
-        cat_sec = Application(session['user_id'], curr_year, role, category_1, category_2, category_3, any_category,
+        appl_id = max([appl.appl_id for appl in Application.query.all()]) + 1
+        cat_sec = Application(appl_id, session['user_id'], curr_year, role, category_1, category_2, category_3, any_category,
                               taken_part, 'False')
         db.session.add(cat_sec)
     db.session.commit()
@@ -1462,7 +1490,7 @@ def confirm_application_deletion(year, user):
 def manage_application(year, user, action, page):
     if check_access(url='/manage_application/' + year + '/' + user + '/' + action + '/' + page) < 8:
         return redirect(url_for('.no_access'))
-    appl_db = db.session.query(Application).filter(Application.user_id == user and Application.year == year).first()
+    appl_db = db.session.query(Application).filter(Application.user_id == user).filter(Application.year == year).first()
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
     if action == 'accept':
         appl_db.considered = 'True'
@@ -1594,7 +1622,7 @@ def remove_secretary(user_id, cat_id):
     if check_access(url='/remove_secretary/' + user_id + '/' + cat_id) < 8:
         return redirect(url_for('.no_access'))
     cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
-                                          and CatSecretaries.cat_id == cat_id).first()
+                                          ).filter(CatSecretaries.cat_id == cat_id).first()
     db.session.delete(cat_sec)
     db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
@@ -1695,7 +1723,7 @@ def supervisor_user(user_id):
         if user_id in [u.user_id for u in SupervisorUser.query.all()]:
             superv = SupervisorUser.query.filter(SupervisorUser.user_id == user_id).first().supervisor_id
             user_sup = SupervisorUser.query.filter(SupervisorUser.user_id == user_id
-                                                   and SupervisorUser.supervisor_id == superv).first()
+                                                   ).filter(SupervisorUser.supervisor_id == superv).first()
             db.session.delete(user_sup)
             db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
@@ -1714,7 +1742,7 @@ def rev_analysis_results():
     rev_criteria = get_criteria(curr_year)
     works = reg_works('all', 1)
     c, cats = categories_info()
-    wks = sorted(works, key=lambda d: d['rk'])
+    wks = sorted(works, key=lambda d: d['rk'], reverse=True)
     works = sorted(wks, key=lambda d: d['reg_tour'])
     cr_n = len(rev_criteria)
     return render_template('rev_analysis/rev_analysis_results.html', criteria=rev_criteria, works=works, cats=cats,
@@ -2088,7 +2116,8 @@ def many_works():
                                                                              Works.msk_time_shift: timeshift})
             edited = True
         else:
-            work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age, author_1_class,
+            work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age,
+                               author_1_class,
                                author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class,
                                teacher_name, reg_tour, timeshift, None)
             db.session.add(work_write)
@@ -2225,13 +2254,6 @@ def no_fee_list():
                                                     str(work_db.author_3_name)]).replace(', None', '')})
         cats.append({'cat_id': cat_db.cat_id, 'cat_name': cat_db.cat_name, 'works': works})
     return render_template('works/no_fee_list.html', cats=cats)
-
-
-@app.route('/invoice')
-def invoice():
-    if check_access(url='/invoice') < 8:
-        return redirect(url_for('.no_access'))
-    return render_template('knowledge/org/invoice.html')
 
 
 @app.route('/drive_links')
@@ -2516,7 +2538,7 @@ def download_schedule(cat_id):
                 # + ' - ' + work['authors'])
         lines.append('')
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    path = 'static/files/schedules/' + 'Расписание ' + cat_name + '.txt'
+    path = 'static/files/schedules/' + str(curr_year) + '/' + 'Расписание ' + cat_name + '.txt'
     with open(path, 'w', encoding='utf-8') as f:
         f.writelines([line + '\n' for line in lines])
     return send_file(path, as_attachment=True)
@@ -2586,17 +2608,237 @@ def reported(cat_id, work_id, action):
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
+# БАЗА ЗНАНИЙ
+
 @app.route('/knowledge_main')
 def knowledge_main():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     now = datetime.datetime.now().date()
-    date = days_full[now.strftime('%w')] + ', ' + now.strftime('%d') + ' ' + months_full[now.strftime('%m')] + ' ' + now.strftime('%Y')
+    date = days_full[now.strftime('%w')] + ', ' + now.strftime('%d') + ' ' + months_full[
+        now.strftime('%m')] + ' ' + now.strftime('%Y')
     return render_template('knowledge-main.html', date=date)
+
+
+@app.route('/invoice')
+def invoice():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/invoice.html')
 
 
 @app.route('/contact')
 def contact():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
     return render_template('knowledge/org/contact.html')
+
+
+@app.route('/email')
+def email():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/email.html')
+
+
+@app.route('/email_schedule')
+def email_schedule():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/email_schedule.html')
+
+
+@app.route('/phone_schedule')
+def phone_schedule():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/phone_schedule.html')
+
+
+@app.route('/working_programme')
+def working_programme():
+    if check_access(url='/invoice') < 5:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/working_programme.html')
+
+
+@app.route('/online_additional_contest')
+def online_additional_contest():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/online_additional_contest.html')
+
+
+@app.route('/consult_works')
+def consult_works():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/consult_works.html')
+
+
+@app.route('/vernadsky_olympiade')
+def vernadsky_olympiade():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/vernadsky_olympiade.html')
+
+
+@app.route('/general_info')
+def general_info():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/general_info.html')
+
+
+@app.route('/frequent_actions')
+def frequent_actions():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/frequent_actions.html')
+
+
+@app.route('/registration_on_site')
+def registration_on_site():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/registration_on_site.html')
+
+
+@app.route('/attach_work')
+def attach_work():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/attach_work.html')
+
+
+@app.route('/approve_for_2_tour')
+def approve_for_2_tour():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/approve_for_2_tour.html')
+
+
+@app.route('/approve_for_1_tour')
+def approve_for_1_tour():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/approve_for_1_tour.html')
+
+
+# ОРГКОМИТЕТ
+
+# @app.route('/contact_team')
+# def contact_team():
+#     if check_access(url='/invoice') < 8:
+#         return redirect(url_for('.no_access'))
+#     return render_template('knowledge/org/contact_team.html')
+
+# s
+@app.route('/bank_details')
+def bank_details():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/bank_details.html')
+
+
+@app.route('/banks_and_payments')
+def banks_and_payments():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/banks_and_payments.html')
+
+
+@app.route('/guarantee_letters')
+def guarantee_letters():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/guarantee_letters.html')
+
+
+@app.route('/creativity_contest')
+def creativity_contest():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/creativity_contest.html')
+
+
+@app.route('/session_shedule')
+def session_shedule():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/session_shedule.html')
+
+
+@app.route('/apply_2_tour')
+def apply_2_tour():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/apply_2_tour.html')
+
+
+@app.route('/programme_grid')
+def programme_grid():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/programme_grid.html')
+
+
+@app.route('/feedback')
+def feedback():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/feedback.html')
+
+
+@app.route('/movement_projects')
+def movement_projects():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/movement_projects.html')
+
+
+@app.route('/working_resources')
+def working_resources():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/working_resources.html')
+
+
+@app.route('/apply_for_participant')
+def apply_for_participant():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/apply_for_participant.html')
+
+
+@app.route('/contest_calendar')
+def contest_calendar():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/contest_calendar.html')
+
+
+@app.route('/apply_1_tour')
+def apply_1_tour():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/apply_1_tour.html')
+
+
+@app.route('/faq')
+def faq():
+    if check_access(url='/invoice') < 3:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/FAQ.html')
+
+
+@app.route('/tour_2')
+def tour_2():
+    if check_access(url='/invoice') < 8:
+        return redirect(url_for('.no_access'))
+    return render_template('knowledge/org/tour_2.html')
 
 
 if __name__ == '__main__':
     app.run(debug=False)
+

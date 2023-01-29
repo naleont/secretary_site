@@ -4,10 +4,13 @@
 
 {% block content %}
 <h2>Сайт команды Конкурса им. В. И. Вернадского</h2><br>
-{% if session['application'] == True %}
+{% if session['application'] == True or session['type'] == 'supervisor' %}
 {% else %}
       <div align="center">
             <a href="/team_application"><button class="big-button"><h4>Стать секретарем секции или волонтером</h4></button></a>
+      </div><br>
+      <div align="center">
+            <a href="/login"><button class="big-button"><h4>Я руководитель секции</h4></button></a>
       </div><br>
 {% endif %}
 {% if session['supervisor'] == True %}
@@ -15,9 +18,6 @@
             <a href="/analysis_works/{{ session['cat_id'][0] }}"><button class="big-button"><h4>Заполнить анализ рецензий</h4></button></a>
       </div><br>
 {% endif %}
-<p>Пока что на сайте пустовато, но со временем здесь появятся описание работы секретарей, задачи и все
-      необходимые инструкции.{% if session['application'] != True %} А пока что можно <a href="/team_application">
-            подать заявку в команду</a>.{% endif %}</p>
 <br>
 <h3 align="center">Новости</h3>
 <hr>

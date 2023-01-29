@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+<script>
+    function sort_list (lis) {
+        lis.sort();
+    }
+</script>
+
+{% block content %}
+
+{{ lis }}<br><br>
+
+<!--sort_list(lis)<br><br>-->
+
+<button onclick="sort_list(lis)">'sort'</button>
+
+{% endblock %}

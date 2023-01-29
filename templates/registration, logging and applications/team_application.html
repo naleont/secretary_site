@@ -22,9 +22,9 @@
                     <option class="container-fluid bg-2" {% if not application['category_1_id'] or
                     application['category_1_id'] == None %} selected="true" {% endif %}
                             value="None">Выберите секцию</option>
-                    {% for key in categories %}
-                    <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_1_id'] %}
-                            selected="true" {% endif %} value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
+                    {% for cat in categories %}
+                    <option class="container-fluid bg-2" {% if cat['id'] == application['category_1_id'] %}
+                            selected="true" {% endif %} value={{ cat['id'] }}>{{ cat['name'] }}</option>
                     {% endfor %}
                 </select></p>
                     <span class="comment">Второй приоритет</span>
@@ -32,9 +32,9 @@
                     <option class="container-fluid bg-2" {% if not application['category_2_id'] or
                     application['category_2_id'] == None %}
                             selected="true" {% endif %} value="None">Выберите секцию</option>
-                    {% for key in categories %}
-                    <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_2_id'] %} selected="true" {% endif %}
-                            value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
+                    {% for cat in categories %}
+                    <option class="container-fluid bg-2" {% if cat['id'] == application['category_2_id'] %} selected="true" {% endif %}
+                            value={{ cat['id'] }}>{{ cat['name'] }}</option>
                     {% endfor %}
                 </select></p>
                     <span class="comment">Третий приоритет</span>
@@ -42,9 +42,9 @@
                     <option class="container-fluid bg-2" {% if not application['category_3_id'] or
                     application['category_3_id'] == None %} selected="true"
                             {% endif %} value="None">Выберите секцию</option>
-                    {% for key in categories %}
-                    <option class="container-fluid bg-2" {% if categories[key]['id'] == application['category_3_id'] %}
-                            selected="true" {% endif %} value={{ categories[key]['id'] }}>{{ categories[key]['name'] }}</option>
+                    {% for cat in categories %}
+                    <option class="container-fluid bg-2" {% if cat['id'] == application['category_3_id'] %}
+                            selected="true" {% endif %} value={{ cat['id'] }}>{{ cat['name'] }}</option>
                     {% endfor %}
                 </select></p>
                 <input type="checkbox" name="any_category" value="True" {% if application['any_category'] == True %}
@@ -84,24 +84,24 @@
             <b>Секретарь</b>
         </td>
     </tr>
-{% for key in categories %}
+{% for cat in categories %}
     <tr bgcolor="#C5E3F3">
         <td width="45%">
-            {{ categories[key]['name'] }}
+            {{ cat['name'] }}
         </td>
         <td>
-            <a href="/supervisor_profile/{{ categories[key]['supervisor_id'] }}" target="_blank">
-                {{ categories[key]['supervisor'] }}</a>
+            <a href="/supervisor_profile/{{ cat['supervisor_id'] }}" target="_blank">
+                {{ cat['supervisor'] }}</a>
         </td>
         <td>
-            {% if categories[key]['contest'] == 'Конкурс им. В. И. Вернадского' %}
+            {% if cat['contest'] == 'Конкурс им. В. И. Вернадского' %}
             8 - 11 класс
-            {% elif categories[key]['contest'] == 'Тропой открытий В. И. Вернадского' %}
+            {% elif cat['contest'] == 'Тропой открытий В. И. Вернадского' %}
             5 - 7 класс
             {% endif %}
         </td>
         <td>
-            {% if categories[key]['secretary']%}
+            {% if cat['secretary']%}
             Есть
             {% endif %}
         </td>

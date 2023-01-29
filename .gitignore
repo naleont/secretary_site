@@ -15,3 +15,10 @@ team_db.db-journal
 vernadsky.info.json
 check.ipynb
 test_db.db
+<<<<<<< HEAD
+=======
+/.ipynb_checkpoints
+/instance
+/templates/check.html
+ajax_models.py
+>>>>>>> f436c38402f19384b892188db9acb1d0471fa40c

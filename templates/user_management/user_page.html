@@ -83,12 +83,16 @@
         <td rowspan="{{ user['cat_id']|length }}">
             Секция
         </td>
-            {% for cat in user['cat_id'] %}
+            {% for c in user['cat_id'] %}
                 <td colspan="2">
-                    {{ categories[cat]['name'] }}
+                    {% for cat in categories %}
+                        {% if cat['id'] == c %}
+                            {{ cat['name'] }}
+                        {% endif %}
+                    {% endfor %}
                 </td>
                 <td width="10%">
-                    <a href="/remove_secretary/{{ user['user_id'] }}/{{ cat }}">
+                    <a href="/remove_secretary/{{ user['user_id'] }}/{{ c }}">
                         <button class="blue" type="button">Снять</button></a>
                 </td>
         </tr><tr>

@@ -151,9 +151,10 @@ class CatDirs(db.Model):
 
 class Application(db.Model):
     __tablename__ = 'team_application'
-    __table_args__ = (PrimaryKeyConstraint('user_id', 'category_1', 'category_2', 'category_3'),)
+    __table_args__ = (PrimaryKeyConstraint('appl_id', 'user_id', 'category_1', 'category_2', 'category_3'),)
 
-    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'), unique=True)
+    appl_id = db.Column('appl_id', db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'), unique=False)
     year = db.Column('year', db.Integer)
     role = db.Column('role', db.Text)
     category_1 = db.Column('category_1', db.Integer, ForeignKey('categories.cat_id'), unique=False)
@@ -163,7 +164,8 @@ class Application(db.Model):
     taken_part = db.Column('taken_part', db.Text)
     considered = db.Column('considered', db.Text)
 
-    def __init__(self, user_id, year, role, category_1, category_2, category_3, any_category, taken_part, considered):
+    def __init__(self, appl_id, user_id, year, role, category_1, category_2, category_3, any_category, taken_part, considered):
+        self.appl_id = appl_id
         self.user_id = user_id
         self.year = year
         self.role = role
