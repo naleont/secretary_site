@@ -3,6 +3,8 @@ team_db.db
 mail_data.py
 /venv
 /static/files/schedules
+/logs
+/__pycache__
 check.py
 plan.txt
 DROP.py
