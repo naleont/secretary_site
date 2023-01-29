@@ -352,9 +352,10 @@ def write_category(cat_info):
         else:
             if cat_info['supervisor'] is not None:
                 sup_name = cat_info['supervisor'].split(' ')
-                sup = db.session.query(Supervisors).filter(Supervisors.last_name == sup_name[0] and
-                                                           Supervisors.first_name == sup_name[1] and
-                                                           Supervisors.patronymic == sup_name[2]).first()
+                sup = db.session.query(Supervisors).filter(Supervisors.last_name == sup_name[0]
+                                                           ).filter(Supervisors.first_name == sup_name[1]
+                                                                    ).filter(Supervisors.patronymic == sup_name[2]
+                                                                             ).first()
                 db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
             else:
                 sup = None
@@ -502,7 +503,7 @@ def application_info(info_type, user, year=curr_year):
         applications = db.session.query(Application).join(Users).filter(Application.year == year).order_by(
             Users.last_name)
     elif info_type == 'user-year':
-        applications = db.session.query(Application).filter(Application.user_id == user and Application.year == year)
+        applications = db.session.query(Application).filter(Application.user_id == user).filter(Application.year == year)
     else:
         applications = None
     appl = dict()
@@ -1489,7 +1490,7 @@ def confirm_application_deletion(year, user):
 def manage_application(year, user, action, page):
     if check_access(url='/manage_application/' + year + '/' + user + '/' + action + '/' + page) < 8:
         return redirect(url_for('.no_access'))
-    appl_db = db.session.query(Application).filter(Application.user_id == user and Application.year == year).first()
+    appl_db = db.session.query(Application).filter(Application.user_id == user).filter(Application.year == year).first()
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
     if action == 'accept':
         appl_db.considered = 'True'
@@ -1621,7 +1622,7 @@ def remove_secretary(user_id, cat_id):
     if check_access(url='/remove_secretary/' + user_id + '/' + cat_id) < 8:
         return redirect(url_for('.no_access'))
     cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
-                                          and CatSecretaries.cat_id == cat_id).first()
+                                          ).filter(CatSecretaries.cat_id == cat_id).first()
     db.session.delete(cat_sec)
     db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
@@ -1722,7 +1723,7 @@ def supervisor_user(user_id):
         if user_id in [u.user_id for u in SupervisorUser.query.all()]:
             superv = SupervisorUser.query.filter(SupervisorUser.user_id == user_id).first().supervisor_id
             user_sup = SupervisorUser.query.filter(SupervisorUser.user_id == user_id
-                                                   and SupervisorUser.supervisor_id == superv).first()
+                                                   ).filter(SupervisorUser.supervisor_id == superv).first()
             db.session.delete(user_sup)
             db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
