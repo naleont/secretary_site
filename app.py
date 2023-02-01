@@ -1401,7 +1401,7 @@ def team_application():
     elif check_access(url='/team_application') < 2:
         return redirect(url_for('.no_access', message='register_first'))
     cats_count, categs = categories_info()
-    if session['user_id'] in [a.user_id for a in Application.query.all()]:
+    if session['user_id'] in [a.user_id for a in Application.query.filter(Application.year == curr_year).all()]:
         application = application_info('user-year', user=session['user_id'])
         # if application == {curr_year: {'role': None, 'category_1': None, 'category_2': None, 'category_3': None,
         #                                'any_category': None, 'taken_part': None, 'considered': None}}:
