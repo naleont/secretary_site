@@ -187,7 +187,6 @@ def send_email(email):
 
 def find_user(user_got):
     tel = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in user_got if n not in tel_unneeded]))
-    print(user_got)
     if user_got in [user.email for user in Users.query.all()]:
         user = db.session.query(Users).filter(Users.email == user_got).first()
     elif tel in [user.tel for user in Users.query.all()]:
