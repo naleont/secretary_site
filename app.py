@@ -221,12 +221,13 @@ def get_user_info(user):
     user_info['type'] = user_db.user_type
     user_info['approved'] = user_db.approved
     user_info['created_on'] = user_db.created_on.strftime('%d.%m.%Y %H:%M:%S')
+    year_cats = [c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()]
     if user_db.last_login:
         user_info['last_login'] = user_db.last_login.strftime('%d.%m.%Y %H:%M:%S')
     if user in [u.secretary_id for u in CatSecretaries.query.all()]:
         user_info['secretary'] = True
         user_info['cat_id'] = [c.cat_id for c in db.session.query(CatSecretaries).filter(
-            CatSecretaries.secretary_id == user).all()]
+            CatSecretaries.secretary_id == user).all() if c.cat_id in year_cats]
     else:
         user_info['cat_id'] = []
     if user in [s.user_id for s in SupervisorUser.query.all()]:
