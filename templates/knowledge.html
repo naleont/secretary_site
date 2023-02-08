@@ -9,10 +9,12 @@
 <!--  <p><a href="">Лучшие работы</a></p>-->
 <!--  <p><a href="">Квитанции и договоры</a></p>-->
 {% endif %}
-  <p><a href="/contact">Контакты оргкомитета</a></p>
+{% if session['type'] in ['org', 'manager', 'admin'] %}
+  <p><a href="/knowledge_main">БЗ - Оргкомитет</a></p>
+  <p><a href="/secretary_knowledge">БЗ - Секретари</a></p>
   <p><a href="/invoice">Квитанции и договоры</a></p>
-<!--      <p><a href="/secretary_reminder">Памятка секретаря</a></p>-->
-
+{% endif %}
+  <p><a href="/contact">Контакты оргкомитета</a></p>
 <!--      <p><a href="#">Меню-3</a></p>-->
 </div>
 <div class="col-sm-8 text-left">
