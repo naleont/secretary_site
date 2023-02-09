@@ -2852,7 +2852,6 @@ def secretary_knowledge():
     return render_template('secretary_knowledge.html')
 
 
-
 if __name__ == '__main__':
     app.run(debug=False)
 
