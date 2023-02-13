@@ -12,6 +12,10 @@
 <!--      <p><a href="/secretary_reminder">Памятка секретаря</a></p>-->
 
 <!--      <p><a href="#">Меню-3</a></p>-->
+{% if session['type'] in ['org', 'manager', 'admin'] %}
+    <p><a href="/users_list">Пользователи</a></p>
+    <p><a href="/view_applications">Заявки в команду</a></p>
+{% endif %}
 </div>
 <div class="col-sm-8 text-left">
   {% block content %} {% endblock %}
