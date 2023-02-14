@@ -176,7 +176,7 @@ def decrypt(encrypted_message):
 # Отправка письма для подтверждения регистрации на адрес email
 def send_email(email):
     user_id = db.session.query(Users).filter(Users.email == email).first().user_id
-    link = 'http://nleontovich.pythonanywhere.com/approve/' + str(user_id)
+    link = 'http://org.vernadsky.info/approve/' + str(user_id)
     msg = Message(subject='Подтверждение e-mail',
                   body='Это подтверждение вашей регистрации на сайте для секретарей Конкурса им. В. И.'
                        'Вернадского. Перейдите по ссылке для подтверждения email: ' + link,
