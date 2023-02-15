@@ -1327,7 +1327,7 @@ def edit_supervisor(sup_id):
 def edited_supervisor():
     supervisor = personal_info_form()
     supervisor['sup_info'] = request.form['supervisor_info']
-    sup_id = request.form['supervisor_id']
+    sup_id = request.form['supervisor_id'].strip()
     if sup_id != '' and sup_id is not None and '\r\n' not in sup_id:
         supervisor_id = int(sup_id)
         if supervisor_id in [sup.supervisor_id for sup in Supervisors.query.all()]:
@@ -1339,6 +1339,24 @@ def edited_supervisor():
         supervisor = Supervisors(supervisor['last_name'], supervisor['first_name'], supervisor['patronymic'],
                                  supervisor['email'], supervisor['tel'], supervisor['sup_info'])
         db.session.add(supervisor)
+    db.session.commit()
+    renew_session()
+    return redirect(url_for('.supervisors'))
+
+
+@app.route('/confirm_sup_deletion/<sup_id>')
+def confirm_sup_deletion(sup_id):
+    access = check_access(url='/supervisor_profile/' + sup_id)
+    if access < 8:
+        return redirect(url_for('.no_access'))
+    sup_info = supervisor_info(sup_id)
+    return render_template('supervisors/confirm_supervisor_deletion.html', supervisor=sup_info)
+
+
+@app.route('/delete_supervisor/<sup_id>')
+def delete_supervisor(sup_id):
+    supervisor = db.session.query(Supervisors).filter(Supervisors.supervisor_id == sup_id).first()
+    db.session.delete(supervisor)
     db.session.commit()
     renew_session()
     return redirect(url_for('.supervisors'))

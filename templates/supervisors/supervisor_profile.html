@@ -10,6 +10,8 @@
 {% if session['type'] == 'org' or session['type'] == 'admin' or session['type'] == 'manager' %}
     <td>
         <a href="/edit_supervisor/{{ supervisor['id'] }}"><button>Редактировать русека</button></a></td>
+    <td>
+        <a href="/confirm_sup_deletion/{{ supervisor['id'] }}"><button class="red-button">Удалить русека</button></a></td>
 {% endif %}
 </tr></table>
 ФИО: {{ supervisor['name'] }}<br>

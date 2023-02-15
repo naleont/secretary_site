@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h3>Удаление руководителя секции: {{ supervisor['name'] }}</h3>
+<div align="center">
+    <table>
+        <tr>
+            <td>
+                <a href="/delete_supervisor/{{ supervisor['id'] }}"><button>Подтвердить</button></a>
+            </td>
+            <td>
+                <a href="/supervisors"><button class="red-button">Назад</button></a>
+            </td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
