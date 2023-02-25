@@ -2,10 +2,11 @@
 
 {% block content %}
 
+
 <form action="/write_pre_analysis" method = 'POST'>
-    <fieldset>
-        <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
+    <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
         <h4><b>"{{ work['work_name'] }}"</b></h4></legend>
+    <fieldset>
         <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
         <span class="required">Была бы работа допущена до 2 тура, если бы проходила через рецензирование экспертами
         вашей секции?</span><br>
@@ -37,7 +38,7 @@
         <input type="radio" name="has_review" value='False' required {% if pre_ana['has_review'] == False %} checked {% endif %}>
         Нет<br><br>
 
-        <span class="required">Допуск работы до 2 тура продавили</span><br>
+        <span class="required">Допуск работы до 2 тура "продавили"</span><br>
         <span class="comment">То есть, работа была допущена без вашего согласия (и против вашей оценки)</span><br>
         <input type="radio" name="pushed" value='True' required {% if pre_ana['pushed'] == True %} checked {% endif %}>
         Да<br>

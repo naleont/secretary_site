@@ -1,4 +1,6 @@
 import json
+import csv
+from time import strftime
 
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
@@ -564,7 +566,9 @@ def work_info(work_id):
         else:
             work['timeshift'] = str(work['timeshift'])
     if work_id in [w.work_id for w in RevAnalysis.query.all()]:
-        if len(RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()) == len(RevCriteria.query.all()):
+        if len(RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()
+               ) == len(RevCriteria.query.filter(RevCriteria.year == datetime.datetime.strptime(str(curr_year), '%Y').date()
+                                                 ).all()):
             work['analysis'] = True
         else:
             work['analysis'] = 'part'
@@ -1305,6 +1309,7 @@ def supervisors():
     c, cats = categories_info()
     relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
     relevant.append(21) #Добавление Свешниковой
+    relevant.append(44) #Добавление Марусяк
     renew_session()
     return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access(url='/supervisors'),
                            relevant=relevant)
@@ -1659,7 +1664,7 @@ def category_page(cat_id, errors):
     renew_session()
     need_analysis = check_analysis(cat_id)
     works_no_fee = get_works_no_fee(cat_id)
-    show_top_100 = False
+    show_top_100 = True
     return render_template('categories/category_page.html', category=category, need_analysis=need_analysis,
                            errors=errors, works_no_fee=works_no_fee, show_top_100=show_top_100)
 
@@ -1799,6 +1804,26 @@ def add_criteria():
     return render_template('rev_analysis/add_criteria.html')
 
 
+@app.route('/download_criteria')
+def download_criteria():
+    renew_session()
+    if check_access(url='/download_criteria') < 10:
+        return redirect(url_for('.no_access'))
+    prev_year = curr_year - 1
+    criteria = get_criteria(prev_year)
+    crit = [v for v in criteria.values()]
+    lines = []
+    for c in crit:
+        lines.append(c['name'] + '\t' + c['description'] + '\t' + str(c['year']) + '\t' + str(c['weight']))
+    if not os.path.isdir('static/files/rev_crit'):
+        os.mkdir('static/files/rev_crit')
+    f_name = 'static/files/rev_crit/criteria_' + str(prev_year) + '.txt'
+    with open(f_name, 'w', encoding='utf-8') as f:
+        f.writelines([line + '\n' for line in lines])
+    path = f_name
+    return send_file(path, as_attachment=True)
+
+
 @app.route('/adding_criteria', methods=['POST'])
 def adding_criteria():
     renew_session()
@@ -1899,13 +1924,44 @@ def adding_values():
             vals = RevCritValues(value, comment, weight)
             db.session.add(vals)
             db.session.commit()
-            criterion_id = RevCriteria.query.filter(RevCriteria.criterion_name == criterion).first().criterion_id
-            value_id = RevCritValues.query.order_by(RevCritValues.value_id.desc()
-                                                    ).filter(RevCritValues.value_name == value).first().value_id
+            criterion_id = RevCriteria.query.filter(RevCriteria.year == datetime.datetime.strptime(str(curr_year), '%Y'
+                                                                                                   ).date()
+                                                    ).filter(RevCriteria.criterion_name == criterion
+                                                             ).first().criterion_id
+            vals = RevCritValues.query.order_by(RevCritValues.value_id.desc()
+                                                ).filter(RevCritValues.value_name == value).all()
+            val_ids = [v.value_id for v in vals if v.value_id not in [va.value_id for va in CriteriaValues.query.all()]]
+            value_id = sorted(val_ids, reverse=True)[0]
             crit_val = CriteriaValues(criterion_id, value_id)
             db.session.add(crit_val)
             db.session.commit()
     return redirect(url_for('.analysis_criteria'))
+
+
+@app.route('/download_values')
+def download_values():
+    renew_session()
+    if check_access(url='/download_values') < 10:
+        return redirect(url_for('.no_access'))
+    prev_year = curr_year - 1
+    criteria = get_criteria(prev_year)
+    crit = [v for v in criteria.values()]
+    lines = []
+    for c in crit:
+        crit_name = c['name']
+        for v in c['values'].values():
+            if v['comment'] is None:
+                comment = ''
+            else:
+                comment = v['comment']
+            lines.append(crit_name + '\t' + v['val_name'] + '\t' + comment + '\t' + str(v['val_weight']))
+    if not os.path.isdir('static/files/rev_crit'):
+        os.mkdir('static/files/rev_crit')
+    f_name = 'static/files/rev_crit/values_' + str(prev_year) + '.txt'
+    with open(f_name, 'w', encoding='utf-8') as f:
+        f.writelines([line + '\n' for line in lines])
+    path = f_name
+    return send_file(path, as_attachment=True)
 
 
 @app.route('/analysis_works/<cat_id>')

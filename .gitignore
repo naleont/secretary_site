@@ -21,3 +21,5 @@ test_db.db
 ajax_models.py
 .idea
 /test
+requests_2.json
+cat_site_ids.json

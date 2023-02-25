@@ -41,12 +41,12 @@
                 <button {% if need_analysis == True %} class="red-button" {% else %} {% endif %}>Анализ рецензий</button>
             </a></td>
     </tr>
-    <tr>
-            <td width="auto"><a href="/reports_order/{{ category['id'] }}">
-                <button>Порядок выступлений</button>
-            </a></td>
-        {% endif %}
-    </tr>
+<!--    <tr>-->
+<!--            <td width="auto"><a href="/reports_order/{{ category['id'] }}">-->
+<!--                <button>Порядок выступлений</button>-->
+<!--            </a></td>-->
+<!--        {% endif %}-->
+<!--    </tr>-->
 </table>
 
 
@@ -57,7 +57,7 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
 <h3>Работы, участвующие без оргвзноса</h3>
 <p>2-4 лучшие работы от каждой секции получат возможность участвовать во 2 туре Конкурса без оплаты оргвзноса.
     Добавьте работы ниже, чтобы включить их в список.
-    Работы региональных туров в список не включаются и от оргвзноса не освобождаются.</p>
+    <b>Работы региональных туров в список не включаются и от оргвзноса не освобождаются</b>.</p>
 <div class="alarm">
     {% if errors != None %}
     <span>Не удалось добавить работы:</span><br>

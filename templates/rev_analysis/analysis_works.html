@@ -27,9 +27,8 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
         </td>
     </tr>
     {% for key in works %}
-    {% if works[key]['analysis'] == False and works[key]['reg_tour'] != None
-    or works[key]['analysis'] == 'part' and works[key]['reg_tour'] != None%}
-
+    {% if works[key]['reg_tour'] != None %}
+    {% if works[key]['analysis'] == False or works[key]['analysis'] == 'part' %}
         <tr>
             <td align="center" valign="bottom">
                 <a href="/review_analysis/{{ works[key]['work_id'] }}">
@@ -56,6 +55,7 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
             </td>
         </tr>
     {% endif %}
+    {% endif %}
     {% endfor %}
 </table>
 {% else %}
@@ -79,8 +79,9 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
         </td>
     </tr>
     {% for key in works %}
-    {% if works[key]['analysis'] == True and works[key]['reg_tour'] != None %}
 
+    {% if works[key]['reg_tour'] != None %}
+    {% if works[key]['analysis'] == True or works[key]['analysis'] == 'part' %}
         <tr>
             <td align="center" valign="bottom">
                 <a href="/review_analysis/{{ works[key]['work_id'] }}">
@@ -106,6 +107,7 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
                 {{ works[key]['reg_tour'] }}
             </td>
         </tr>
+    {% endif %}
     {% endif %}
     {% endfor %}
 </table>
