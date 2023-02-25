@@ -785,28 +785,31 @@ def analysis_nums():
     all_stats['regionals'] = 0
     all_stats['analysed'] = 0
     regions = []
-    for key in cats.keys():
-        ana_nums[key] = dict()
-        ana_nums[key]['cat_id'] = cats[key]['id']
-        ana_nums[key]['cat_name'] = cats[key]['name']
-        ana_nums[key]['analysed'] = 0
-        cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cats[key]['id'])]
-        ana_nums[key]['regional_applied'] = 0
+    ana_nums = []
+    for cat in cats:
+        cat_ana = {}
+        cat_ana['cat_id'] = cat['id']
+        cat_ana['cat_name'] = cat['name']
+        cat_ana['analysed'] = 0
+        cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])]
+        cat_ana['regional_applied'] = 0
         for work in cat_works:
             work_db = db.session.query(Works).filter(Works.work_id == work).first()
             status_id = WorkStatuses.query.filter(WorkStatuses.work_id == work_db.work_id).first().status_id
             status = ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id
                                                         ).first().status_name
             if work_db.reg_tour is not None and status != 'Не прошла на конкурс':
-                ana_nums[key]['regional_applied'] += 1
+                cat_ana['regional_applied'] += 1
                 all_stats['regionals'] += 1
                 regions.append(work_db.reg_tour)
                 if work_info(work)['analysis'] is True:
-                    ana_nums[key]['analysed'] += 1
+                    cat_ana['analysed'] += 1
                     all_stats['analysed'] += 1
-        ana_nums[key]['left'] = ana_nums[key]['regional_applied'] - ana_nums[key]['analysed']
+        cat_ana['left'] = cat_ana['regional_applied'] - cat_ana['analysed']
+        ana_nums.append(cat_ana)
     all_stats['left'] = all_stats['regionals'] - all_stats['analysed']
     all_stats['regions'] = len(set(regions))
+    print(ana_nums, all_stats)
     return ana_nums, all_stats
 
 

@@ -51,33 +51,33 @@
             Осталось
         </b></td>
     </tr>
-    {% for key in ana_nums %}
+    {% for ana in ana_nums %}
     <tr
-        {% if ana_nums[key]['regional_applied'] == 0 %}
-        {% elif ana_nums[key]['analysed'] == 0 %}
+        {% if ana['regional_applied'] == 0 %}
+        {% elif ana['analysed'] == 0 %}
             bgcolor="#FFBDBD"
-        {% elif ana_nums[key]['left'] == 0 %}
+        {% elif ana['left'] == 0 %}
             bgcolor="#BBDAB8"
         {% else %}
             bgcolor="#FFFFB9"
         {% endif %}>
         <td>
             {% if session['type'] in ['admin', 'org', 'manager']
-            or (session['supervisor'] == True and  session['cat_id'] == ana_nums[key]['cat_id'])
-            or (session['secretary'] == True and  session['cat_id'] == ana_nums[key]['cat_id']) %}
-                <a href="/analysis_works/{{ ana_nums[key]['cat_id'] }}">{{ ana_nums[key]['cat_name'] }}</a>
+            or (session['supervisor'] == True and  session['cat_id'] == ana['cat_id'])
+            or (session['secretary'] == True and  session['cat_id'] == ana['cat_id']) %}
+                <a href="/analysis_works/{{ ana['cat_id'] }}">{{ ana['cat_name'] }}</a>
             {% else %}
-                <a href="/category_page/{{ ana_nums[key]['cat_id'] }}">{{ ana_nums[key]['cat_name'] }}</a>
+                <a href="/category_page/{{ ana['cat_id'] }}">{{ ana['cat_name'] }}</a>
             {% endif %}
         </td>
         <td align="center">
-            {{ ana_nums[key]['regional_applied'] }}
+            {{ ana['regional_applied'] }}
         </td>
         <td align="center">
-            {{ ana_nums[key]['analysed'] }}
+            {{ ana['analysed'] }}
         </td>
         <td align="center">
-            {{ ana_nums[key]['left'] }}
+            {{ ana['left'] }}
         </td>
     </tr>
     {% endfor %}
