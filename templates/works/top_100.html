@@ -30,22 +30,22 @@
             Список работ
         </b></td>
     </tr>
-    {% for key in no_fee %}
+    {% for work in no_fee %}
     <tr>
         <td>
             {% if session['type'] in ['admin', 'org', 'manager']
-            or (session['supervisor'] == True and  session['cat_id'] == no_fee[key]['cat_id'])
-            or (session['secretary'] == True and  session['cat_id'] == no_fee[key]['cat_id']) %}
-                <a href="/category_page/{{ no_fee[key]['id'] }}">{{ no_fee[key]['name'] }}</a>
+            or (session['supervisor'] == True and  session['cat_id'] == work['cat_id'])
+            or (session['secretary'] == True and  session['cat_id'] == work['cat_id']) %}
+                <a href="/category_page/{{ work['id'] }}">{{ work['name'] }}</a>
             {% else %}
-                <a href="/category_page/{{ no_fee[key]['id'] }}">{{ no_fee[key]['name'] }}</a>
+                <a href="/category_page/{{ work['id'] }}">{{ work['name'] }}</a>
             {% endif %}
         </td>
         <td align="center">
-            {{ no_fee[key]['works_no'] }}
+            {{ work['works_no'] }}
         </td>
         <td align="center">
-            {{ no_fee[key]['works'] }}
+            {{ work['works'] }}
         </td>
     {% endfor %}
 </table>

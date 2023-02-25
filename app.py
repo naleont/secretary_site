@@ -826,7 +826,7 @@ def check_analysis(cat_id):
 def no_fee_nums():
     cats_no, cats = categories_info()
     total = 0
-    for cat in cats.values():
+    for cat in cats:
         works = get_works_no_fee(cat['id'])
         cat['works'] = ', '.join([str(w) for w in works.keys()])
         cat['works_no'] = len(works)
