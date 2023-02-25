@@ -355,6 +355,20 @@ class RevAnalysis(db.Model):
         self.value_id = value_id
 
 
+class RevComment(db.Model):
+    __tablename__ = 'review_comment'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    work_comment = db.Column('work_comment', db.Text)
+    rev_comment = db.Column('rev_comment', db.Text)
+
+    def __init__(self, work_id, work_comment, rev_comment):
+        self.work_id = work_id
+        self.work_comment = work_comment
+        self.rev_comment = rev_comment
+
+
 class ParticipationStatuses(db.Model):
     __tablename__ = 'participation_statuses'
 

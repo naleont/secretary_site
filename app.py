@@ -1991,8 +1991,16 @@ def review_analysis(work_id):
     pre_ana = get_pre_analysis(work_id)
     if pre_ana is None:
         return redirect(url_for('.pre_analysis', work_id=work_id))
+    work_id = int(work_id)
+    if work_id in [w.work_id for w in RevComment.query.all()]:
+        wo = db.session.query(RevComment).filter(RevComment.work_id == work_id).first()
+        work_comment = wo.work_comment
+        rev_comment = wo.rev_comment
+    else:
+        work_comment = None
+        rev_comment = None
     return render_template('rev_analysis/review_analysis.html', work=work, analysis=analysis, criteria=criteria,
-                           pre_ana=pre_ana)
+                           pre_ana=pre_ana, work_comment=work_comment, rev_comment=rev_comment)
 
 
 @app.route('/pre_analysis/<work_id>')
@@ -2001,8 +2009,15 @@ def pre_analysis(work_id):
     if check_access(url='/pre_analysis' + work_id) < 6:
         return redirect(url_for('.no_access'))
     work = work_info(work_id)
-    pre = get_pre_analysis(int(work_id))
-    return render_template('/rev_analysis/pre_analysis.html', work=work, pre_ana=pre)
+    work_id = int(work_id)
+    pre = get_pre_analysis(work_id)
+    if work_id in [w.work_id for w in RevComment.query.all()]:
+        work_comment = RevComment.query.filter(RevComment.work_id == work_id).first().work_comment
+        if work_comment is None:
+            work_comment = ''
+    else:
+        work_comment = ''
+    return render_template('/rev_analysis/pre_analysis.html', work=work, pre_ana=pre, work_comment=work_comment)
 
 
 @app.route('/write_pre_analysis', methods=['POST'])
@@ -2042,6 +2057,10 @@ def write_pre_analysis():
             pushed = False
         else:
             pushed = None
+    if 'work_comment' in request.form.keys() and request.form['work_comment'] != '':
+        work_comment = request.form['work_comment']
+    else:
+        work_comment = None
     if work_id in [w.work_id for w in PreAnalysis.query.all()]:
         db.session.query(PreAnalysis).filter(PreAnalysis.work_id == int(work_id)).update(
             {PreAnalysis.good_work: good_work, PreAnalysis.research: research,
@@ -2050,6 +2069,14 @@ def write_pre_analysis():
     else:
         pre_ana = PreAnalysis(work_id, good_work, research, has_review, rev_type, pushed, None, None)
         db.session.add(pre_ana)
+        db.session.commit()
+    if work_id in [w.work_id for w in RevComment.query.all()]:
+        db.session.query(RevComment).filter(RevComment.work_id == int(work_id)).update(
+            {RevComment.work_comment: work_comment})
+        db.session.commit()
+    elif work_comment is not None:
+        w_comm = RevComment(work_id, work_comment, None)
+        db.session.add(w_comm)
         db.session.commit()
     if has_review is True:
         return redirect(url_for('.analysis_form', work_id=work_id))
@@ -2070,8 +2097,16 @@ def analysis_form(work_id):
         return redirect(url_for('.no_access'))
     criteria = get_criteria(curr_year)
     work = work_info(work_id)
-    rk, analysis = get_analysis(int(work_id))
-    return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, analysis=analysis)
+    work_id = int(work_id)
+    rk, analysis = get_analysis(work_id)
+    if work_id in [w.work_id for w in RevComment.query.all()]:
+        rev_comment = RevComment.query.filter(RevComment.work_id == work_id).first().rev_comment
+        if rev_comment is None:
+            rev_comment = ''
+    else:
+        rev_comment = ''
+    return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, analysis=analysis,
+                           rev_comment=rev_comment)
 
 
 @app.route('/write_analysis', methods=['POST'])
@@ -2096,6 +2131,18 @@ def write_analysis():
                 crit_value = RevAnalysis(work_id, criterion_id, value)
                 db.session.add(crit_value)
                 db.session.commit()
+    if 'rev_comment' in request.form.keys() and request.form['rev_comment'] != '':
+        rev_comment = request.form['rev_comment']
+    else:
+        rev_comment = None
+    if work_id in [w.work_id for w in RevComment.query.all()]:
+        db.session.query(RevComment).filter(RevComment.work_id == int(work_id)).update(
+            {RevComment.rev_comment: rev_comment})
+        db.session.commit()
+    elif rev_comment is not None:
+        rev_comm = RevComment(work_id, None, rev_comment)
+        db.session.add(rev_comm)
+        db.session.commit()
     cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     return redirect(url_for('.analysis_works', cat_id=cat_id))
 

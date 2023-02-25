@@ -45,6 +45,9 @@
         <input type="radio" name="pushed" value='False' required {% if pre_ana['pushed'] == False %} checked {% endif %}>
         Нет<br><br>
 
+        <span>Комментарий к работе</span><br>
+        <textarea cols="120" rows="2" name="work_comment">{{ work_comment }}</textarea><br><br>
+
         <input class="button" type="submit" value="Сохранить"><br>
     </fieldset>
 </form>

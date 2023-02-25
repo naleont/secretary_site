@@ -67,6 +67,16 @@ or (session['supervisor'] == True and work['cat_id'] in session['cat_id']) %}
             {% endif %}
         </td>
     </tr>
+
+    {% if work_comment != None and work_comment != '' %}
+    <tr>
+        <td colspan="2">
+            <b>Комментарий к работе: </b>
+            {{ work_comment }}
+        </td>
+    </tr>
+    {% endif %}
+
     {% if pre_ana['has_review'] == True %}
     {% if work['analysis'] == True or work['analysis'] == 'part' %}
     <tr>
@@ -90,6 +100,16 @@ or (session['supervisor'] == True and work['cat_id'] in session['cat_id']) %}
     </tr>
     {% endfor %}
     {% endif %}
+
+    {% if rev_comment != None and rev_comment != '' %}
+    <tr>
+        <td colspan="2">
+            <b>Комментарий к рецензии: </b>
+            {{ rev_comment }}
+        </td>
+    </tr>
+    {% endif %}
+
     {% endif %}
 </table>
 {% endif %}
