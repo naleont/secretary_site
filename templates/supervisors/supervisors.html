@@ -23,7 +23,7 @@
 <a href="mailto:
     {% for key in supervisors %}
     {% if supervisors[key]['id'] in relevant %}
-    {{ supervisors[key]['email'] }}
+    {{ supervisors[key]['email'] }};
     {% endif %}
     {% endfor %}"
     target="_blank"><button>
