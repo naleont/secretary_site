@@ -673,9 +673,12 @@ def reg_works(cat_id='all', status=1):
         stat = ['Допущена до 2-го тура']
     if cat_id == 'all':
         categories = db.session.query(Categories
-                                      ).join(CatDirs).join(Directions
-                                                           ).join(Contests).order_by(CatDirs.dir_id, CatDirs.contest_id,
-                                                                                     Categories.cat_name).all()
+                                      ).filter(Categories.year == curr_year
+                                               ).join(CatDirs
+                                                      ).join(Directions
+                                                             ).join(Contests
+                                                                    ).order_by(CatDirs.dir_id, CatDirs.contest_id,
+                                                                               Categories.cat_name).all()
         for cat in categories:
             cat_id = cat.cat_id
             works = {}
