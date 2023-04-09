@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Формат участия и скидки</h2>
+{% if info['type'] == 'application' %}
+    <h4>Заявка {{ info['id'] }}</h4>
+    <form action="/set_fee/{{ info['id'] }}" method = 'POST'>
+        <fieldset>
+            {% for part in info['participants'] %}
+            <b>{{ part['role'] }} {{ part['id'] }}:</b>
+                {{ part['last_name'] }} {{ part['first_name'] }} {{ part['patronymic_name'] }}<br>
+                        <span class="required">Размер оргвзноса:</span><br>
+                            <p><select name="{{ part['id'] }};fee" required>
+                                <option class="container-fluid bg-2" {% if part['fee'] == 4800 %} selected="true" {% endif %}
+                                        value="4800">4800</option>
+                                <option class="container-fluid bg-2" {% if part['fee'] == 3900 %} selected="true" {% endif %}
+                                        value="3900">3900</option>
+                                <option class="container-fluid bg-2" {% if part['fee'] == 0 %} selected="true" {% endif %}
+                                        value="0">Без оргвзноса</option>
+                                </select></p>
+                        <span class="required">Формат участия:</span><br>
+                            <input type="radio" name="{{ part['id'] }};format" {% if part['format'] == 'face-to-face' %} checked {% endif %}
+                                           value="face-to-face" required>Очно<br>
+                            <input type="radio" name="{{ part['id'] }};format" {% if part['format'] == 'online' %} checked {% endif %}
+                                           value="online" required>Дистанционно<br><br>
+            {% endfor %}
+            <input class="button" type="submit" value="Сохранить">
+            </fieldset>
+        </form><br><br>
+{{ info }}
+{% elif info['type'] == 'work' %}
+
+    <br><h4>Работа {{ info['work_id'] }}</h4>
+    {{ info['work_name'] }}<br>
+    Региональный тур: {{ info['reg_tour'] }}<br>
+    {% for participant in info['participants'] %}
+<!--        {{ participant['role'] }} {{ participant['id'] }}:-->
+<!--        {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>-->
+    {% endfor %}
+<br>
+<form action="/set_fee/{{ info['work_id'] }}" method = 'POST'>
+    <fieldset>
+        <span class="required">Размер оргвзноса:</span><br>
+            <p><select name="{{ info['work_id'] }};fee" required>
+                <option class="container-fluid bg-2" {% if info['fee'] == 4800 %} selected="true" {% endif %}
+                        value="4800">4800</option>
+                <option class="container-fluid bg-2" {% if info['fee'] == 3900 %} selected="true" {% endif %}
+                        value="3900">3900</option>
+                <option class="container-fluid bg-2" {% if info['fee'] == 0 %} selected="true" {% endif %}
+                        value="0">Без оргвзноса</option>
+                </select></p><br>
+        <span class="required">Формат участия:</span><br>
+            <input type="radio" name="{{ info['work_id'] }};format" {% if not info['format'] or info['format'] == 'face-to-face' %} checked {% endif %}
+                           value="face-to-face">Очно<br>
+            <input type="radio" name="{{ info['work_id'] }};format" {% if info['format'] == 'online' %} checked {% endif %}
+                           value="online">Дистанционно<br><br>
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+{% endif %}
+
+
+{% endblock %}

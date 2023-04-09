@@ -36,6 +36,8 @@ mail = Mail(app)
 
 tel_unneeded = '-() '
 curr_year = 2023
+fee = 4800
+tour_fee = 3900
 
 days = {'1': 'Пн', '2': 'Вт', '3': 'Ср', '4': 'Чт', '5': 'Пт', '6': 'Сб', '0': 'Вс'}
 days_full = {'1': 'Понедельник',
@@ -582,6 +584,12 @@ def work_info(work_id):
         work['analysis'] = False
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     work['reg_tour'] = work_db.reg_tour
+    if work['reg_tour'] is not None:
+        work['fee'] = tour_fee
+    elif work['reg_tour'] in [w.work_id for w in WorksNoFee.query.all()]:
+        work['fee'] = 0
+    else:
+        work['fee'] = fee
     work['site_id'] = work_db.work_site_id
     if work_id in [w.work_id for w in Applications2Tour.query.all()]:
         appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()
@@ -858,6 +866,28 @@ def check_order(cat_works):
                                                              ).update({
                             ReportOrder.order: prev_order})
                         db.session.commit()
+
+
+def application_2_tour(appl):
+    application = {'id': appl, 'works': [work_info(w.work_id) for w
+                                         in Applications2Tour.query.filter(Applications2Tour.appl_no == appl).all()],
+                   'participants': []}
+    for part in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).all():
+        part_db = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id == part.participant_id
+                                                               ).first()
+        participant = {'id': part_db.participant_id, 'last_name': part_db.last_name, 'first_name': part_db.first_name,
+                       'patronymic_name': part_db.patronymic_name, 'class': part_db.participant_class,
+                       'role': part_db.role}
+        p_name = (participant['last_name'] + ' ' + participant['first_name'] + ' ' + participant['patronymic_name']).strip()
+        if participant['id'] in [p.participant_id for p in Discounts.query.all()]:
+            disc = db.session.query(Discounts).filter(Discounts.participant_id == participant['id']).first()
+            participant['fee'] = disc.payment
+            participant['format'] = disc.participation_format
+        else:
+            participant['fee'] = fee
+            participant['format'] = 'face-to-face'
+        application['participants'].append(participant)
+    return application
 
 
 # Главная страница
@@ -1587,7 +1617,7 @@ def users_list(query):
             if int(query) in [u.user_id for u in Users.query.all()]:
                 for u in Users.query.filter(Users.user_id == query).order_by(Users.user_id.desc()).all():
                     users[u.user_id] = get_user_info(u.user_id)
-        except Exception:
+        except BaseException:
             pass
         if query in [u.email for u in Users.query.all()]:
             for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all():
@@ -2295,19 +2325,42 @@ def many_applications():
     works = json.loads(text)
     w = works['works']
     works_applied = []
+    participants = []
     for n in w:
-        works = [{'work': int(a['number']), 'appl': int(n['id'])} for a in n['works']]
+        works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
         works_applied.extend(works)
+        part_s = [{'id': int(p['id']), 'appl': int(n['id']), 'last_name': p['last_name'],
+                   'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'], 
+                   'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
+        participants.extend(part_s)
     for work in works_applied:
         if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
             db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
-                                                       ).first().update({Applications2Tour.appl_no: work['appl'],
-                                                                         Applications2Tour.arrived: work['appl']})
+                                                       ).update({Applications2Tour.appl_no: work['appl'],
+                                                                 Applications2Tour.arrived: work['arrived']})
             db.session.commit()
         else:
-            wo = Works.query.filter(Works.work_id == work['work']).first().work_id
-            appl = Applications2Tour(wo, work['appl'], False)
-            db.session.add(appl)
+            if work['work'] in [wo.work_id for wo in Works.query.all()]:
+                wo = Works.query.filter(Works.work_id == work['work']).first().work_id
+                appl = Applications2Tour(wo, work['appl'], False)
+                db.session.add(appl)
+            db.session.commit()
+    for participant in participants:
+        if participant['id'] in [part.participant_id for part in ParticipantsApplied.query.all()]:
+            db.session.query(ParticipantsApplied
+                             ).filter(ParticipantsApplied.participant_id == participant['id']
+                                      ).update({ParticipantsApplied.appl_id: participant['appl'],
+                                                ParticipantsApplied.last_name: participant['last_name'],
+                                                ParticipantsApplied.first_name: participant['first_name'],
+                                                ParticipantsApplied.patronymic_name: participant['patronymic_name'],
+                                                ParticipantsApplied.participant_class: participant['participant_class'],
+                                                ParticipantsApplied.role: participant['role']})
+            db.session.commit()
+        else:
+            part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
+                                       participant['first_name'], participant['patronymic_name'],
+                                       participant['participant_class'], participant['role'], None)
+            db.session.add(part)
             db.session.commit()
     return redirect(url_for('.applications_2_tour'))
 
@@ -2352,7 +2405,7 @@ def works_for_free(cat_id):
                     errors[work] = 'работа не из вашей секции'
             else:
                 errors[work] = 'работа не найдена'
-        except Exception:
+        except BaseException:
             if success is False and work not in errors.keys():
                 errors[work] = 'некорректный номер работы'
             pass
@@ -2740,6 +2793,80 @@ def reported(cat_id, work_id, action):
     db.session.commit()
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
+
+@app.route('/search_participant', defaults={'query': 'sear'})
+@app.route('/search_participant/<query>')
+def search_participant(query):
+    renew_session()
+    if check_access(url='/search_participant') < 8:
+        return redirect(url_for('.no_access'))
+    if query:
+        try:
+            qu = int(query)
+        except ValueError:
+            response = {'type': None}
+        if len(query) == 6 and qu:
+            response = {'type': 'work', 'value': work_info(int(query))}
+        elif len(query) == 5:
+            response = {'type': 'appl', 'value': application_2_tour(int(query))}
+        elif query == 'sear':
+            response = 'search'
+        else:
+            response = {'type': None}
+    return render_template('participants_and_payment/search_participant.html', response=response)
+
+
+@app.route('/searching_participant', methods = ['GET'])
+def searching_participant():
+    renew_session()
+    query = request.values.get('query', str)
+    return redirect(url_for('.search_participant', query=query))
+
+
+@app.route('/discount_and_participation_mode/<part_id>')
+def discount_and_participation_mode(part_id):
+    if len(part_id) == 5:
+        info = application_2_tour(int(part_id))
+        info['type'] = 'application'
+    elif len(part_id) == 6:
+        info = work_info(int(part_id))
+        info['type'] = 'work'
+    else:
+        return redirect(url_for('.search_participant'))
+    return render_template('participants_and_payment/discount_and_participation_mode.html', info=info)
+
+
+@app.route('/set_fee/<part_id>', methods=['POST'])
+def set_fee(part_id):
+    if len(part_id) == 6:
+        part_fee = int(request.form[str(part_id) + ';fee'])
+        part_format = request.form[str(part_id) + ';format']
+        if part_id in [p.work_id for p in Discounts.query.all()]:
+            db.session.query(Discounts).filter(Discounts.work_id == int(part_id)
+                                               ).update({Discounts.payment: part_fee,
+                                                         Discounts.participation_format: part_format})
+        else:
+            discount = Discounts(None, int(part_id), part_fee, part_format)
+            db.session.add(discount)
+        db.session.commit()
+    elif len(part_id) == 5:
+        for participant in [p['id'] for p in application_2_tour(part_id)['participants']]:
+            part_fee = int(request.form[str(participant) + ';fee'])
+            part_format = request.form[str(participant) + ';format']
+            if participant in [p.participant_id for p in Discounts.query.all()]:
+                db.session.query(Discounts).filter(Discounts.participant_id == int(participant)
+                                                   ).update({Discounts.payment: part_fee,
+                                                             Discounts.participation_format: part_format})
+            else:
+                discount = Discounts(int(participant), None, part_fee, part_format)
+                db.session.add(discount)
+            db.session.commit()
+    return redirect(url_for('.search_participant', query=part_id))
+
+
+@app.route('/add_bank_statement')
+def add_bank_statement():
+    return render_template('participants_and_payment/add_bank_statement.html')
 
 # БАЗА ЗНАНИЙ
 

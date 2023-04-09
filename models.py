@@ -432,6 +432,29 @@ class Applications2Tour(db.Model):
         self.arrived = arrived
 
 
+class ParticipantsApplied(db.Model):
+    __tablename__ = 'participants_applied'
+
+    participant_id = db.Column('participant_id', db.Integer, primary_key=True)
+    appl_id = db.Column('appl_id', db.Integer)
+    last_name = db.Column('last_name', db.Text)
+    first_name = db.Column('first_name', db.Text)
+    patronymic_name = db.Column('patronymic_name', db.Text)
+    participant_class = db.Column('participant_class', db.Text)
+    role = db.Column('role', db.Text)
+    work_id = db.Column('work_id', db.Integer)
+
+    def __init__(self, participant_id, appl_id, last_name, first_name, patronymic_name, participant_class, role, work_id):
+        self.participant_id = participant_id
+        self.appl_id = appl_id
+        self.last_name = last_name
+        self.first_name = first_name
+        self.patronymic_name = patronymic_name
+        self.participant_class = participant_class
+        self.role = role
+        self.work_id = work_id
+
+
 class ReportOrder(db.Model):
     __tablename__ = 'report_order'
     __table_args__ = (PrimaryKeyConstraint('work_id'),)
@@ -462,3 +485,59 @@ class Cities(db.Model):
         self.area = area
         self.city = city
         self.msk_time_shift = msk_time_shift
+
+
+class ParticipationFormat(db.Model):
+    __tablename__ = 'participation_format'
+
+    format_id = db.Column('format_id', db.Integer, primary_key=True)
+    participant_id = db.Column('participant_id', db.Integer)
+    work_id = db.Column('work_id', db.Integer)
+    format = db.Column('format', db.Text)
+
+    def __init__(self, participant_id, work_id, format):
+        self.participant_id = participant_id
+        self.work_id = work_id
+        self.format = format
+
+
+class Discounts(db.Model):
+    __tablename__ = 'discounts'
+
+    discount_id = db.Column('discount_id', db.Integer, primary_key=True)
+    participant_id = db.Column('participant_id', db.Integer)
+    work_id = db.Column('work_id', db.Integer)
+    payment = db.Column('payment', db.Integer)
+    participation_format = db.Column('participation_format', db.Text)
+
+    def __init__(self, participant_id, work_id, payment, participation_format):
+        self.participant_id = participant_id
+        self.work_id = work_id
+        self.payment = payment
+        self.participation_format = participation_format
+
+
+# class BankStatement(db.Model):
+#     __tablename__ = 'bank_statement'
+#
+#     payment_id = db.Column('payment_id', db.Integer, primary_key=True)
+#     date = db.Column('date', db.Date)
+#     order_id = db.Column('order_id', db.Integer)
+#     debit = db.Column('debit', db.Float)
+#     credit = db.Column('credit', db.Float)
+#     organisation = db.Column('organisation', db.Text)
+#     tin = db.Column('tin', db.Text)
+#     bic = db.Column('bic', db.Text)
+#     bank_name = db.Column('bank_name', db.Text)
+#     payment_comment = db.Column('payment_comment', db.Text)
+#
+#     def __init__(self, date, order_id, debit, credit, organisation, tin, bic, bank_name, payment_comment):
+#         self.date = date
+#         self.order_id = order_id
+#         self.debit = debit
+#         self.credit = credit
+#         self.organisation = organisation
+#         self.tin = tin
+#         self.bic = bic
+#         self.bank_name = bank_name
+#         self.payment_comment = payment_comment
