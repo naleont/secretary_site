@@ -584,7 +584,11 @@ def work_info(work_id):
         work['analysis'] = False
     work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     work['reg_tour'] = work_db.reg_tour
-    if work['reg_tour'] is not None:
+    if work['work_id'] in [w.work_id for w in Discounts.query.all()]:
+        disc = db.session.query(Discounts).filter(Discounts.work_id == work['work_id']).first()
+        work['fee'] = disc.payment
+        work['format'] = disc.participation_format
+    elif work['reg_tour'] is not None:
         work['fee'] = tour_fee
     elif work['reg_tour'] in [w.work_id for w in WorksNoFee.query.all()]:
         work['fee'] = 0
@@ -2841,7 +2845,7 @@ def set_fee(part_id):
     if len(part_id) == 6:
         part_fee = int(request.form[str(part_id) + ';fee'])
         part_format = request.form[str(part_id) + ';format']
-        if part_id in [p.work_id for p in Discounts.query.all()]:
+        if int(part_id) in [p.work_id for p in Discounts.query.all()]:
             db.session.query(Discounts).filter(Discounts.work_id == int(part_id)
                                                ).update({Discounts.payment: part_fee,
                                                          Discounts.participation_format: part_format})
@@ -2853,7 +2857,7 @@ def set_fee(part_id):
         for participant in [p['id'] for p in application_2_tour(part_id)['participants']]:
             part_fee = int(request.form[str(participant) + ';fee'])
             part_format = request.form[str(participant) + ';format']
-            if participant in [p.participant_id for p in Discounts.query.all()]:
+            if int(participant) in [p.participant_id for p in Discounts.query.all()]:
                 db.session.query(Discounts).filter(Discounts.participant_id == int(participant)
                                                    ).update({Discounts.payment: part_fee,
                                                              Discounts.participation_format: part_format})
@@ -2864,9 +2868,9 @@ def set_fee(part_id):
     return redirect(url_for('.search_participant', query=part_id))
 
 
-@app.route('/add_bank_statement')
-def add_bank_statement():
-    return render_template('participants_and_payment/add_bank_statement.html')
+# @app.route('/add_bank_statement')
+# def add_bank_statement():
+#     return render_template('participants_and_payment/add_bank_statement.html')
 
 # БАЗА ЗНАНИЙ
 
