@@ -517,27 +517,43 @@ class Discounts(db.Model):
         self.participation_format = participation_format
 
 
-# class BankStatement(db.Model):
-#     __tablename__ = 'bank_statement'
-#
-#     payment_id = db.Column('payment_id', db.Integer, primary_key=True)
-#     date = db.Column('date', db.Date)
-#     order_id = db.Column('order_id', db.Integer)
-#     debit = db.Column('debit', db.Float)
-#     credit = db.Column('credit', db.Float)
-#     organisation = db.Column('organisation', db.Text)
-#     tin = db.Column('tin', db.Text)
-#     bic = db.Column('bic', db.Text)
-#     bank_name = db.Column('bank_name', db.Text)
-#     payment_comment = db.Column('payment_comment', db.Text)
-#
-#     def __init__(self, date, order_id, debit, credit, organisation, tin, bic, bank_name, payment_comment):
-#         self.date = date
-#         self.order_id = order_id
-#         self.debit = debit
-#         self.credit = credit
-#         self.organisation = organisation
-#         self.tin = tin
-#         self.bic = bic
-#         self.bank_name = bank_name
-#         self.payment_comment = payment_comment
+class BankStatement(db.Model):
+    __tablename__ = 'bank_statement'
+
+    payment_id = db.Column('payment_id', db.Integer, primary_key=True)
+    date = db.Column('date', db.Date)
+    order_id = db.Column('order_id', db.Integer)
+    debit = db.Column('debit', db.Float)
+    credit = db.Column('credit', db.Float)
+    organisation = db.Column('organisation', db.Text)
+    tin = db.Column('tin', db.Text)
+    bic = db.Column('bic', db.Text)
+    bank_name = db.Column('bank_name', db.Text)
+    account = db.Column('account', db.Text)
+    payment_comment = db.Column('payment_comment', db.Text)
+
+    def __init__(self, date, order_id, debit, credit, organisation, tin, bic, bank_name, account, payment_comment):
+        self.date = date
+        self.order_id = order_id
+        self.debit = debit
+        self.credit = credit
+        self.organisation = organisation
+        self.tin = tin
+        self.bic = bic
+        self.bank_name = bank_name
+        self.account = account
+        self.payment_comment = payment_comment
+
+
+class PaymentRegistration(db.Model):
+    __tablename__ = 'payment_registration'
+
+    payment_reg_id = db.Column('payment_reg_id', db.Integer, primary_key=True)
+    payment_id = db.Column('payment_id', db.Integer)
+    participant = db.Column('participant', db.Integer)
+    for_work = db.Column('for_work', db.Boolean)
+
+    def __init__(self, payment_id, participant, for_work):
+        self.payment_id = payment_id
+        self.participant = participant
+        self.for_work = for_work

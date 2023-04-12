@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Назначение платежа</h2>
+
+<b>Платеж {{ payment['payment_id'] }}</b><br>
+Дата получения платежа: {{ payment['date'] }}<br>
+Сумма: {{ payment['debit'] }}<br>
+Не распределено: {{ payment['remainder'] }}<br><br>
+Комментарий к платежу: {{ payment['comment'] }}<br><br>
+Плательщик: {{ payment['organisation'] }}<br>
+ИНН: {{ payment['tin'] }}<br>
+БИК: {{ payment['bic'] }}<br>
+Название банка: {{ payment['bank_name'] }}<br>
+Счет плательщика: {{ payment['account'] }}<br>
+Номер платежного документа: {{ payment['order_id'] }}<br><br>
+
+<b>Заявка {{ appl['id'] }}</b>
+<form action="/set_payment/{{ payment['payment_id'] }}/{{ appl['id'] }}" method = 'POST'>
+    <fieldset>
+        <table>
+            <tr>
+                <td colspan="2">
+                    <b>Работы</b><br>
+                    {% for work in appl['works'] %}
+                    Работа {{ work['work_id'] }} -
+                    {{ work['work_name'] }}<br>
+                    {% endfor %}<br>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <b>Участники</b><br>
+                </td>
+            </tr>
+            <tr>
+            {% for participant in appl['participants'] %}
+                <td>
+                    <input type="checkbox" name="{{ participant['id'] }}">
+                </td>
+                <td>
+                    <br><i>{{ participant['role'] }} {{ participant['id'] }}</i><br>
+                    {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
+                    Оргвзнос {{ participant['fee'] }}р.,
+                    {% if participant['format'] == 'face-to-face' %}
+                        Очное участие
+                    {% elif participant['format'] == 'online'%}
+                        Дистанционное участие
+                    {% endif %}<br>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <input class="button" type="submit" value="Назначить платеж выбранным участникам">
+    </fieldset>
+</form>
+<br>
+
+{% endblock %}

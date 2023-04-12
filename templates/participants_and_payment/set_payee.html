@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<table width="100%">
+    <tr>
+        <td>
+            <h2>Платеж {{ payment['payment_id'] }}</h2>
+        </td>
+        <td align="right">
+
+            <form action="/application_payment/{{ payment['payment_id'] }}" method = 'GET'>
+                <fieldset>
+                    <input size="30" class="blue-border" type="text" name="payee">
+                    <button class="blue_no_border" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg></button>
+                </fieldset>
+            </form>
+        </tdalign>
+    </tr>
+</table>
+
+Дата получения платежа: {{ payment['date'] }}<br>
+Сумма: {{ payment['debit'] }}<br>
+Не распределено: {{ payment['remainder'] }}<br><br>
+Комментарий к платежу: {{ payment['comment'] }}<br><br>
+Плательщик: {{ payment['organisation'] }}<br>
+ИНН: {{ payment['tin'] }}<br>
+БИК: {{ payment['bic'] }}<br>
+Название банка: {{ payment['bank_name'] }}<br>
+Счет плательщика: {{ payment['account'] }}<br>
+Номер платежного документа: {{ payment['order_id'] }}<br><br>
+
+{% if participant['type'] == 'None' %}
+
+{{ participant['payee'] }}: Не найдено таких участников
+
+{% elif participant['type'] == 'work' %}
+<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['participant']['work_id'] }}" method = 'POST'>
+    <fieldset>
+        <table>
+            <tr>
+                <td width="70%">
+                    <input type="checkbox" name="{{ participant['participant']['work_id'] }}" checked>
+                    <b>Работа {{ participant['participant']['work_id'] }}</b><br>
+                        {{ participant['participant']['work_name'] }}<br>
+                    <b>Заявка {{ participant['participant']['appl_no'] }}</b><br>
+                        Оргвзнос {{ participant['participant']['fee'] }}р.
+                            {% if participant['participant']['payed'] == True %}
+                            <span class="green-text">(Оплачен)</span>
+                            {% elif participant['participant']['payed'] == False %}
+                            <span class="alarm">(Не оплачен)</span>
+                            {% endif %},
+                            {% if not participant['participant']['format'] or participant['participant']['format'] == 'face-to-face' %}
+                                Очное участие
+                            {% elif response['value']['format'] == 'online'%}
+                                Дистанционное участие
+                            {% endif %}
+                </td>
+                <td width="30%">
+                    <input class="button" type="submit" value="Назначить платеж работе"><br><br>
+                    <a href="/discount_and_participation_mode/{{ participant['participant']['work_id'] }}">
+                        <button>Исправить суммы оргвзносов</button></a>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+</form>
+
+{% elif participant['type'] == 'appl' %}
+<table>
+    {% for appl in participant['participant'] %}
+    <tr>
+        <td>
+            <b>Заявка {{ appl['id'] }}</b><br>
+                <b>Работы</b><br>
+                {% for work in appl['works'] %}
+                Работа {{ work['work_id'] }} -
+                {{ work['work_name'] }}<br>
+                {% endfor %}<br>
+                <b>Участники</b><br>
+                {% for member in appl['participants'] %}
+                <i>{{ member['role'] }} {{ member['id'] }}</i><br>
+                {{ member['last_name'] }} {{ member['first_name'] }} {{ member['patronymic_name'] }}<br>
+                Оргвзнос {{ member['fee'] }}р.
+                    {% if member['payed'] == True %}
+                    <span class="green-text">(Оплачен)</span>
+                    {% elif member['payed'] == False %}
+                    <span class="alarm">(Не оплачен)</span>
+                    {% endif %},
+                {% if member['format'] == 'face-to-face' %}
+                    Очное участие
+                {% elif member['format'] == 'online'%}
+                    Дистанционное участие
+                {% endif %}<br><br>
+                {% endfor %}
+        </td>
+        <td width="30%" valign="top" align="center">
+            <a href="/сheck_payees/{{ payment['payment_id'] }}/{{ appl['id'] }}">
+                <button>Назначить платеж заявке</button></a><br><br>
+                    <a href="/discount_and_participation_mode/{{ appl['id'] }}">
+                        <button>Исправить суммы оргвзносов</button></a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endif %}
+
+{% endblock %}

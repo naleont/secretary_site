@@ -54,7 +54,12 @@
                 {% for participant in response['value']['participants'] %}
                 <i>{{ participant['role'] }} {{ participant['id'] }}</i><br>
                 {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
-                Оргвзнос {{ participant['fee'] }}р.,
+                Оргвзнос {{ participant['fee'] }}р.
+                    {% if participant['payed'] == True %}
+                    <span class="green-text">(Оплачен)</span>
+                    {% elif participant['payed'] == False %}
+                    <span class="alarm">(Не оплачен)</span>
+                    {% endif %},
                 {% if participant['format'] == 'face-to-face' %}
                     Очное участие
                 {% elif participant['format'] == 'online'%}

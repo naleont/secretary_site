@@ -890,10 +890,57 @@ def application_2_tour(appl):
         else:
             participant['fee'] = fee
             participant['format'] = 'face-to-face'
+        if participant['id'] in [p.participant for p in PaymentRegistration.query.all()]:
+            participant['payed'] = True
+        else:
+            participant['payed'] = False
         application['participants'].append(participant)
     return application
 
 
+def payment_info(payment_id):
+    payment = db.session.query(BankStatement).filter(BankStatement.payment_id == int(payment_id)).first()
+    date = datetime.datetime.strftime(payment.date, '%d.%m.%Y')
+    if payment.debit % 1 == 0:
+        debit = str(int(payment.debit)) + ' р.'
+    else:
+        debit = str(payment.debit).replace('.', ',') + ' р.'
+    pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
+           'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
+           'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment}
+    return pay
+
+
+def statement_info():
+    statement = []
+    stat_db = db.session.query(BankStatement).order_by(BankStatement.order_id).order_by(BankStatement.date).all()
+    payment_reg = db.session.query(PaymentRegistration)
+    for payment in stat_db:
+        remainder = payment.debit
+        if payment.payment_id in [p.payment_id for p in payment_reg.all()]:
+            for participant in [p.participant for p
+                                in payment_reg.filter(PaymentRegistration.payment_id == payment.payment_id).all()]:
+                if participant in [p.participant_id for p in Discounts.query.all()]:
+                    disc = db.session.query(Discounts).filter(Discounts.participant_id == participant['id']).first()
+                    payed = disc.payment
+                else:
+                    payed = fee
+                remainder -= payed
+        remainder = str(int(remainder)) + ' р.'
+        date = datetime.datetime.strftime(payment.date, '%d.%m.%Y')
+        if payment.debit % 1 == 0:
+            debit = str(int(payment.debit)) + ' р.'
+        else:
+            debit = str(payment.debit).replace('.', ',') + ' р.'
+        pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
+               'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
+               'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment,
+               'remainder': remainder}
+        statement.append(pay)
+    return statement
+
+
+#САЙТ
 # Главная страница
 @app.route('/')
 def main_page():
@@ -2868,9 +2915,128 @@ def set_fee(part_id):
     return redirect(url_for('.search_participant', query=part_id))
 
 
-# @app.route('/add_bank_statement')
-# def add_bank_statement():
-#     return render_template('participants_and_payment/add_bank_statement.html')
+@app.route('/load_statement', defaults={'success': False})
+@app.route('/load_statement/<success>')
+def load_statement(success):
+    renew_session()
+    return render_template('participants_and_payment/load_statement.html', success=success)
+
+
+@app.route('/add_bank_statement', methods=['POST'])
+def add_bank_statement():
+    data = request.files['file'].read().decode('ptcp154')
+    lines = data.split('\n')
+    statement = []
+    for line in lines[2:]:
+        if line != '':
+            sta = {name: value for name, value in zip(lines[0].split('\t'), line.split('\t'))}
+            statement.append(sta)
+    for payment in statement:
+        if payment != {}:
+            payment['date_oper'] = datetime.datetime.strptime(payment['date_oper'], '%d.%m.%Y')
+            if payment['number'] not in [p.order_id for p in BankStatement.query.all()]\
+                    and payment['date_oper'] not in [p.date for p in BankStatement.query.all()]\
+                    and payment['plat_inn'] not in [p.tin for p in BankStatement.query.all()]:
+                if payment['d_c'] == 'C':
+                    pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
+                                        debit=float(payment['sum_val'].replace(',', '.')), credit=0,
+                                        organisation=payment['plat_name'], tin=payment['plat_inn'], bic=payment['plat_bic'],
+                                        bank_name=payment['plat_bank'], account=payment['plat_acc'],
+                                        payment_comment=payment['text70'])
+                    db.session.add(pay)
+    db.session.commit()
+    return redirect(url_for('.load_statement', success=True))
+
+
+@app.route('/id_payments')
+def id_payments():
+    statement = statement_info()
+    return render_template('participants_and_payment/id_payments.html', statement=statement)
+
+
+@app.route('/set_payee/<payment_id>', defaults={'payee': None})
+@app.route('/set_payee/<payment_id>/<payee>')
+def set_payee(payment_id, payee):
+    payment = payment_info(payment_id)
+    if payee is not None:
+        try:
+            payee = int(payee)
+        except ValueError:
+            pass
+        if payee in [p.appl_id for p in ParticipantsApplied.query.all()]:
+            participant = {'type': 'appl', 'participant': [application_2_tour(payee)]}
+        elif payee in [p.last_name for p in ParticipantsApplied.query.all()]:
+            parts = [p.participant_id for p in ParticipantsApplied.query.filter(ParticipantsApplied.last_name).all()]
+            p = []
+            for part in parts:
+                partic = application_2_tour(part)
+                p.append(partic)
+            participant = {'type': 'appl', 'participant': p}
+        elif payee in [w.work_id for w in Works.query.all()]:
+            participant = {'type': 'work', 'participant': work_info(payee)}
+    else:
+        participant = {'type': None, 'participant': payee}
+    return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
+
+
+@app.route('/application_payment/<payment_id>', methods=['GET'])
+def application_payment(payment_id):
+    payee = request.values.get('payee', str)
+    return redirect(url_for('.set_payee', payment_id=payment_id, payee=payee))
+
+
+@app.route('/сheck_payees/<payment_id>/<appl>')
+def сheck_payees(payment_id, appl):
+    payment = payment_info(payment_id)
+    application = application_2_tour(appl)
+    return render_template('participants_and_payment/check_payees.html', payment=payment, appl=application)
+
+
+@app.route('/set_payment/<payment_id>/<payee>', methods=['POST'])
+def set_payment(payment_id, payee):
+    if len(payee) == 6:
+        for_work = True
+        participant = int(payee)
+        if str(participant) not in request.form.keys():
+            if participant in [p.participant for p in PaymentRegistration.query.all()]:
+                PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
+                db.session.commit()
+        else:
+            data = request.form[str(participant)]
+            if data == 'on':
+                if participant not in [p.participant for p in PaymentRegistration.query.all()]:
+                    payment = PaymentRegistration(payment_id, participant, for_work)
+                    db.session.add(payment)
+                    db.session.commit()
+                else:
+                    db.session.query(PaymentRegistration).filter(PaymentRegistration.participant == participant
+                                                                 ).update({'payment_id': payment_id,
+                                                                           'for_work': for_work})
+                    db.session.commit()
+        db.session.commit()
+    elif len(payee) == 5:
+        for_work = False
+        participants = [p.participant_id for p
+                        in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(payee)).all()]
+        for participant in participants:
+            if str(participant) not in request.form.keys():
+                if participant in [p.participant for p in PaymentRegistration.query.all()]:
+                    PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
+                    db.session.commit()
+            else:
+                data = request.form[str(participant)]
+                if data == 'on':
+                    if participant not in [p.participant for p in PaymentRegistration.query.all()]:
+                        payment = PaymentRegistration(payment_id, participant, for_work)
+                        db.session.add(payment)
+                        db.session.commit()
+                    else:
+                        db.session.query(PaymentRegistration).filter(PaymentRegistration.participant == participant
+                                                                     ).update({'payment_id': payment_id,
+                                                                               'for_work': for_work})
+                        db.session.commit()
+    return redirect(url_for('.id_payments'))
+
 
 # БАЗА ЗНАНИЙ
 
