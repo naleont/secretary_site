@@ -2943,7 +2943,7 @@ def add_bank_statement():
                                         bank_name=payment['plat_bank'], account=payment['plat_acc'],
                                         payment_comment=payment['text70'])
                     db.session.add(pay)
-    db.session.commit()
+                    db.session.commit()
     return redirect(url_for('.load_statement', success=True))
 
 
