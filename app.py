@@ -921,7 +921,7 @@ def statement_info():
             for participant in [p.participant for p
                                 in payment_reg.filter(PaymentRegistration.payment_id == payment.payment_id).all()]:
                 if participant in [p.participant_id for p in Discounts.query.all()]:
-                    disc = db.session.query(Discounts).filter(Discounts.participant_id == participant['id']).first()
+                    disc = db.session.query(Discounts).filter(Discounts.participant_id == participant).first()
                     payed = disc.payment
                 else:
                     payed = fee
@@ -2260,7 +2260,6 @@ def many_works():
 
     for n in w:
         edited = False
-        work_id = int(n['number'])
         work_site_id = int(n['id'])
         email = n['contacts']['email']
         tel = n['contacts']['phone']
