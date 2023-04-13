@@ -913,7 +913,7 @@ def payment_info(payment_id):
 
 def statement_info():
     statement = []
-    stat_db = db.session.query(BankStatement).order_by(BankStatement.order_id).order_by(BankStatement.date).all()
+    stat_db = db.session.query(BankStatement).order_by(BankStatement.order_id.asc()).order_by(BankStatement.date.desc()).all()
     payment_reg = db.session.query(PaymentRegistration)
     for payment in stat_db:
         remainder = payment.debit
@@ -2933,9 +2933,7 @@ def add_bank_statement():
     for payment in statement:
         if payment != {}:
             payment['date_oper'] = datetime.datetime.strptime(payment['date_oper'], '%d.%m.%Y')
-            if payment['number'] not in [p.order_id for p in BankStatement.query.all()]\
-                    and payment['date_oper'] not in [p.date for p in BankStatement.query.all()]\
-                    and payment['plat_inn'] not in [p.tin for p in BankStatement.query.all()]:
+            if payment['date_oper'] != datetime.datetime.now().date:
                 if payment['d_c'] == 'C':
                     pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
                                         debit=float(payment['sum_val'].replace(',', '.')), credit=0,
@@ -2945,6 +2943,12 @@ def add_bank_statement():
                     db.session.add(pay)
                     db.session.commit()
     return redirect(url_for('.load_statement', success=True))
+
+
+@app.route('/manage_payments')
+def manage_payments():
+    statement = statement_info()
+    return render_template('participants_and_payment/manage_payments.html', statement=statement)
 
 
 @app.route('/id_payments')
@@ -3037,6 +3041,13 @@ def set_payment(payment_id, payee):
                                                                                'for_work': for_work})
                         db.session.commit()
     return redirect(url_for('.id_payments'))
+
+
+@app.route('/delete_payment/<payment_id>')
+def delete_payment(payment_id):
+    BankStatement.query.filter(BankStatement.payment_id == payment_id).delete()
+    db.session.commit()
+    return redirect(url_for('.manage_payments'))
 
 
 # БАЗА ЗНАНИЙ
