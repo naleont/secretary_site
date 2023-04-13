@@ -17,7 +17,7 @@
             </svg></button>
                 </fieldset>
             </form>
-        </tdalign>
+        </td>
     </tr>
 </table>
 
@@ -37,15 +37,14 @@
 {{ participant['payee'] }}: Не найдено таких участников
 
 {% elif participant['type'] == 'work' %}
-<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['participant']['work_id'] }}" method = 'POST'>
-    <fieldset>
+<!--<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['participant']['work_id'] }}" method = 'POST'>-->
+<!--    <fieldset>-->
         <table>
             <tr>
                 <td width="70%">
                     <input type="checkbox" name="{{ participant['participant']['work_id'] }}" checked>
                     <b>Работа {{ participant['participant']['work_id'] }}</b><br>
                         {{ participant['participant']['work_name'] }}<br>
-                    <b>Заявка {{ participant['participant']['appl_no'] }}</b><br>
                         Оргвзнос {{ participant['participant']['fee'] }}р.
                             {% if participant['participant']['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
@@ -57,16 +56,19 @@
                             {% elif response['value']['format'] == 'online'%}
                                 Дистанционное участие
                             {% endif %}
+                    <br>
+                            <a href="/application_payment/{{ payment['payment_id'] }}/{{ participant['participant']['appl_no'] }}"><button class="blue_no_border" type="submit">
+                    <b>Заявка {{ participant['participant']['appl_no'] }}</b></button></a>
                 </td>
                 <td width="30%">
-                    <input class="button" type="submit" value="Назначить платеж работе"><br><br>
-                    <a href="/discount_and_participation_mode/{{ participant['participant']['work_id'] }}">
-                        <button>Исправить суммы оргвзносов</button></a>
+<!--                    <input class="button" type="submit" value="Назначить платеж работе"><br><br>-->
+<!--                    <a href="/discount_and_participation_mode/{{ participant['participant']['work_id'] }}">-->
+<!--                        <button>Исправить суммы оргвзносов</button></a>-->
                 </td>
             </tr>
         </table>
-    </fieldset>
-</form>
+<!--    </fieldset>-->
+<!--</form>-->
 
 {% elif participant['type'] == 'appl' %}
 <table>

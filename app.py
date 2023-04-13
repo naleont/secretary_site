@@ -2978,9 +2978,11 @@ def set_payee(payment_id, payee):
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
 
 
-@app.route('/application_payment/<payment_id>', methods=['GET'])
-def application_payment(payment_id):
-    payee = request.values.get('payee', str)
+@app.route('/application_payment/<payment_id>', methods=['GET'], defaults={'payee':None})
+@app.route('/application_payment/<payment_id>/<payee>')
+def application_payment(payment_id, payee):
+    if payee is None:
+        payee = request.values.get('payee', str)
     return redirect(url_for('.set_payee', payment_id=payment_id, payee=payee))
 
 
