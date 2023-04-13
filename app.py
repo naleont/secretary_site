@@ -3004,8 +3004,10 @@ def set_payment(payment_id, payee):
         participant = int(payee)
         if str(participant) not in request.form.keys():
             if participant in [p.participant for p in PaymentRegistration.query.all()]:
-                PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
-                db.session.commit()
+                if PaymentRegistration.query.filter(PaymentRegistration.participant == participant
+                                                    ).first().payment_id == int(payment_id):
+                    PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
+                    db.session.commit()
         else:
             data = request.form[str(participant)]
             if data == 'on':
@@ -3026,8 +3028,10 @@ def set_payment(payment_id, payee):
         for participant in participants:
             if str(participant) not in request.form.keys():
                 if participant in [p.participant for p in PaymentRegistration.query.all()]:
-                    PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
-                    db.session.commit()
+                    if PaymentRegistration.query.filter(PaymentRegistration.participant == participant
+                                                        ).first().payment_id == int(payment_id):
+                        PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
+                        db.session.commit()
             else:
                 data = request.form[str(participant)]
                 if data == 'on':
