@@ -1404,18 +1404,18 @@ def supervisors():
                            relevant=relevant)
 
 
-# @app.route('/download_supervisors')
-# def download_supervisors():
-#     sups = get_supervisors()
-#     c, cats = categories_info()
-#     relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
-#     relevant.append(21)  # Добавление Свешниковой
-#     relevant.append(44)  # Добавление Марусяк
-#     supers = [sup for sup in sups.values() if sup['id'] in relevant]
-#     df = pd.DataFrame(data=supers)
-#     with pd.ExcelWriter('static/files/supervisors.xlsx') as writer:
-#         df.to_excel(writer, sheet_name='Руководители секций')
-#     return send_file('static/files/supervisors.xlsx', as_attachment=True)
+@app.route('/download_supervisors')
+def download_supervisors():
+    sups = get_supervisors()
+    c, cats = categories_info()
+    relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
+    relevant.append(21)  # Добавление Свешниковой
+    relevant.append(44)  # Добавление Марусяк
+    supers = [sup for sup in sups.values() if sup['id'] in relevant]
+    df = pd.DataFrame(data=supers)
+    with pd.ExcelWriter('static/files/supervisors.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Руководители секций')
+    return send_file('static/files/supervisors.xlsx', as_attachment=True)
 
 
 @app.route('/edit_supervisor', defaults={'sup_id': ''})
@@ -1693,7 +1693,7 @@ def users_list(query):
             for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif query.lower() in [u.last_name.lower() for u in Users.query.all()]:
-            q = ''.join([query[0].upper(), query[1:].lower()])
+            q = ''.join([query[0].upper()] + [s.lower() for s in query[1:]])
             for u in Users.query.filter(Users.last_name == q).order_by(Users.user_id.desc()).all():
                 users[u.user_id] = get_user_info(u.user_id)
         elif query == 'secretary':
@@ -2984,18 +2984,11 @@ def set_payee(payment_id, payee):
             pass
         if payee in [p.appl_id for p in ParticipantsApplied.query.all()]:
             participant = {'type': 'appl', 'participant': [application_2_tour(payee)]}
-        elif payee.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
-            parts = [p.participant_id for p
-                     in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
-            parts.extend([p.participant_id for p
-                     in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
-            parts.extend([p.participant_id for p
-                     in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
-                                                         ''.join([payee[0].upper(), payee[1:].lower()])).all()])
+        elif payee in [p.last_name for p in ParticipantsApplied.query.all()]:
+            parts = [p.participant_id for p in ParticipantsApplied.query.filter(ParticipantsApplied.last_name).all()]
             p = []
             for part in parts:
-                appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
-                partic = application_2_tour(appl)
+                partic = application_2_tour(part)
                 p.append(partic)
             participant = {'type': 'appl', 'participant': p}
         elif payee in [w.work_id for w in Works.query.all()]:
