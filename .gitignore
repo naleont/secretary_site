@@ -23,3 +23,4 @@ ajax_models.py
 /test
 requests_2.json
 cat_site_ids.json
+/static/files/generated_files
