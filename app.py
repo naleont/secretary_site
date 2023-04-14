@@ -2983,6 +2983,8 @@ def set_payee(payment_id, payee):
             pass
         if payee in [p.appl_id for p in ParticipantsApplied.query.all()]:
             participant = {'type': 'appl', 'participant': [application_2_tour(payee)]}
+        elif payee in [w.work_id for w in Works.query.all()]:
+            participant = {'type': 'work', 'participant': work_info(payee)}
         elif payee.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
             parts = [p.participant_id for p
                      in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
@@ -2997,8 +2999,6 @@ def set_payee(payment_id, payee):
                 partic = application_2_tour(appl)
                 p.append(partic)
             participant = {'type': 'appl', 'participant': p}
-        elif payee in [w.work_id for w in Works.query.all()]:
-            participant = {'type': 'work', 'participant': work_info(payee)}
         else:
             participant = {'type': None, 'participant': payee}
     else:
