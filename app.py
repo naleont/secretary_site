@@ -2976,6 +2976,7 @@ def id_payments():
 @app.route('/set_payee/<payment_id>/<payee>')
 def set_payee(payment_id, payee):
     payment = payment_info(payment_id)
+    payee = payee.strip()
     if payee is not None:
         try:
             payee = int(payee)
