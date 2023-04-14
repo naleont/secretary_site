@@ -32,9 +32,9 @@
 Счет плательщика: {{ payment['account'] }}<br>
 Номер платежного документа: {{ payment['order_id'] }}<br><br>
 
-{% if participant['type'] == 'None' %}
+{% if participant['type'] == None %}
 
-{{ participant['payee'] }}: Не найдено таких участников
+{{ participant['participant'] }}: Не найдено таких участников
 
 {% elif participant['type'] == 'work' %}
 <!--<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['participant']['work_id'] }}" method = 'POST'>-->

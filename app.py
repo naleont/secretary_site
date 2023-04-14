@@ -2999,6 +2999,8 @@ def set_payee(payment_id, payee):
             participant = {'type': 'appl', 'participant': p}
         elif payee in [w.work_id for w in Works.query.all()]:
             participant = {'type': 'work', 'participant': work_info(payee)}
+        else:
+            participant = {'type': None, 'participant': payee}
     else:
         participant = {'type': None, 'participant': payee}
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
