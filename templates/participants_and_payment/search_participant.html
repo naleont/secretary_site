@@ -27,7 +27,10 @@
                         <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
                     </svg>
                 </a><br>
-                {{ response['value']['work_name'] }}</b><br>
+                {{ response['value']['work_name'] }}</b>
+                {% if response['value']['reg_tour'] %}<br>
+                <span class="alarm">{{ response['value']['reg_tour'] }} тур</span>
+                {% endif %}<br>
                 Заявка {{ response['value']['appl_no'] }}<br>
                 Оргвзнос {{ response['value']['fee'] }}р.,
                     {% if not response['value']['format'] or response['value']['format'] == 'face-to-face' %}
@@ -48,7 +51,10 @@
                 <b>Работы</b><br>
                 {% for work in response['value']['works'] %}
                 Работа {{ work['work_id'] }} -
-                {{ work['work_name'] }}<br>
+                {{ work['work_name'] }}
+                {% if work['reg_tour'] %}
+                <span class="alarm">{{ work['reg_tour'] }} тур</span>
+                {% endif %}<br>
                 {% endfor %}<br>
                 <b>Участники</b><br>
                 {% for participant in response['value']['participants'] %}
@@ -64,6 +70,9 @@
                     Очное участие
                 {% elif participant['format'] == 'online'%}
                     Дистанционное участие
+                {% endif %}
+                {% if participant['payed'] == True %}
+                - <a href="/set_payee/{{ participant['payment_id'] }}/{{ response['value']['id'] }}">Посмотреть платеж</a>
                 {% endif %}<br><br>
                 {% endfor %}
                 {% endif %}</b>

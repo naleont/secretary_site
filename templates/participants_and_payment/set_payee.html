@@ -23,7 +23,11 @@
 
 Дата получения платежа: {{ payment['date'] }}<br>
 Сумма: {{ payment['debit'] }}<br>
-Не распределено: {{ payment['remainder'] }}<br><br>
+{% if payment['remainder'] != '0 р.' %}
+<span class="alarm">Не распределено: {{ payment['remainder'] }}</span>
+{% else %}
+Платеж распределен по участникам
+{% endif %}<br><br>
 Комментарий к платежу: {{ payment['comment'] }}<br><br>
 Плательщик: {{ payment['organisation'] }}<br>
 ИНН: {{ payment['tin'] }}<br>
@@ -44,7 +48,10 @@
                 <td width="70%">
                     <input type="checkbox" name="{{ participant['participant']['work_id'] }}" checked>
                     <b>Работа {{ participant['participant']['work_id'] }}</b><br>
-                        {{ participant['participant']['work_name'] }}<br>
+                        {{ participant['participant']['work_name'] }}
+                        {% if participant['participant']['reg_tour'] %}
+                        <span class="alarm">{{ participant['participant']['reg_tour'] }} тур</span>
+                        {% endif %}<br>
                         Оргвзнос {{ participant['participant']['fee'] }}р.
                             {% if participant['participant']['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
@@ -78,8 +85,11 @@
             <b>Заявка {{ appl['id'] }}</b><br>
                 <b>Работы</b><br>
                 {% for work in appl['works'] %}
-                Работа {{ work['work_id'] }} -
+                <i>Работа {{ work['work_id'] }}</i>
                 {{ work['work_name'] }}<br>
+                {% if work['reg_tour'] %}
+                <span class="alarm">{{ work['reg_tour'] }} тур</span>
+                {% endif %}<br>
                 {% endfor %}<br>
                 <b>Участники</b><br>
                 {% for member in appl['participants'] %}
@@ -95,6 +105,9 @@
                     Очное участие
                 {% elif member['format'] == 'online'%}
                     Дистанционное участие
+                {% endif %}
+                {% if member['payed'] == True %}
+                - <a href="/set_payee/{{ member['payment_id'] }}/{{ appl['id'] }}">Посмотреть платеж</a>
                 {% endif %}<br><br>
                 {% endfor %}
         </td>

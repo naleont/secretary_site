@@ -14,6 +14,7 @@ from flask_mail import Mail, Message
 from sqlalchemy import update, delete
 import asyncio
 from flask import send_file
+
 # import pandas as pd
 
 app = Flask(__name__, instance_relative_config=False)
@@ -319,7 +320,7 @@ def write_category(cat_info):
         else:
             cat_dir = CatDirs(cat_info['cat_id'], cat_info['direction'], cat_info['contest'])
             db.session.add(cat_dir)
-        if cat_info['supervisor'] is not None and cat_info['supervisor'] !='':
+        if cat_info['supervisor'] is not None and cat_info['supervisor'] != '':
             if cat_info['cat_id'] in [sup.cat_id for sup in CatSupervisors.query.all()]:
                 db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).update(
                     {CatSupervisors.supervisor_id: cat_info['supervisor']})
@@ -505,12 +506,14 @@ def one_application(application):
 
 def application_info(info_type, user, year=curr_year):
     if info_type == 'user':
-        applications = db.session.query(Application).filter(Application.user_id == user).order_by(Application.year.desc())
+        applications = db.session.query(Application).filter(Application.user_id == user).order_by(
+            Application.year.desc())
     elif info_type == 'year':
         applications = db.session.query(Application).join(Users).filter(Application.year == year).order_by(
             Users.last_name)
     elif info_type == 'user-year':
-        applications = db.session.query(Application).filter(Application.user_id == user).filter(Application.year == year)
+        applications = db.session.query(Application).filter(Application.user_id == user).filter(
+            Application.year == year)
     else:
         applications = None
     appl = dict()
@@ -570,8 +573,9 @@ def work_info(work_id):
             work['timeshift'] = str(work['timeshift'])
     if work_id in [w.work_id for w in RevAnalysis.query.all()]:
         if len(RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()
-               ) == len(RevCriteria.query.filter(RevCriteria.year == datetime.datetime.strptime(str(curr_year), '%Y').date()
-                                                 ).all()):
+               ) == len(
+            RevCriteria.query.filter(RevCriteria.year == datetime.datetime.strptime(str(curr_year), '%Y').date()
+                                     ).all()):
             work['analysis'] = True
         else:
             work['analysis'] = 'part'
@@ -883,7 +887,8 @@ def application_2_tour(appl):
         participant = {'id': part_db.participant_id, 'last_name': part_db.last_name, 'first_name': part_db.first_name,
                        'patronymic_name': part_db.patronymic_name, 'class': part_db.participant_class,
                        'role': part_db.role}
-        p_name = (participant['last_name'] + ' ' + participant['first_name'] + ' ' + participant['patronymic_name']).strip()
+        p_name = (participant['last_name'] + ' ' + participant['first_name'] + ' ' + participant[
+            'patronymic_name']).strip()
         if participant['id'] in [p.participant_id for p in Discounts.query.all()]:
             disc = db.session.query(Discounts).filter(Discounts.participant_id == participant['id']).first()
             participant['fee'] = disc.payment
@@ -893,6 +898,8 @@ def application_2_tour(appl):
             participant['format'] = 'face-to-face'
         if participant['id'] in [p.participant for p in PaymentRegistration.query.all()]:
             participant['payed'] = True
+            participant['payment_id'] = PaymentRegistration.query.filter(PaymentRegistration.participant ==
+                                                                         participant['id']).first().payment_id
         else:
             participant['payed'] = False
         application['participants'].append(participant)
@@ -902,19 +909,37 @@ def application_2_tour(appl):
 def payment_info(payment_id):
     payment = db.session.query(BankStatement).filter(BankStatement.payment_id == int(payment_id)).first()
     date = datetime.datetime.strftime(payment.date, '%d.%m.%Y')
+    remainder = payment.debit
+    if int(payment_id) in [p.payment_id for p in PaymentRegistration.query.all()]:
+        for participant in PaymentRegistration.query.filter(PaymentRegistration.payment_id == int(payment_id)).all():
+            print(application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
+                                                                      participant.participant
+                                                                      ).first().appl_id))
+            participants = application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
+                                                                               participant.participant
+                                                                               ).first().appl_id)['participants']
+            for part in participants:
+                if part['id'] == participant.participant:
+                    remainder -= float(part['fee'])
+    if remainder % 1 == 0:
+        remainder = str(int(remainder)) + ' р.'
+    else:
+        remainder = str(remainder).replace('.', ',') + ' р.'
     if payment.debit % 1 == 0:
         debit = str(int(payment.debit)) + ' р.'
     else:
         debit = str(payment.debit).replace('.', ',') + ' р.'
     pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
            'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
-           'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment}
+           'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment,
+           'remainder': remainder}
     return pay
 
 
 def statement_info():
     statement = []
-    stat_db = db.session.query(BankStatement).order_by(BankStatement.order_id.asc()).order_by(BankStatement.date.desc()).all()
+    stat_db = db.session.query(BankStatement).order_by(BankStatement.order_id.asc()).order_by(
+        BankStatement.date.desc()).all()
     payment_reg = db.session.query(PaymentRegistration)
     for payment in stat_db:
         remainder = payment.debit
@@ -941,7 +966,7 @@ def statement_info():
     return statement
 
 
-#САЙТ
+# САЙТ
 # Главная страница
 @app.route('/')
 def main_page():
@@ -1396,8 +1421,8 @@ def supervisors():
     sups = get_supervisors()
     c, cats = categories_info()
     relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
-    relevant.append(21) #Добавление Свешниковой
-    relevant.append(44) #Добавление Марусяк
+    relevant.append(21)  # Добавление Свешниковой
+    relevant.append(44)  # Добавление Марусяк
     renew_session()
     return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access(url='/supervisors'),
                            relevant=relevant)
@@ -1564,7 +1589,8 @@ def application_process():
              Application.taken_part: taken_part})
     else:
         appl_id = max([appl.appl_id for appl in Application.query.all()]) + 1
-        cat_sec = Application(appl_id, session['user_id'], curr_year, role, category_1, category_2, category_3, any_category,
+        cat_sec = Application(appl_id, session['user_id'], curr_year, role, category_1, category_2, category_3,
+                              any_category,
                               taken_part, 'False')
         db.session.add(cat_sec)
     db.session.commit()
@@ -2395,7 +2421,7 @@ def many_applications():
         works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
         works_applied.extend(works)
         part_s = [{'id': int(p['id']), 'appl': int(n['id']), 'last_name': p['last_name'],
-                   'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'], 
+                   'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
                    'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
         participants.extend(part_s)
     for work in works_applied:
@@ -2881,7 +2907,7 @@ def search_participant(query):
     return render_template('participants_and_payment/search_participant.html', response=response)
 
 
-@app.route('/searching_participant', methods = ['GET'])
+@app.route('/searching_participant', methods=['GET'])
 def searching_participant():
     renew_session()
     query = request.values.get('query', str)
@@ -2952,7 +2978,8 @@ def add_bank_statement():
                 if payment['d_c'] == 'C':
                     pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
                                         debit=float(payment['sum_val'].replace(',', '.')), credit=0,
-                                        organisation=payment['plat_name'], tin=payment['plat_inn'], bic=payment['plat_bic'],
+                                        organisation=payment['plat_name'], tin=payment['plat_inn'],
+                                        bic=payment['plat_bic'],
                                         bank_name=payment['plat_bank'], account=payment['plat_acc'],
                                         payment_comment=payment['text70'])
                     db.session.add(pay)
@@ -2976,8 +3003,8 @@ def id_payments():
 @app.route('/set_payee/<payment_id>/<payee>')
 def set_payee(payment_id, payee):
     payment = payment_info(payment_id)
-    payee = payee.strip()
     if payee is not None:
+        payee = payee.strip()
         try:
             payee = int(payee)
         except ValueError:
@@ -2990,10 +3017,10 @@ def set_payee(payment_id, payee):
             parts = [p.participant_id for p
                      in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
             parts.extend([p.participant_id for p
-                     in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
+                          in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
             parts.extend([p.participant_id for p
-                     in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
-                                                         ''.join([payee[0].upper(), payee[1:].lower()])).all()])
+                          in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
+                                                              ''.join([payee[0].upper(), payee[1:].lower()])).all()])
             p = []
             for part in parts:
                 appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
@@ -3007,7 +3034,7 @@ def set_payee(payment_id, payee):
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
 
 
-@app.route('/application_payment/<payment_id>', methods=['GET'], defaults={'payee':None})
+@app.route('/application_payment/<payment_id>', methods=['GET'], defaults={'payee': None})
 @app.route('/application_payment/<payment_id>/<payee>')
 def application_payment(payment_id, payee):
     if payee is None:
@@ -3319,4 +3346,3 @@ def secretary_knowledge():
 
 if __name__ == '__main__':
     app.run(debug=False)
-

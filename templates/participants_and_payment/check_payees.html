@@ -26,6 +26,9 @@
                     {% for work in appl['works'] %}
                     Работа {{ work['work_id'] }} -
                     {{ work['work_name'] }}<br>
+                    {% if work['reg_tour'] %}
+                    <span class="alarm">{{ work['reg_tour'] }} тур</span>
+                    {% endif %}<br>
                     {% endfor %}<br>
                 </td>
             </tr>
