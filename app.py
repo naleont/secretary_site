@@ -935,8 +935,8 @@ def payment_info(payment_id):
 
 def statement_info():
     statement = []
-    stat_db = db.session.query(BankStatement).order_by(BankStatement.order_id.asc()).order_by(
-        BankStatement.date.desc()).all()
+    stat_db = db.session.query(BankStatement).order_by(
+        BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
     payment_reg = db.session.query(PaymentRegistration)
     for payment in stat_db:
         remainder = payment.debit
