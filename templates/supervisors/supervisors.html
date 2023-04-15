@@ -3,7 +3,16 @@
 {% block title %} Русеки {% endblock %}
 
 {% block content %}
-<h2>Руководители секций</h2>
+<table>
+    <tr>
+        <td>
+            <h2>Руководители секций</h2>
+        </td>
+        <td align="right">
+            <a href="/download_supervisors"><button>Скачать список этого года</button></a>
+        </td>
+    </tr>
+</table>
 
 {% if session['type'] == 'admin' %}
 <a href="/edit_supervisor"><button>Добавить русека</button></a><br><br>

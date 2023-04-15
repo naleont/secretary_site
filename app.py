@@ -15,7 +15,7 @@ from sqlalchemy import update, delete
 import asyncio
 from flask import send_file
 
-# import pandas as pd
+import pandas as pd
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -912,9 +912,6 @@ def payment_info(payment_id):
     remainder = payment.debit
     if int(payment_id) in [p.payment_id for p in PaymentRegistration.query.all()]:
         for participant in PaymentRegistration.query.filter(PaymentRegistration.payment_id == int(payment_id)).all():
-            print(application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
-                                                                      participant.participant
-                                                                      ).first().appl_id))
             participants = application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
                                                                                participant.participant
                                                                                ).first().appl_id)['participants']
@@ -1428,18 +1425,18 @@ def supervisors():
                            relevant=relevant)
 
 
-# @app.route('/download_supervisors')
-# def download_supervisors():
-#     sups = get_supervisors()
-#     c, cats = categories_info()
-#     relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
-#     relevant.append(21)  # Добавление Свешниковой
-#     relevant.append(44)  # Добавление Марусяк
-#     supers = [sup for sup in sups.values() if sup['id'] in relevant]
-#     df = pd.DataFrame(data=supers)
-#     with pd.ExcelWriter('static/files/supervisors.xlsx') as writer:
-#         df.to_excel(writer, sheet_name='Руководители секций')
-#     return send_file('static/files/supervisors.xlsx', as_attachment=True)
+@app.route('/download_supervisors')
+def download_supervisors():
+    sups = get_supervisors()
+    c, cats = categories_info()
+    relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
+    relevant.append(21)  # Добавление Свешниковой
+    relevant.append(44)  # Добавление Марусяк
+    supers = [sup for sup in sups.values() if sup['id'] in relevant]
+    df = pd.DataFrame(data=supers)
+    with pd.ExcelWriter('static/files/supervisors.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Руководители секций')
+    return send_file('static/files/supervisors.xlsx', as_attachment=True)
 
 
 @app.route('/edit_supervisor', defaults={'sup_id': ''})
