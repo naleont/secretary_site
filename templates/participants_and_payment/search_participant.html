@@ -72,7 +72,7 @@
                     Дистанционное участие
                 {% endif %}
                 {% if participant['payed'] == True %}
-                - <a href="/set_payee/{{ participant['payment_id'] }}/{{ response['value']['id'] }}">Посмотреть платеж</a>
+                - <a target="_blank" href="/set_payee/{{ participant['payment_id'] }}/{{ response['value']['id'] }}">Посмотреть платеж</a>
                 {% endif %}<br><br>
                 {% endfor %}
                 {% endif %}</b>

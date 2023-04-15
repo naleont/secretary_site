@@ -107,7 +107,7 @@
                     Дистанционное участие
                 {% endif %}
                 {% if member['payed'] == True %}
-                - <a href="/set_payee/{{ member['payment_id'] }}/{{ appl['id'] }}">Посмотреть платеж</a>
+                - <a target="_blank" href="/set_payee/{{ member['payment_id'] }}/{{ appl['id'] }}">Посмотреть платеж</a>
                 {% endif %}<br><br>
                 {% endfor %}
         </td>
