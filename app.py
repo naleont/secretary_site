@@ -2409,7 +2409,6 @@ def many_works():
 def many_applications():
     renew_session()
     text = '{"works": ' + request.form['text'].strip('\n') + '}'
-
     works = json.loads(text)
     w = works['works']
     works_applied = []
@@ -2421,6 +2420,16 @@ def many_applications():
                    'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
                    'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
         participants.extend(part_s)
+        for participant in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(n['id'])).all():
+            if participant.participant_id not in [p['id'] for p in participants]:
+                part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
+                                                                           participant.participant_id).first()
+                db.session.delete(part_to_del)
+                db.session.commit()
+    for appl in set(a.appl_id for a in ParticipantsApplied.query.all()):
+        if appl not in [a['appl'] for a in participants]:
+            ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).delete()
+            db.session.commit()
     for work in works_applied:
         if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
             db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
