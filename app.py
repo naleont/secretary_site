@@ -1436,7 +1436,7 @@ def supervisors():
 #     df = pd.DataFrame(data=supers)
 #     with pd.ExcelWriter('static/files/supervisors.xlsx') as writer:
 #         df.to_excel(writer, sheet_name='Руководители секций')
-#     return send_file('static/files/supervisors.xlsx', as_attachment=True)
+#     return send_file('static/files/generated_files/supervisors.xlsx', as_attachment=True)
 
 
 @app.route('/edit_supervisor', defaults={'sup_id': ''})
