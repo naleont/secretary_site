@@ -2,7 +2,7 @@
 
 {% block content %}
 
-    <h2><b>Найти работу или заявку</b>
+<h2><b>Найти работу или заявку</b></h2>
     <form action="/searching_participant" method = 'GET'>
         <fieldset>
             <input size="30" type="text" name="query">
@@ -19,63 +19,135 @@
         Ничего не найдено
 
         {% elif response['type'] == 'work' %}
-            <b>Работа {{ response['value']['work_id'] }}
-                <a href="/discount_and_participation_mode/{{ response['value']['work_id'] }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                         class="bi bi-credit-card" viewBox="0 0 16 16">
-                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
-                        <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
-                    </svg>
-                </a><br>
-                {{ response['value']['work_name'] }}</b>
-                {% if response['value']['reg_tour'] %}<br>
-                <span class="alarm">{{ response['value']['reg_tour'] }} тур</span>
-                {% endif %}<br>
-                Заявка {{ response['value']['appl_no'] }}<br>
-                Оргвзнос {{ response['value']['fee'] }}р.,
-                    {% if not response['value']['format'] or response['value']['format'] == 'face-to-face' %}
-                        Очное участие
-                    {% elif response['value']['format'] == 'online'%}
-                        Дистанционное участие
-                    {% endif %}<br>
+        <b>Работа {{ response['value']['work_id'] }}
+            <a href="/discount_and_participation_mode/{{ response['value']['work_id'] }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                     class="bi bi-credit-card" viewBox="0 0 16 16">
+                    <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
+                    <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
+                </svg>
+            </a><br>
+        {{ response['value']['work_name'] }}</b>
+            {% if response['value']['reg_tour'] %}<br>
+            <span class="alarm">{{ response['value']['reg_tour'] }} тур</span>
+            {% endif %}<br>
+        Заявка {{ response['value']['appl_no'] }}<br>
+        Оргвзнос {{ response['value']['fee'] }}р.,
+            {% if not response['value']['format'] or response['value']['format'] == 'face-to-face' %}
+                Очное участие
+            {% elif response['value']['format'] == 'online'%}
+                Дистанционное участие
+            {% endif %}<br>
 
-                {% elif response['type'] == 'appl' %}
-                <br><b>Заявка {{ response['value']['id'] }}</b>
-                <a href="/discount_and_participation_mode/{{ response['value']['id'] }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                         class="bi bi-credit-card" viewBox="0 0 16 16">
-                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
-                        <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
-                    </svg>
-                </a><br><br>
-                <b>Работы</b><br>
+        {% elif response['type'] == 'appl' %}
+        <br><b>Заявка {{ response['value']['id'] }}</b>
+        <a href="/discount_and_participation_mode/{{ response['value']['id'] }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                 class="bi bi-credit-card" viewBox="0 0 16 16">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
+                <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
+            </svg>
+        </a><br><br>
+        <b>Работы</b><br>
                 {% for work in response['value']['works'] %}
                 Работа {{ work['work_id'] }} -
                 {{ work['work_name'] }}
-                {% if work['reg_tour'] %}
-                <span class="alarm">{{ work['reg_tour'] }} тур</span>
-                {% endif %}<br>
+                    {% if work['reg_tour'] %}
+                    <span class="alarm">{{ work['reg_tour'] }} тур</span>
+                    {% endif %}<br>
                 {% endfor %}<br>
-                <b>Участники</b><br>
+            <b>Участники</b><br>
                 {% for participant in response['value']['participants'] %}
-                <i>{{ participant['role'] }} {{ participant['id'] }}</i><br>
+                <i>{{ participant['role'] }} {{ participant['id'] }}</i>
+                    {% if session['access'] > 2 %}
+                        {% if participant['payed'] == True %}
+                        <span class="green-text">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span>
+                        {% elif participant['payed'] == False %}
+                        <span class="alarm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span>
+                        {% endif %}
+                    {% endif %}<br>
                 {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
-                Оргвзнос {{ participant['fee'] }}р.
-                    {% if participant['payed'] == True %}
-                    <span class="green-text">(Оплачен)</span>
-                    {% elif participant['payed'] == False %}
-                    <span class="alarm">(Не оплачен)</span>
-                    {% endif %},
-                {% if participant['format'] == 'face-to-face' %}
-                    Очное участие
-                {% elif participant['format'] == 'online'%}
-                    Дистанционное участие
-                {% endif %}
-                {% if participant['payed'] == True %}
-                - <a target="_blank" href="/set_payee/{{ participant['payment_id'] }}/{{ response['value']['id'] }}">Посмотреть платеж</a>
-                {% endif %}<br><br>
+                    {% if session['access'] >= 8 %}
+                    Оргвзнос {{ participant['fee'] }}р.
+                        {% if participant['payed'] == True %}
+                        <span class="green-text">(Оплачен)</span>
+                        {% elif participant['payed'] == False %}
+                        <span class="alarm">(Не оплачен)</span>
+                        {% endif %},
+                        {% if participant['format'] == 'face-to-face' %}
+                            Очное участие
+                        {% elif participant['format'] == 'online'%}
+                            Дистанционное участие
+                        {% endif %}
+                        {% if participant['payed'] == True %}
+                        - <a target="_blank" href="/set_payee/{{ participant['payment_id'] }}/{{ response['value']['id'] }}">Посмотреть платеж</a>
+                        {% endif %}
+                    {% endif %}<br><br>
                 {% endfor %}
-                {% endif %}</b>
+        {% elif response['type'] == 'appls' %}
+            {% for appl in response['value'] %}
+            <br><b>Заявка {{ appl['id'] }}</b>
+            <a href="/discount_and_participation_mode/{{ response['value']['id'] }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                     class="bi bi-credit-card" viewBox="0 0 16 16">
+                    <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
+                    <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
+                </svg>
+            </a><br><br>
+            <b>Работы</b><br>
+                {% for work in appl['works'] %}
+                Работа {{ work['work_id'] }} -
+                {{ work['work_name'] }}
+                    {% if work['reg_tour'] %}
+                    <span class="alarm">{{ work['reg_tour'] }} тур</span>
+                    {% endif %}<br>
+                {% endfor %}<br>
+        <b>Участники</b><br>
+            {% for participant in appl['participants'] %}
+                <i>{{ participant['role'] }} {{ participant['id'] }}</i>
+                    {% if session['access'] > 2 %}
+                        {% if participant['payed'] == True %}
+                        <span class="green-text">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span>
+                        {% elif participant['payed'] == False %}
+                        <span class="alarm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span><br>
+                        {% endif %}
+                    {% endif %}
+                {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
+                    {% if session['access'] >= 8 %}
+                    Оргвзнос {{ participant['fee'] }}р.
+                        {% if participant['payed'] == True %}
+                        <span class="green-text">(Оплачен)</span>
+                        {% elif participant['payed'] == False %}
+                        <span class="alarm">(Не оплачен)</span>
+                        {% endif %},
+                        {% if participant['format'] == 'face-to-face' %}
+                            Очное участие
+                        {% elif participant['format'] == 'online'%}
+                            Дистанционное участие
+                        {% endif %}
+                        {% if participant['payed'] == True %}
+                        - <a target="_blank" href="/set_payee/{{ participant['payment_id'] }}/{{ response['value']['id'] }}">Посмотреть платеж</a>
+                        {% endif %}<br>
+                    {% endif %}<br>
+            {% endfor %}
+        {% endfor %}
+        {% endif %}</b>
         </p>
-    {% endif %}
+{% endif %}
 {% endblock %}

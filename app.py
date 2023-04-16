@@ -2895,21 +2895,37 @@ def reported(cat_id, work_id, action):
 @app.route('/search_participant/<query>')
 def search_participant(query):
     renew_session()
-    if check_access(url='/search_participant') < 8:
+    if check_access(url='/search_participant') < 3:
         return redirect(url_for('.no_access'))
     if query:
         try:
             qu = int(query)
+            if len(query) == 6 and qu:
+                response = {'type': 'work', 'value': work_info(int(query))}
+            elif len(query) == 5:
+                response = {'type': 'appl', 'value': application_2_tour(int(query))}
+            else:
+                response = {'type': None}
         except ValueError:
-            response = {'type': None}
-        if len(query) == 6 and qu:
-            response = {'type': 'work', 'value': work_info(int(query))}
-        elif len(query) == 5:
-            response = {'type': 'appl', 'value': application_2_tour(int(query))}
-        elif query == 'sear':
-            response = 'search'
-        else:
-            response = {'type': None}
+            if query == 'sear':
+                response = 'search'
+            elif query.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
+                parts = [p.participant_id for p
+                         in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == query.lower()).all()]
+                parts.extend([p.participant_id for p
+                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == query.upper()).all()])
+                parts.extend([p.participant_id for p
+                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
+                                                                  ''.join([query[0].upper(), query[1:].lower()])).all()])
+                p = []
+                for part in parts:
+                    appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
+                    if appl not in [pa['id'] for pa in p]:
+                        partic = application_2_tour(appl)
+                        p.append(partic)
+                response = {'type': 'appls', 'value': p}
+            else:
+                response = {'type': None}
     return render_template('participants_and_payment/search_participant.html', response=response)
 
 
@@ -3030,8 +3046,9 @@ def set_payee(payment_id, payee):
             p = []
             for part in parts:
                 appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
-                partic = application_2_tour(appl)
-                p.append(partic)
+                if appl not in [pa['id'] for pa in p]:
+                    partic = application_2_tour(appl)
+                    p.append(partic)
             participant = {'type': 'appl', 'participant': p}
         else:
             participant = {'type': None, 'participant': payee}
