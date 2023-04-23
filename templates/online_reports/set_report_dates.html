@@ -12,18 +12,19 @@
         {{ message }}
         {% endif %}
     </legend>
+    <span><b>Выберите даты и нажмите: </b></span><input class="button" type="submit" value="Сохранить"><br><br>
       <table frame="void" border="2px" bordercolor="#4962A4">
         <tr>
           <td><b>
             Секция
           </b></td>
-          <td><b>
+          <td align="center"><b>
             День 1
           </b></td>
-          <td><b>
+          <td align="center"><b>
             День 2
           </b></td>
-          <td><b>
+          <td align="center"><b>
             День 3
           </b></td>
         </tr>
@@ -32,20 +33,31 @@
           <td>
             {{ cat['cat_name'] }}
           </td>
-          <td>
+          <td align="center" valign="middle">
+            {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
             <input name="{{ cat['cat_id'] }}_day_1" type="date" value="{{ cat['day_1'] }}"><br><br>
+            {% elif cat['day_1'] != None %}
+            {{ cat['d_1'] }}
+            {% endif %}
           </td>
-          <td>
+          <td align="center" valign="middle">
+            {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
             <input name="{{ cat['cat_id'] }}_day_2" type="date" value="{{ cat['day_2'] }}"><br><br>
+            {% elif cat['day_2'] != None %}
+            {{ cat['day_2'] }}
+            {% endif %}
           </td>
-          <td>
+          <td align="center" valign="middle">
+            {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
             <input name="{{ cat['cat_id'] }}_day_3" type="date" value="{{ cat['day_3'] }}"><br><br>
+            {% elif cat['day_3'] != None %}
+            {{ cat['day_3'] }}
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
       </table>
 
-    <input class="button" type="submit" value="Сохранить">
   </fieldset>
 </form>
 <br>

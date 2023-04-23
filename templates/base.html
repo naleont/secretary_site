@@ -9,6 +9,7 @@
     session['type'] in ['org', 'manager', 'admin'] %}
   <p><a href="/analysis_state">Анализ рецензий</a></p>
   <p><a href="/top_100">Лучшие работы</a></p>
+    <p><a href="/set_report_dates">Назначить даты заседаний секций</a></p>
 {% endif %}
 <!--      <p><a href="/secretary_reminder">Памятка секретаря</a></p>-->
 
@@ -17,6 +18,7 @@
     <p><a href="/users_list">Пользователи</a></p>
     <p><a href="/view_applications">Заявки в команду</a></p>
 {% endif %}
+
 </div>
 <div class="col-sm-8 text-left">
   {% block content %} {% endblock %}

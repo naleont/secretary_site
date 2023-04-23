@@ -412,13 +412,13 @@ def one_category(categ):
         dates = []
         if dates_db.day_1:
             dates.append(days[dates_db.day_1.strftime('%w')] + ' ' + dates_db.day_1.strftime('%d') + ' ' +
-                         months[dates_db.day_1.strftime('%m')])
+                         months_full[dates_db.day_1.strftime('%m')])
         if dates_db.day_2:
             dates.append(days[dates_db.day_2.strftime('%w')] + ' ' + dates_db.day_2.strftime('%d') + ' ' +
-                         months[dates_db.day_2.strftime('%m')])
+                         months_full[dates_db.day_2.strftime('%m')])
         if dates_db.day_3:
             dates.append(days[dates_db.day_3.strftime('%w')] + ' ' + dates_db.day_3.strftime('%d') + ' ' +
-                         months[dates_db.day_3.strftime('%m')])
+                         months_full[dates_db.day_3.strftime('%m')])
         cat['dates'] = ', '.join(dates)
     return cat
 
@@ -2590,16 +2590,22 @@ def set_report_dates(message):
             dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
             if dates_db.day_1:
                 c_dates['day_1'] = dates_db.day_1.strftime('%Y-%m-%d')
+                c_dates['d_1'] = days[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
             else:
                 c_dates['day_1'] = None
+                c_dates['d_1'] = None
             if dates_db.day_2:
                 c_dates['day_2'] = dates_db.day_2.strftime('%Y-%m-%d')
+                c_dates['d_2'] = days[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
             else:
                 c_dates['day_2'] = None
+                c_dates['d_2'] = None
             if dates_db.day_3:
                 c_dates['day_3'] = dates_db.day_3.strftime('%Y-%m-%d')
+                c_dates['d_3'] = days[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
             else:
                 c_dates['day_3'] = None
+                c_dates['d_3'] = None
         else:
             c_dates['day_1'] = None
             c_dates['day_2'] = None
