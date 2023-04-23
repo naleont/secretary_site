@@ -35,21 +35,21 @@
           </td>
           <td align="center" valign="middle">
             {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
-            <input name="{{ cat['cat_id'] }}_day_1" type="date" value="{{ cat['day_1'] }}"><br><br>
+            <input name="{{ cat['cat_id'] }}_day_1" type="date" value="{{ cat['day_1'] }}">
             {% elif cat['day_1'] != None %}
             {{ cat['d_1'] }}
             {% endif %}
           </td>
           <td align="center" valign="middle">
             {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
-            <input name="{{ cat['cat_id'] }}_day_2" type="date" value="{{ cat['day_2'] }}"><br><br>
+            <input name="{{ cat['cat_id'] }}_day_2" type="date" value="{{ cat['day_2'] }}">
             {% elif cat['day_2'] != None %}
             {{ cat['day_2'] }}
             {% endif %}
           </td>
           <td align="center" valign="middle">
             {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
-            <input name="{{ cat['cat_id'] }}_day_3" type="date" value="{{ cat['day_3'] }}"><br><br>
+            <input name="{{ cat['cat_id'] }}_day_3" type="date" value="{{ cat['day_3'] }}">
             {% elif cat['day_3'] != None %}
             {{ cat['day_3'] }}
             {% endif %}
