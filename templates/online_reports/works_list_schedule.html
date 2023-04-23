@@ -3,13 +3,13 @@
 {% block content %}
 <h2>{{ cat_name }}</h2>
 <h2>Нераспределенные работы</h2>
-<a target="_blank"
-   href="https://docs.google.com/spreadsheets/d/1SMgw6V3P3C6djkw0Y_yAscnQCMRMzMcnAwToKNZmWZA/edit?usp=sharing">
-    <button>
-        Какие работы вставлять в расписание?
-    </button>
-</a>
-<br><br>
+<!--<a target="_blank"-->
+<!--   href="https://docs.google.com/spreadsheets/d/1SMgw6V3P3C6djkw0Y_yAscnQCMRMzMcnAwToKNZmWZA/edit?usp=sharing">-->
+<!--    <button>-->
+<!--        Какие работы вставлять в расписание?-->
+<!--    </button>-->
+<!--</a>-->
+<!--<br><br>-->
 Работ допущено до 2 тура: <b>{{ approved_for_2 }}</b><br>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
@@ -27,7 +27,12 @@
         </td>
     </tr>
     {% for work in works_unordered %}
-    <tr bgcolor="#faebd7">
+    <tr
+            {% if work['payed'] == True%}
+                bgcolor="#C6E0B4"
+            {% else %}
+                bgcolor="#faebd7"
+            {% endif %}>
         <td>
             <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
                 {{ work['work_id'] }}</a>

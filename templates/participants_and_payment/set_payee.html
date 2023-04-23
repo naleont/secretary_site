@@ -41,8 +41,8 @@
 {{ participant['participant'] }}: Не найдено таких участников
 
 {% elif participant['type'] == 'work' %}
-<!--<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['participant']['work_id'] }}" method = 'POST'>-->
-<!--    <fieldset>-->
+<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['participant']['work_id'] }}" method = 'POST'>
+    <fieldset>
         <table>
             <tr>
                 <td width="70%">
@@ -68,14 +68,14 @@
                     <b>Заявка {{ participant['participant']['appl_no'] }}</b></button></a>
                 </td>
                 <td width="30%">
-<!--                    <input class="button" type="submit" value="Назначить платеж работе"><br><br>-->
-<!--                    <a href="/discount_and_participation_mode/{{ participant['participant']['work_id'] }}">-->
-<!--                        <button>Исправить суммы оргвзносов</button></a>-->
+                    <input class="button" type="submit" value="Назначить платеж работе"><br><br>
+                    <a href="/discount_and_participation_mode/{{ participant['participant']['work_id'] }}">
+                        <button>Исправить суммы оргвзносов</button></a>
                 </td>
             </tr>
         </table>
-<!--    </fieldset>-->
-<!--</form>-->
+    </fieldset>
+</form>
 
 {% elif participant['type'] == 'appl' %}
 <table>

@@ -1,19 +1,20 @@
+import datetime
 import json
-import csv
-from time import strftime
+import os
+import re
 
+from cryptography.fernet import Fernet
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
-from models import *
-import mail_data
-import re
-import datetime
-import os
-from cryptography.fernet import Fernet
-from flask_mail import Mail, Message
-from sqlalchemy import update, delete
-import asyncio
 from flask import send_file
+from flask_mail import Mail, Message
+
+import mail_data
+from models import *
+
+from docx import Document
+from docx.shared import Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 # import pandas as pd
 
@@ -566,6 +567,22 @@ def work_info(work_id):
     work['work_name'] = work_db.work_name
     work['timeshift'] = work_db.msk_time_shift
     work['reported'] = work_db.reported
+    work['email'] = work_db.email
+    work['tel'] = work_db.tel
+    work['author_1_name'] = work_db.author_1_name
+    work['author_1_age'] = work_db.author_1_age
+    work['author_1_class'] = work_db.author_1_class
+    work['author_2_name'] = work_db.author_2_name
+    work['author_2_age'] = work_db.author_2_age
+    work['author_2_class'] = work_db.author_2_class
+    work['author_3_name'] = work_db.author_3_name
+    work['author_3_age'] = work_db.author_3_age
+    work['author_3_class'] = work_db.author_3_class
+    work['authors'] = work['author_1_name']
+    if work['author_2_name'] is not None:
+        work['authors'] += ', ' + work['author_2_name']
+    if work['author_3_name'] is not None:
+        work['authors'] += ', ' + work['author_3_name']
     if work['timeshift']:
         if work['timeshift'] >= 0:
             work['timeshift'] = '+' + str(work['timeshift'])
@@ -611,6 +628,12 @@ def work_info(work_id):
         report = db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).first()
         work['report_day'] = report.report_day
         work['report_order'] = report.order
+    if work['work_id'] in [p.participant for p in PaymentRegistration.query.all()]:
+        work['payed'] = True
+        work['payment_id'] = PaymentRegistration.query.filter(PaymentRegistration.participant ==
+                                                              work['work_id']).first().payment_id
+    else:
+        work['payed'] = False
     return work
 
 
@@ -854,29 +877,6 @@ def no_fee_nums():
     return total, cats
 
 
-def check_order(cat_works):
-    for d in [d.report_day for d in ReportOrder.query.all()]:
-        if [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == d).all()]:
-            prev_order = 0
-            wo = {}
-            order_dict = {}
-            for work in cat_works:
-                if work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == d
-                                                                        ).order_by(ReportOrder.order).all()]:
-                    order = db.session.query(ReportOrder).filter(ReportOrder.work_id == work,
-                                                                 ReportOrder.report_day == d).first().order
-                    wo[work] = order
-                    order_dict = {w: o for w, o in sorted(wo.items(), key=lambda item: item[1])}
-            if order_dict != {}:
-                for w, o in order_dict.items():
-                    prev_order += 1
-                    if o != prev_order:
-                        db.session.query(ReportOrder).filter(ReportOrder.work_id == w
-                                                             ).update({
-                            ReportOrder.order: prev_order})
-                        db.session.commit()
-
-
 def application_2_tour(appl):
     application = {'id': appl, 'works': [work_info(w.work_id) for w
                                          in Applications2Tour.query.filter(Applications2Tour.appl_no == appl).all()],
@@ -910,7 +910,8 @@ def payment_info(payment_id):
     payment = db.session.query(BankStatement).filter(BankStatement.payment_id == int(payment_id)).first()
     date = datetime.datetime.strftime(payment.date, '%d.%m.%Y')
     remainder = payment.debit
-    if int(payment_id) in [p.payment_id for p in PaymentRegistration.query.all()]:
+    if int(payment_id) in [p.payment_id for p in PaymentRegistration.query.filter(PaymentRegistration.for_work == 0
+                                                                                  ).all()]:
         for participant in PaymentRegistration.query.filter(PaymentRegistration.payment_id == int(payment_id)).all():
             participants = application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
                                                                                participant.participant
@@ -961,6 +962,39 @@ def statement_info():
                'remainder': remainder}
         statement.append(pay)
     return statement
+
+
+def document_set():
+    document = Document()
+
+    style = document.styles['Header']
+    style.font.name = 'Calibri Light'
+    style.font.size = Pt(16)
+    style.font.bold = True
+
+    style = document.styles['Heading 1']
+    style.font.name = 'Calibri Light'
+    style.font.size = Pt(16)
+    style.font.color.rgb = RGBColor(0, 0, 0)
+    style.paragraph_format.space_before = Pt(12)
+    style.paragraph_format.space_after = Pt(12)
+    style.paragraph_format.left_indent = Pt(0)
+
+    style = document.styles['Normal']
+    style.font.name = 'Calibri Light'
+    style.font.size = Pt(14)
+    style.font.color.rgb = RGBColor(0, 0, 0)
+    style.paragraph_format.space_before = Pt(6)
+    style.paragraph_format.space_after = Pt(6)
+    style.paragraph_format.left_indent = Pt(30)
+
+    # style = document.styles['Normal']
+    # style.font.name = 'Calibri Light'
+    # style.font.size = Pt(14)
+    # style.font.color.rgb = RGBColor(0, 0, 0)
+    # style.paragraph_format.left_indent = Pt(36)
+
+    return document
 
 
 # САЙТ
@@ -2550,7 +2584,7 @@ def drive_links():
 def set_report_dates(message):
     c, cats = categories_info()
     cat_dates = []
-    for cat in cats.values():
+    for cat in cats:
         c_dates = {'cat_id': cat['id'], 'cat_name': cat['name']}
         if cat['id'] in [c.cat_id for c in ReportDates.query.all()]:
             dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
@@ -2726,36 +2760,42 @@ def works_list_schedule(cat_id):
 @app.route('/work_date/<cat_id>/<work_id>/<day>/<page>')
 def work_date(cat_id, work_id, day, page):
     work_id = int(work_id)
-    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
-    last_order = 1
-    for work in cat_works:
-        if work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
-            order = db.session.query(ReportOrder).filter(ReportOrder.work_id == work,
-                                                         ReportOrder.report_day == day).first().order
-            if order >= last_order:
-                last_order = order + 1
+    if int(cat_id) in [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
+        last_order = max([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
+                                                                    ).filter(ReportOrder.report_day == day).all()]) + 1
+    else:
+        print('hi')
+        last_order = 1
     if work_id in [w.work_id for w in ReportOrder.query.all()]:
         db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id
                                              ).update({ReportOrder.report_day: day,
-                                                       ReportOrder.order: last_order})
+                                                       ReportOrder.order: last_order,
+                                                       ReportOrder.cat_id: cat_id})
         db.session.commit()
     else:
-        o = ReportOrder(work_id, day, last_order)
+        o = ReportOrder(work_id, day, last_order, int(cat_id))
         db.session.add(o)
         db.session.commit()
-    check_order(cat_works)
     return redirect(url_for('.' + page, cat_id=cat_id))
 
 
 @app.route('/unorder/<cat_id>/<work_id>')
 def unorder(cat_id, work_id):
     work_id = int(work_id)
+    work_db = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
+    order_deleted = work_db.order
     if work_id in [w.work_id for w in ReportOrder.query.all()]:
         work = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
         db.session.delete(work)
+        db.session.query(Works).filter(Works.work_id == work_id).update({Works.reported: False})
         db.session.commit()
-    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
-    check_order(cat_works)
+    for work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
+                                                             ).filter(ReportOrder.report_day == work_db.report_day
+                                                                      ).all() if w.order > order_deleted]:
+        new = ReportOrder.query.filter(ReportOrder.work_id == work).first().order - 1
+        db.session.query(ReportOrder).filter(ReportOrder.work_id == work
+                                             ).update({ReportOrder.order: new})
+        db.session.commit()
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
@@ -2768,16 +2808,16 @@ def reorder(cat_id, work_id, direction):
         order_2 = order_1 - 1
     else:
         order_2 = order_1 + 1
-    db.session.query(ReportOrder).filter(ReportOrder.report_day == day
-                                         ).filter(ReportOrder.order == order_2
-                                                  ).update({ReportOrder.order: order_1})
+    db.session.query(ReportOrder).filter(ReportOrder.cat_id == int(cat_id)
+                                         ).filter(ReportOrder.report_day == day
+                                                  ).filter(ReportOrder.order == order_2
+                                                           ).update({ReportOrder.order: order_1})
     db.session.commit()
-    db.session.query(ReportOrder).filter(ReportOrder.report_day == day
-                                         ).filter(ReportOrder.work_id == work_id
-                                                  ).update({ReportOrder.order: order_2})
+    db.session.query(ReportOrder).filter(ReportOrder.cat_id == int(cat_id)
+                                         ).filter(ReportOrder.report_day == day
+                                                  ).filter(ReportOrder.work_id == work_id
+                                                           ).update({ReportOrder.order: order_2})
     db.session.commit()
-    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
-    check_order(cat_works)
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
@@ -2787,7 +2827,7 @@ def download_schedule(cat_id):
     dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
     c_dates = []
     if dates_db.day_1:
-        d_1 = {'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+        d_1 = {'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' +
                            months_full[dates_db.day_1.strftime('%m')]}
         day_works = []
         for work in works.values():
@@ -2813,17 +2853,28 @@ def download_schedule(cat_id):
                 day_works.append(work)
         d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
         c_dates.append(d_3)
-    lines = []
-    for day in c_dates:
-        lines.append(day['day_full'])
-        for work in day['works']:
-            lines.append(str(work['report_order']) + '\t' + str(work['work_id']) + ' - ' + work['work_name']) \
-                # + ' - ' + work['authors'])
-        lines.append('')
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    path = 'static/files/schedules/' + str(curr_year) + '/' + 'Расписание ' + cat_name + '.txt'
-    with open(path, 'w', encoding='utf-8') as f:
-        f.writelines([line + '\n' for line in lines])
+    if not os.path.exists('static/files/generated_files/schedules/' + str(curr_year)):
+        os.makedirs('static/files/generated_files/schedules/' + str(curr_year))
+    path = 'static/files/generated_files/schedules/' + str(curr_year) + '/' + 'Расписание ' + cat_name + '.docx'
+
+    document = document_set()
+
+    h = 'Расписание заседания секции' + '\n' + cat_name
+
+    section = document.sections[0]
+    header = section.header
+    paragraph = header.paragraphs[0]
+    paragraph.text = h
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for day in c_dates:
+        document.add_heading(day['day_full'], level=1)
+        for work in day['works']:
+            document.add_paragraph(str(work['report_order']) + '. ' + str(work['work_id']) + ' – ' + work['work_name'] +
+                                   ' – ' + work['authors'], style='Normal')
+
+    document.save(path)
     return send_file(path, as_attachment=True)
 
 
@@ -2837,6 +2888,7 @@ def many_cities():
     text = request.form['text']
     lines = text.split('\n')
     for line in lines:
+        print(line)
         if line != '':
             info = line.split('\t')
             if info[0] == '':
@@ -2913,10 +2965,12 @@ def search_participant(query):
                 parts = [p.participant_id for p
                          in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == query.lower()).all()]
                 parts.extend([p.participant_id for p
-                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == query.upper()).all()])
+                              in
+                              ParticipantsApplied.query.filter(ParticipantsApplied.last_name == query.upper()).all()])
                 parts.extend([p.participant_id for p
                               in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
-                                                                  ''.join([query[0].upper(), query[1:].lower()])).all()])
+                                                                  ''.join(
+                                                                      [query[0].upper(), query[1:].lower()])).all()])
                 p = []
                 for part in parts:
                     appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
@@ -3091,9 +3145,7 @@ def set_payment(payment_id, payee):
                     db.session.add(payment)
                     db.session.commit()
                 else:
-                    db.session.query(PaymentRegistration).filter(PaymentRegistration.participant == participant
-                                                                 ).update({'payment_id': payment_id,
-                                                                           'for_work': for_work})
+                    PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
                     db.session.commit()
         db.session.commit()
     elif len(payee) == 5:

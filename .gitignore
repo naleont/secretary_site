@@ -2,7 +2,7 @@ secret.key
 team_db.db
 mail_data.py
 /venv
-/static/files/schedules
+/static/files/generated_files/schedules
 /logs
 /__pycache__
 check.py

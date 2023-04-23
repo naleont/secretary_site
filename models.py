@@ -457,16 +457,18 @@ class ParticipantsApplied(db.Model):
 
 class ReportOrder(db.Model):
     __tablename__ = 'report_order'
-    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'cat_id'),)
 
     work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
     report_day = db.Column('report_day', db.Text)
     order = db.Column('order', db.Integer)
+    cat_id = db.Column('cat_id', db.Integer, ForeignKey('categories.cat_id'), unique=False)
 
-    def __init__(self, work_id, report_day, order):
+    def __init__(self, work_id, report_day, order, cat_id):
         self.work_id = work_id
         self.report_day = report_day
         self.order = order
+        self.cat_id = cat_id
 
 
 class Cities(db.Model):
