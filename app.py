@@ -639,21 +639,15 @@ def work_info(work_id):
 
 def get_works(cat_id, status):
     # в status пишется, работы, допущенные до какого тура, мы ищем
-    if status == 1:
-        stat = ['Допущена до 1-го тура', 'Направлена на рецензирование', 'Отрецензирована',
-                'Окончила 1-й тур. Не допущена до 2-го тура', 'Допущена до 2-го тура']
-    elif status == 2:
-        stat = ['Допущена до 2-го тура']
+    stat = {s.status_id: s.status_name for s in ParticipationStatuses.query.all() if s.status_id >= status}
     works = dict()
-    cat_works = db.session.query(WorkCategories).filter(WorkCategories.cat_id == cat_id
-                                                        ).order_by(WorkCategories.work_id).all()
-    for work in cat_works:
-        work_db = db.session.query(Works).filter(Works.work_id == work.work_id).first()
-        w_no = work_db.work_id
-        status_id = WorkStatuses.query.filter(WorkStatuses.work_id == w_no).first().status_id
-        if ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id).first().status_name \
-                in stat:
-            works[w_no] = work_info(w_no)
+    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id
+                                                                ).order_by(WorkCategories.work_id).all()]
+    works_stat = []
+    for st in stat.keys():
+        works_stat.extend([w.work_id for w in WorkStatuses.query.filter(WorkStatuses.status_id == st).all() if w.work_id in cat_works])
+    for w in works_stat:
+        works[w] = work_info(w)
     return works
 
 
@@ -800,7 +794,7 @@ def analysis_results():
     rev_ana = db.session.query(RevAnalysis)
     cats = db.session.query(Categories).all()
     for cat in cats:
-        cat_works = get_works(cat.cat_id, 1)
+        cat_works = get_works(cat.cat_id, 2)
         analysis_res.update(cat_works)
     for work in analysis_res.keys():
         if work in [w.work_id for w in RevAnalysis.query.all()]:
@@ -823,41 +817,31 @@ def analysis_results():
 
 def analysis_nums():
     c, cats = categories_info()
-    ana_nums = dict()
     all_stats = dict()
     all_stats['regionals'] = 0
     all_stats['analysed'] = 0
-    regions = []
     ana_nums = []
     for cat in cats:
-        cat_ana = {}
-        cat_ana['cat_id'] = cat['id']
-        cat_ana['cat_name'] = cat['name']
-        cat_ana['analysed'] = 0
-        cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])]
-        cat_ana['regional_applied'] = 0
-        for work in cat_works:
-            work_db = db.session.query(Works).filter(Works.work_id == work).first()
-            status_id = WorkStatuses.query.filter(WorkStatuses.work_id == work_db.work_id).first().status_id
-            status = ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id
-                                                        ).first().status_name
-            if work_db.reg_tour is not None and status != 'Не прошла на конкурс':
-                cat_ana['regional_applied'] += 1
-                all_stats['regionals'] += 1
-                regions.append(work_db.reg_tour)
-                if work_info(work)['analysis'] is True:
-                    cat_ana['analysed'] += 1
-                    all_stats['analysed'] += 1
+        cat_reg = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])
+                   if Works.query.filter(Works.work_id == w.work_id).first().reg_tour is not None]
+        works_passed = [w.work_id for w in WorkStatuses.query.all() if w.status_id >= 2]
+        to_analyse = [w for w in cat_reg if w in works_passed]
+        analysed = set(w.work_id for w in RevAnalysis.query.all() if w.work_id in to_analyse)
+        analysed.update(w.work_id for w in PreAnalysis.query.filter(PreAnalysis.has_review == 0).all()
+                        if w.work_id in to_analyse)
+        cat_ana = {'cat_id': cat['id'], 'cat_name': cat['name'], 'analysed': len(analysed),
+                   'regional_applied': len(to_analyse)}
         cat_ana['left'] = cat_ana['regional_applied'] - cat_ana['analysed']
         ana_nums.append(cat_ana)
+    all_stats['regionals'] = sum([cat['regional_applied'] for cat in ana_nums])
+    all_stats['analysed'] = sum([cat['analysed'] for cat in ana_nums])
     all_stats['left'] = all_stats['regionals'] - all_stats['analysed']
-    all_stats['regions'] = len(set(regions))
-    print(ana_nums, all_stats)
+    all_stats['regions'] = len(set(w.reg_tour for w in Works.query.all()))
     return ana_nums, all_stats
 
 
 def check_analysis(cat_id):
-    works = get_works(cat_id, 1)
+    works = get_works(cat_id, 2)
     for key in works:
         if works[key]['reg_tour'] is not None \
                 and ('analysis' not in works[key].keys()
@@ -1823,7 +1807,7 @@ def remove_secretary(user_id, cat_id):
 def category_page(cat_id, errors):
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
-    need_analysis = check_analysis(cat_id)
+    need_analysis = check_analysis(cat_id=cat_id)
     works_no_fee = get_works_no_fee(cat_id)
     show_top_100 = True
     return render_template('categories/category_page.html', category=category, need_analysis=need_analysis,
@@ -1917,6 +1901,28 @@ def supervisor_user(user_id):
             db.session.delete(user_sup)
             db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
+
+
+# @app.route('/set_responsibilities')
+# def set_responsibilities():
+#     return render_template('organising_committee/set_responsibilities.html')
+#
+#
+# @app.route('/set_tasks')
+# def set_tasks():
+#     return render_template('organising_committee/set_tasks.html')
+
+
+# @app.route('/set_orgcom')
+# def set_orgcom():
+#
+#     return render_template('organising_committee/set_orgcom.html')
+#
+#
+# @app.route('/organising_committee')
+# def organising_committee():
+#     # members = get_orgcom()
+#     return render_template('organising_committee/organising_committee.html', members=members)
 
 
 @app.route('/rev_analysis')
@@ -2130,10 +2136,13 @@ def analysis_works(cat_id):
     renew_session()
     if check_access(url='/analysis_works/' + cat_id) < 5:
         return redirect(url_for('.no_access'))
-    works = get_works(cat_id, 1)
+    works = get_works(cat_id, 2)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
-    need_analysis = check_analysis(cat_id)
+    if False in [w['analysis'] for w in works.values()]:
+        need_analysis = False
+    else:
+        need_analysis = True
     return render_template('rev_analysis/analysis_works.html', works=works, category=category,
                            need_analysis=need_analysis)
 
@@ -2305,6 +2314,12 @@ def write_analysis():
     return redirect(url_for('.analysis_works', cat_id=cat_id))
 
 
+@app.route('/internal_reviews')
+def internal_reviews():
+    works = get_works()
+    return render_template('internal_reviews/internal_reviews.html')
+
+
 @app.route('/add_works', defaults={'works_added': None, 'works_edited': None})
 @app.route('/add_works/<works_added>/<works_edited>')
 def add_works(works_added, works_edited):
@@ -2335,6 +2350,7 @@ def many_works():
     for n in w:
         edited = False
         work_site_id = int(n['id'])
+        work_id = int(n['number'])
         email = n['contacts']['email']
         tel = n['contacts']['phone']
         work_name = n['title']
@@ -2772,7 +2788,6 @@ def work_date(cat_id, work_id, day, page):
         last_order = max([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
                                                                     ).filter(ReportOrder.report_day == day).all()]) + 1
     else:
-        print('hi')
         last_order = 1
     if work_id in [w.work_id for w in ReportOrder.query.all()]:
         db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id
@@ -2896,7 +2911,6 @@ def many_cities():
     text = request.form['text']
     lines = text.split('\n')
     for line in lines:
-        print(line)
         if line != '':
             info = line.split('\t')
             if info[0] == '':
