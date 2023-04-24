@@ -1468,6 +1468,8 @@ def download_supervisors():
     relevant.append(44)  # Добавление Марусяк
     supers = [sup for sup in sups.values() if sup['id'] in relevant]
     df = pd.DataFrame(data=supers)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
     with pd.ExcelWriter('static/files/generated_files/supervisors.xlsx') as writer:
         df.to_excel(writer, sheet_name='Руководители секций')
     return send_file('static/files/generated_files/supervisors.xlsx', as_attachment=True)
