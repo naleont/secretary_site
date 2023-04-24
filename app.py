@@ -16,7 +16,7 @@ from models import *
 # from docx.shared import Pt, RGBColor
 # from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-# import pandas as pd
+import pandas as pd
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -1459,18 +1459,18 @@ def supervisors():
                            relevant=relevant)
 
 
-# @app.route('/download_supervisors')
-# def download_supervisors():
-#     sups = get_supervisors()
-#     c, cats = categories_info()
-#     relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
-#     relevant.append(21)  # Добавление Свешниковой
-#     relevant.append(44)  # Добавление Марусяк
-#     supers = [sup for sup in sups.values() if sup['id'] in relevant]
-#     df = pd.DataFrame(data=supers)
-#     with pd.ExcelWriter('static/files/supervisors.xlsx') as writer:
-#         df.to_excel(writer, sheet_name='Руководители секций')
-#     return send_file('static/files/generated_files/supervisors.xlsx', as_attachment=True)
+@app.route('/download_supervisors')
+def download_supervisors():
+    sups = get_supervisors()
+    c, cats = categories_info()
+    relevant = [cat['supervisor_id'] for cat in cats if 'supervisor_id' in cat.keys()]
+    relevant.append(21)  # Добавление Свешниковой
+    relevant.append(44)  # Добавление Марусяк
+    supers = [sup for sup in sups.values() if sup['id'] in relevant]
+    df = pd.DataFrame(data=supers)
+    with pd.ExcelWriter('static/files/supervisors.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Руководители секций')
+    return send_file('static/files/generated_files/supervisors.xlsx', as_attachment=True)
 
 
 @app.route('/edit_supervisor', defaults={'sup_id': ''})
