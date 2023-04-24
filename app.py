@@ -12,9 +12,9 @@ from flask_mail import Mail, Message
 import mail_data
 from models import *
 
-# from docx import Document
-# from docx.shared import Pt, RGBColor
-# from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx import Document
+from docx.shared import Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 import pandas as pd
 
@@ -2829,61 +2829,61 @@ def reorder(cat_id, work_id, direction):
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
-# @app.route('/download_schedule/<cat_id>')
-# def download_schedule(cat_id):
-#     works = get_works(cat_id, 2)
-#     dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
-#     c_dates = []
-#     if dates_db.day_1:
-#         d_1 = {'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' +
-#                            months_full[dates_db.day_1.strftime('%m')]}
-#         day_works = []
-#         for work in works.values():
-#             if 'report_day' in work.keys() and work['report_day'] == 'day_1':
-#                 day_works.append(work)
-#         d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
-#         c_dates.append(d_1)
-#     if dates_db.day_2:
-#         d_2 = {'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
-#                            months_full[dates_db.day_2.strftime('%m')]}
-#         day_works = []
-#         for work in works.values():
-#             if 'report_day' in work.keys() and work['report_day'] == 'day_2':
-#                 day_works.append(work)
-#         d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
-#         c_dates.append(d_2)
-#     if dates_db.day_3:
-#         d_3 = {'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
-#                            months_full[dates_db.day_3.strftime('%m')]}
-#         day_works = []
-#         for work in works.values():
-#             if 'report_day' in work.keys() and work['report_day'] == 'day_3':
-#                 day_works.append(work)
-#         d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
-#         c_dates.append(d_3)
-#     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-#     if not os.path.exists('static/files/generated_files/schedules/' + str(curr_year)):
-#         os.makedirs('static/files/generated_files/schedules/' + str(curr_year))
-#     path = 'static/files/generated_files/schedules/' + str(curr_year) + '/' + 'Расписание ' + cat_name + '.docx'
-#
-#     document = document_set()
-#
-#     h = 'Расписание заседания секции' + '\n' + cat_name
-#
-#     section = document.sections[0]
-#     header = section.header
-#     paragraph = header.paragraphs[0]
-#     paragraph.text = h
-#     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-#
-#     for day in c_dates:
-#         document.add_heading(day['day_full'], level=1)
-#         for work in day['works']:
-#             document.add_paragraph(str(work['report_order']) + '. ' + str(work['work_id']) + ' – ' + work['work_name'] +
-#                                    ' – ' + work['authors'], style='Normal')
-#
-#     document.save(path)
-#     return send_file(path, as_attachment=True)
+@app.route('/download_schedule/<cat_id>')
+def download_schedule(cat_id):
+    works = get_works(cat_id, 2)
+    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+    c_dates = []
+    if dates_db.day_1:
+        d_1 = {'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' +
+                           months_full[dates_db.day_1.strftime('%m')]}
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_1':
+                day_works.append(work)
+        d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_1)
+    if dates_db.day_2:
+        d_2 = {'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
+                           months_full[dates_db.day_2.strftime('%m')]}
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_2':
+                day_works.append(work)
+        d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_2)
+    if dates_db.day_3:
+        d_3 = {'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+                           months_full[dates_db.day_3.strftime('%m')]}
+        day_works = []
+        for work in works.values():
+            if 'report_day' in work.keys() and work['report_day'] == 'day_3':
+                day_works.append(work)
+        d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        c_dates.append(d_3)
+    cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
+    if not os.path.exists('static/files/generated_files/schedules/' + str(curr_year)):
+        os.makedirs('static/files/generated_files/schedules/' + str(curr_year))
+    path = 'static/files/generated_files/schedules/' + str(curr_year) + '/' + 'Расписание ' + cat_name + '.docx'
+
+    document = document_set()
+
+    h = 'Расписание заседания секции' + '\n' + cat_name
+
+    section = document.sections[0]
+    header = section.header
+    paragraph = header.paragraphs[0]
+    paragraph.text = h
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for day in c_dates:
+        document.add_heading(day['day_full'], level=1)
+        for work in day['works']:
+            document.add_paragraph(str(work['report_order']) + '. ' + str(work['work_id']) + ' – ' + work['work_name'] +
+                                   ' – ' + work['authors'], style='Normal')
+
+    document.save(path)
+    return send_file(path, as_attachment=True)
 
 
 @app.route('/add_cities')
