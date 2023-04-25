@@ -2,58 +2,59 @@
 
 {% block content %}
 <h2>{{ cat_name }}</h2>
-<h2>Нераспределенные работы</h2>
-<!--<a target="_blank"-->
-<!--   href="https://docs.google.com/spreadsheets/d/1SMgw6V3P3C6djkw0Y_yAscnQCMRMzMcnAwToKNZmWZA/edit?usp=sharing">-->
-<!--    <button>-->
-<!--        Какие работы вставлять в расписание?-->
-<!--    </button>-->
-<!--</a>-->
-<!--<br><br>-->
-Работ допущено до 2 тура: <b>{{ approved_for_2 }}</b><br>
-<table frame="void" border="2px" bordercolor="#4962A4">
-    <tr>
-        <td align="center">
-            <b>Номер</b>
-        </td>
-        <td align="center">
-            <b>Название</b>
-        </td>
-        <td align="center">
-            <b>MSK</b>
-        </td>
-        <td align="center" width="17%">
-            <b>Защита</b>
-        </td>
-    </tr>
-    {% for work in works_unordered %}
-    <tr
-            {% if work['payed'] == True%}
-                bgcolor="#C6E0B4"
-            {% else %}
-                bgcolor="#faebd7"
-            {% endif %}>
-        <td>
-            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
-                {{ work['work_id'] }}</a>
-        </td>
-        <td>
-            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
-                {{ work['work_name'] }}</a>
-        </td>
-        <td align="center">
-            {% if work['timeshift'] != None %}
-            {{ work['timeshift'] }}
-            {% endif %}
-        </td>
-        <td align="center">
-            {% for day in c_dates %}
-                <a href="/work_date/{{ work['cat_id'] }}/{{ work['work_id'] }}/{{ day['d'] }}/works_list_schedule">
-                    <button class="blue">{{ day['day'] }}</button></a>
-            {% endfor %}
-        </td>
-    </tr>
-    {% endfor %}
-</table><br>
 
+<form action="/report_order_many/{{ cat_id }}" method = 'POST'>
+    <fieldset>
+        <input class="button" type="submit" value="Сохранить">
+        <h2>Нераспределенные работы</h2>
+        Работ допущено до 2 тура: <b>{{ approved_for_2 }}</b><br>
+        <table frame="void" border="2px" bordercolor="#4962A4">
+            <tr>
+                <td align="center">
+                    <b>Номер</b>
+                </td>
+                <td align="center">
+                    <b>Название</b>
+                </td>
+                <td align="center">
+                    <b>MSK</b>
+                </td>
+                <td align="center" width="17%">
+                    <b>Защита</b>
+                </td>
+            </tr>
+            {% for work in works_unordered %}
+            <tr
+                    {% if work['payed'] == True %}
+                        bgcolor="#C6E0B4"
+                    {% else %}
+                        bgcolor="#faebd7"
+                    {% endif %}>
+                <td>
+                    <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                        {{ work['work_id'] }}</a>
+                </td>
+                <td>
+                    <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                        {{ work['work_name'] }}</a>
+                </td>
+                <td align="center">
+                    {% if work['timeshift'] != None %}
+                    {{ work['timeshift'] }}
+                    {% endif %}
+                </td>
+                <td align="center">
+                {% for day in c_dates %}
+                    <label>
+                        <div class="blue"><input type="checkbox" name="{{ work['work_id'] }}"
+                                                 value="{{ day['d'] }}"> {{ day['day'] }}</div>
+                    </label>
+                {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table><br>
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
 {% endblock %}

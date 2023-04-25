@@ -978,6 +978,26 @@ def document_set():
     return document
 
 
+def write_work_date(cat_id, work_id, day):
+    work_id = int(work_id)
+    if int(cat_id) in [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
+        last_order = max([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
+                                                                    ).filter(ReportOrder.report_day == day).all()]) + 1
+    else:
+        last_order = 1
+    if work_id in [w.work_id for w in ReportOrder.query.all()]:
+        db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id
+                                             ).update({ReportOrder.report_day: day,
+                                                       ReportOrder.order: last_order,
+                                                       ReportOrder.cat_id: cat_id})
+        db.session.commit()
+    else:
+        o = ReportOrder(work_id, day, last_order, int(cat_id))
+        db.session.add(o)
+        db.session.commit()
+    return 'done'
+
+
 # САЙТ
 # Главная страница
 @app.route('/')
@@ -2784,23 +2804,20 @@ def works_list_schedule(cat_id):
 
 @app.route('/work_date/<cat_id>/<work_id>/<day>/<page>')
 def work_date(cat_id, work_id, day, page):
-    work_id = int(work_id)
-    if int(cat_id) in [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
-        last_order = max([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
-                                                                    ).filter(ReportOrder.report_day == day).all()]) + 1
-    else:
-        last_order = 1
-    if work_id in [w.work_id for w in ReportOrder.query.all()]:
-        db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id
-                                             ).update({ReportOrder.report_day: day,
-                                                       ReportOrder.order: last_order,
-                                                       ReportOrder.cat_id: cat_id})
-        db.session.commit()
-    else:
-        o = ReportOrder(work_id, day, last_order, int(cat_id))
-        db.session.add(o)
-        db.session.commit()
+    write_work_date(cat_id=cat_id, work_id=work_id, day=day)
     return redirect(url_for('.' + page, cat_id=cat_id))
+
+
+@app.route('/report_order_many/<cat_id>', methods=['POST'])
+def report_order_many(cat_id):
+    works = get_works(cat_id, 2)
+    schedule = {}
+    for work in works.values():
+        if str(work['work_id']) in request.form.keys():
+            schedule[work['work_id']] = request.form[str(work['work_id'])]
+    for w in schedule.keys():
+        write_work_date(cat_id=cat_id, work_id=w, day=schedule[w])
+    return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
 @app.route('/unorder/<cat_id>/<work_id>')
