@@ -817,9 +817,6 @@ def analysis_results():
 
 def analysis_nums():
     c, cats = categories_info()
-    all_stats = dict()
-    all_stats['regionals'] = 0
-    all_stats['analysed'] = 0
     ana_nums = []
     for cat in cats:
         cat_reg = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])
@@ -833,10 +830,10 @@ def analysis_nums():
                    'regional_applied': len(to_analyse)}
         cat_ana['left'] = cat_ana['regional_applied'] - cat_ana['analysed']
         ana_nums.append(cat_ana)
-    all_stats['regionals'] = sum([cat['regional_applied'] for cat in ana_nums])
-    all_stats['analysed'] = sum([cat['analysed'] for cat in ana_nums])
+    all_stats = {'regionals': sum([cat['regional_applied'] for cat in ana_nums]),
+                 'analysed': sum([cat['analysed'] for cat in ana_nums]),
+                 'regions': len(set(w.reg_tour for w in Works.query.all()))}
     all_stats['left'] = all_stats['regionals'] - all_stats['analysed']
-    all_stats['regions'] = len(set(w.reg_tour for w in Works.query.all()))
     return ana_nums, all_stats
 
 
@@ -2418,6 +2415,7 @@ def many_works():
                                                                              Works.reg_tour: reg_tour,
                                                                              Works.msk_time_shift: timeshift})
             edited = True
+            db.session.commit()
         else:
             work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age,
                                author_1_class,
@@ -2425,7 +2423,7 @@ def many_works():
                                teacher_name, reg_tour, timeshift, None)
             db.session.add(work_write)
             works_added += 1
-        db.session.commit()
+            db.session.commit()
         if status_id not in [s.status_id for s in ParticipationStatuses.query.all()]:
             part_status = ParticipationStatuses(status_id, status_name)
             db.session.add(part_status)
@@ -2433,25 +2431,28 @@ def many_works():
         if work_id in [s.work_id for s in WorkStatuses.query.all()]:
             db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
                                                   ).update({WorkStatuses.status_id: status_id})
+            db.session.commit()
             edited = True
         else:
             work_status = WorkStatuses(work_id, status_id)
             db.session.add(work_status)
-        db.session.commit()
+            db.session.commit()
         if work_id in [w.work_id for w in WorkCategories.query.all()]:
             if not cat_id:
                 work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
                 db.session.delete(work_cat)
+                db.session.commit()
                 edited = True
             else:
                 db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id
                                                         ).update({WorkCategories.cat_id: cat_id})
+                db.session.commit()
                 edited = True
         else:
             if cat_id:
                 work_cat = WorkCategories(work_id, cat_id)
                 db.session.add(work_cat)
-        db.session.commit()
+                db.session.commit()
         if edited:
             works_edited += 1
     return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
