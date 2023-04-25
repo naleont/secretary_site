@@ -10,6 +10,9 @@
         <td>
             <a href="/download_schedule/{{ cat_id }}"><button>Скачать расписание</button></a>
         </td>
+        <td>
+            <a href="/confirm_clear_schedule/{{ cat_id }}"><button>Удалить все работы из расписания</button></a>
+        </td>
     </tr>
 <!--    <tr>-->
 <!--        <td></td>-->
@@ -116,7 +119,7 @@
 
 <h2>Нераспределенные работы</h2>
 Работ допущено до 2 тура: <b>{{ approved_for_2 }}</b><br><br>
-<a href="/works_list_schedule/{{ cat_id }}" target="_blank"><button>Назначить день нескольким работам сразу</button></a><br>
+<a href="/works_list_schedule/{{ cat_id }}"><button>Назначить день нескольким работам сразу</button></a><br>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
         <td align="center">

@@ -2840,6 +2840,44 @@ def unorder(cat_id, work_id):
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
+@app.route('/confirm_clear_schedule/<cat_id>')
+def confirm_clear_schedule(cat_id):
+    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+    c_dates = []
+    if dates_db.day_1:
+        d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
+               'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' +
+                           months_full[dates_db.day_1.strftime('%m')]}
+        c_dates.append(d_1)
+    if dates_db.day_2:
+        d_2 = {'d': 'day_2', 'day': days[dates_db.day_2.strftime('%w')],
+               'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' +
+                           months_full[dates_db.day_2.strftime('%m')]}
+        c_dates.append(d_2)
+    if dates_db.day_3:
+        d_3 = {'d': 'day_3', 'day': days[dates_db.day_3.strftime('%w')],
+               'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' +
+                           months_full[dates_db.day_3.strftime('%m')]}
+        c_dates.append(d_3)
+    return render_template('online_reports/confirm_clear_schedule.html', cat_id=cat_id, c_dates=c_dates)
+
+
+@app.route('/clear_schedule/<cat_id>/<day>')
+def clear_schedule(cat_id, day):
+    works_db = db.session.query(ReportOrder).filter(ReportOrder.cat_id == int(cat_id))
+    works = [w.work_id for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)).all()]
+    for work in works:
+        db.session.query(Works).filter(Works.work_id == work).update({Works.reported: False})
+        db.session.commit()
+    if day == 'all':
+        to_delete = works_db
+    else:
+        to_delete = works_db.filter(ReportOrder.report_day == day)
+    to_delete.delete()
+    db.session.commit()
+    return redirect(url_for('.reports_order', cat_id=cat_id))
+
+
 @app.route('/reorder/<cat_id>/<work_id>/<direction>')
 def reorder(cat_id, work_id, direction):
     order_db = db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).first()

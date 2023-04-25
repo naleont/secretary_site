@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Удаление всех работ из расписания</h2>
+
+<p>Удалить все работы из расписания заседания секции?</p><br>
+
+<a href="/clear_schedule/{{ cat_id }}/all"><button class="red-button">Да, удалить все</button></a><br><br>
+{% for date in c_dates %}
+<a href="/clear_schedule/{{ cat_id }}/{{ date['d'] }}"><button class="red-button">Да, удалить работы из дня {{ date['day_full'] }}</button></a><br><br>
+{% endfor %}
+<a href="/reports_order/{{ cat_id }}"><button>Нет, вернуться назад</button></a>
+
+{% endblock %}
