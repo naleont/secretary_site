@@ -9,7 +9,13 @@
 {% for org in members %}
     <tr bgcolor="#C5E3F3">
         <td>
+        {% if access >= 3 %}
+            <a href="/user_page/{{ org['user_id'] }}">
+        {% endif %}
             {{ org['last_name'] }} {{ org['first_name'] }} {{ org['patronymic'] }}
+        {% if access >= 3 %}
+            </a>
+        {% endif %}
         </td>
         {% if access >= 3 %}
         <td>

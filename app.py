@@ -1939,7 +1939,8 @@ def supervisor_user(user_id):
 def organising_committee():
     membs = [get_org_info(u.user_id) for u
                in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year)]
-    members = sorted(membs, key=lambda u: u['last_name'])
+    m = sorted(membs, key=lambda u: u['first_name'])
+    members = sorted(m, key=lambda u: u['last_name'])
     return render_template('organising_committee/organising_committee.html', members=members,
                            access=check_access(url='/organising_committee'), curr_year=curr_year)
 
@@ -1947,8 +1948,8 @@ def organising_committee():
 @app.route('/set_orgcom')
 def set_orgcom():
     users = []
-    user_ids = [u.user_id for u in Users.query.order_by(Users.last_name).all() if u.user_type in [u for u in access_types.keys()
-                                                                        if access_types[u] >= 8]]
+    user_ids = [u.user_id for u in Users.query.order_by(Users.last_name).order_by(Users.first_name).all()
+                if u.user_type in [u for u in access_types.keys() if access_types[u] >= 8]]
     for u in user_ids:
         users.append(get_user_info(u))
     return render_template('organising_committee/set_orgcom.html', curr_year=curr_year, users=users)
