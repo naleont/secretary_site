@@ -64,13 +64,13 @@
                                 Дистанционное участие
                             {% endif %}
                     <br>
-                            <a href="/application_payment/{{ payment['payment_id'] }}/{{ participant['participant']['appl_no'] }}"><button class="blue_no_border" type="submit">
-                    <b>Заявка {{ participant['participant']['appl_no'] }}</b></button></a>
+                            <a href="/application_payment/{{ payment['payment_id'] }}/{{ participant['participant']['appl_no'] }}"><div class="blue_no_border" type="submit">
+                    <b>Заявка {{ participant['participant']['appl_no'] }}</b></div></a>
                 </td>
                 <td width="30%">
                     <input class="button" type="submit" value="Назначить платеж работе"><br><br>
                     <a href="/discount_and_participation_mode/{{ participant['participant']['work_id'] }}">
-                        <button>Исправить суммы оргвзносов</button></a>
+                        <div class="green-button">Исправить суммы оргвзносов</div></a>
                 </td>
             </tr>
         </table>

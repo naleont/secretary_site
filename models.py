@@ -559,3 +559,15 @@ class PaymentRegistration(db.Model):
         self.payment_id = payment_id
         self.participant = participant
         self.for_work = for_work
+
+
+class OrganisingCommittee(db.Model):
+    __tablename__ = 'organising_committee'
+
+    orgcom_id = db.Column('orgcom_id', db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.Integer, unique=False)
+    year = db.Column('year', db.Integer)
+
+    def __init__(self, user_id, year):
+        self.user_id = user_id
+        self.year = year

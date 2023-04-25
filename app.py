@@ -242,6 +242,11 @@ def get_user_info(user):
     return user_info
 
 
+def get_org_info(user_id):
+    org = get_user_info(user_id)
+    return org
+
+
 def all_users():
     users = dict()
     for u in Users.query.order_by(Users.user_id.desc()).all():
@@ -1928,18 +1933,44 @@ def supervisor_user(user_id):
 # @app.route('/set_tasks')
 # def set_tasks():
 #     return render_template('organising_committee/set_tasks.html')
+#
+#
+@app.route('/organising_committee')
+def organising_committee():
+    membs = [get_org_info(u.user_id) for u
+               in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year)]
+    members = sorted(membs, key=lambda u: u['last_name'])
+    return render_template('organising_committee/organising_committee.html', members=members,
+                           access=check_access(url='/organising_committee'), curr_year=curr_year)
 
 
-# @app.route('/set_orgcom')
-# def set_orgcom():
-#
-#     return render_template('organising_committee/set_orgcom.html')
-#
-#
-# @app.route('/organising_committee')
-# def organising_committee():
-#     # members = get_orgcom()
-#     return render_template('organising_committee/organising_committee.html', members=members)
+@app.route('/set_orgcom')
+def set_orgcom():
+    users = []
+    user_ids = [u.user_id for u in Users.query.order_by(Users.last_name).all() if u.user_type in [u for u in access_types.keys()
+                                                                        if access_types[u] >= 8]]
+    for u in user_ids:
+        users.append(get_user_info(u))
+    return render_template('organising_committee/set_orgcom.html', curr_year=curr_year, users=users)
+
+
+@app.route('/save_orgcom', methods=['POST'])
+def save_orgcom():
+    users = [u.user_id for u in Users.query.all() if u.user_type in [u for u in access_types.keys()
+                                                                     if access_types[u] >= 8]]
+    orgcom = [u for u in users if str(u) in request.form.keys() and request.form[str(u)] == 'on']
+    for org in orgcom:
+        if org not in [o.user_id for o in OrganisingCommittee.query.filter(OrganisingCommittee.year ==
+                                                                           curr_year).all()]:
+            member = OrganisingCommittee(user_id=org, year=curr_year)
+            db.session.add(member)
+            db.session.commit()
+    check = [u.user_id for u in Users.query.all() if u.user_id not in orgcom]
+    if check:
+        for user in check:
+            OrganisingCommittee.query.filter(OrganisingCommittee.user_id == user).delete()
+            db.session.commit()
+    return redirect(url_for('.organising_committee'))
 
 
 @app.route('/rev_analysis')

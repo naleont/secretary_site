@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Назначить членов оргкомитета {{ curr_year }} года</h2>
+
+<form action="save_orgcom" method="POST">
+    <fieldset>
+        {% for user in users %}
+        <p><label>
+        <input type="checkbox" name="{{ user['user_id'] }}">
+            {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
+        </label></p>
+        {% endfor %}
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+
+{% endblock %}

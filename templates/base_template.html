@@ -156,6 +156,16 @@
       .circle-ul{
           type: circle;
       }
+      label {
+          font-weight: normal;
+      }
+      div.green-button{
+        background-color: #67AB60;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #67AB60;
+      }
 
     /* On small screens, set height to 'auto' for sidenav and grid */
     @media screen and (max-width: 767px) {
@@ -186,6 +196,7 @@
       <ul class="nav navbar-nav">
         <li><a href="/categories">Секции</a></li>
         <li><a href="/supervisors">Руководители секций</a></li>
+        <li><a href="/organising_committee">Оргкомитет</a></li>
         {% if session['type'] in ['manager', 'org', 'admin'] %}
         <li><a href="/knowledge_main">База знаний</a></li>
         {% endif %}

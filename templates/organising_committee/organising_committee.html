@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<h2>Оргкомитет {{ curr_year }} года</h2>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+{% for org in members %}
+    <tr bgcolor="#C5E3F3">
+        <td>
+            {{ org['last_name'] }} {{ org['first_name'] }} {{ org['patronymic'] }}
+        </td>
+        {% if access >= 3 %}
+        <td>
+            <a href="mailto:{{ org['email'] }}">{{ org['email'] }}</a>
+        </td>
+        <td>
+            <a href="tel:{{ org['tel'] }}">{{ org['tel'] }}</a>
+        </td>
+        {% endif %}
+    </tr>
+{% endfor %}
+</table>
+
+{% endblock %}
