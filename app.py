@@ -398,23 +398,21 @@ def one_category(categ):
     cat['cont_id'] = contest.contest_id
     cat['drive_link'] = categ.drive_link
     cat['cat_site_id'] = categ.cat_site_id
-    if db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).first():
-        sup_id = db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).first().supervisor_id
-        sup = db.session.query(Supervisors).filter(Supervisors.supervisor_id == sup_id).first()
+    if cat_id in [c.cat_id for c in CatSupervisors.query.all()]:
+        sup = db.session.query(Supervisors).join(CatSupervisors).filter(CatSupervisors.cat_id == cat_id).first()
         cat['supervisor_id'] = sup.supervisor_id
         cat['supervisor'] = sup.last_name + ' ' + sup.first_name + ' ' + sup.patronymic
         cat['supervisor_email'] = sup.email
         cat['supervisor_tel'] = sup.tel
-    if db.session.query(CatSecretaries).filter(CatSecretaries.cat_id == cat_id).first():
-        sec_id = db.session.query(CatSecretaries).filter(CatSecretaries.cat_id == cat_id).first().secretary_id
-        user = db.session.query(Users).filter(Users.user_id == sec_id).first()
+    if cat_id in [c.cat_id for c in CatSecretaries.query.all()]:
+        user = db.session.query(Users).join(CatSecretaries).filter(CatSecretaries.cat_id == cat_id).first()
         cat['secretary_id'] = user.user_id
         cat['secretary'] = user.last_name + ' ' + user.first_name
         cat['secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
         cat['secretary_email'] = user.email
         cat['secretary_tel'] = user.tel
     if cat_id in [cat.cat_id for cat in ReportDates.query.all()]:
-        dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
+        dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
         dates = []
         if dates_db.day_1:
             dates.append(days[dates_db.day_1.strftime('%w')] + ' ' + dates_db.day_1.strftime('%d') + ' ' +
@@ -644,14 +642,10 @@ def work_info(work_id):
 
 
 def get_works(cat_id, status):
-    # в status пишется, работы, допущенные до какого тура, мы ищем
-    stat = {s.status_id: s.status_name for s in ParticipationStatuses.query.all() if s.status_id >= status}
     works = dict()
-    cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id
-                                                                ).order_by(WorkCategories.work_id).all()]
-    works_stat = []
-    for st in stat.keys():
-        works_stat.extend([w.work_id for w in WorkStatuses.query.filter(WorkStatuses.status_id == st).all() if w.work_id in cat_works])
+    works_cat = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
+    works_stat = [w.work_id for w in WorkStatuses.query.filter(WorkStatuses.status_id >= status).all() if w.work_id
+                  in works_cat]
     for w in works_stat:
         works[w] = work_info(w)
     return works
@@ -844,12 +838,20 @@ def analysis_nums():
 
 
 def check_analysis(cat_id):
-    works = get_works(cat_id, 2)
-    for key in works:
-        if works[key]['reg_tour'] is not None \
-                and ('analysis' not in works[key].keys()
-                     or works[key]['analysis'] is False):
+    cat_works = [w.work_id for w in Works.query.select_from(WorkCategories
+                                                        ).join(Works, Works.work_id == WorkCategories.work_id
+                                                               ).filter(WorkCategories.cat_id == cat_id).all()
+                 if w.reg_tour is not None]
+    for work in cat_works:
+        if work not in [w.work_id for w in PreAnalysis.query.all()]:
             return True
+        else:
+            if PreAnalysis.query.filter(PreAnalysis.work_id == work).first().has_review is True:
+                if len(RevAnalysis.query.filter(RevAnalysis.work_id == work).all()
+                       ) != len(
+                    RevCriteria.query.filter(RevCriteria.year == datetime.datetime.strptime(str(curr_year), '%Y').date()
+                                             ).all()):
+                    return True
     return False
 
 
@@ -2194,10 +2196,7 @@ def analysis_works(cat_id):
     works = get_works(cat_id, 2)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
-    if False in [w['analysis'] for w in works.values()]:
-        need_analysis = False
-    else:
-        need_analysis = True
+    need_analysis = check_analysis(cat_id)
     return render_template('rev_analysis/analysis_works.html', works=works, category=category,
                            need_analysis=need_analysis)
 
