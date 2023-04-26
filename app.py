@@ -865,6 +865,7 @@ def no_fee_nums():
 
 
 def application_2_tour(appl):
+    print(appl)
     application = {'id': appl, 'works': [work_info(w.work_id) for w
                                          in Applications2Tour.query.filter(Applications2Tour.appl_no == appl).all()],
                    'participants': []}
@@ -900,12 +901,16 @@ def payment_info(payment_id):
     if int(payment_id) in [p.payment_id for p in PaymentRegistration.query.filter(PaymentRegistration.for_work == 0
                                                                                   ).all()]:
         for participant in PaymentRegistration.query.filter(PaymentRegistration.payment_id == int(payment_id)).all():
-            participants = application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
-                                                                               participant.participant
-                                                                               ).first().appl_id)['participants']
-            for part in participants:
-                if part['id'] == participant.participant:
-                    remainder -= float(part['fee'])
+            if participant.participant in [p.participant_id for p in ParticipantsApplied.query.all()]:
+                participants = application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
+                                                                                   participant.participant
+                                                                                   ).first().appl_id)['participants']
+                for part in participants:
+                    if part['id'] == participant.participant:
+                        remainder -= float(part['fee'])
+            else:
+                PaymentRegistration.query.filter(PaymentRegistration.participant == participant.participant).delete()
+                db.session.commit()
     if remainder % 1 == 0:
         remainder = str(int(remainder)) + ' р.'
     else:
