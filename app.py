@@ -3,6 +3,7 @@ import json
 import os
 import re
 
+import requests
 from cryptography.fernet import Fernet
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
@@ -282,7 +283,7 @@ def write_user(user_info):
         user_db = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
         # Проверка существования другого пользователя с новым введенным email
         same_email = [user.user_id for user in db.session.query(Users).filter(Users.email == user_info['email']).all()]
-        if same_email is None:
+        if not same_email:
             user_db.email = user_info['email']
         elif session['user_id'] in same_email:
             if same_email.remove(session['user_id']) is None:
@@ -291,7 +292,7 @@ def write_user(user_info):
             return 'email'
         # Проверка существования другого пользователя с новым введенным телефоном
         same_tel = [user.user_id for user in db.session.query(Users).filter(Users.email == user_info['tel']).all()]
-        if same_tel is None:
+        if not same_tel:
             user_db.tel = user_info['tel']
         elif session['user_id'] in same_tel:
             if same_tel.remove(session['user_id']) is None:
@@ -2363,10 +2364,58 @@ def write_analysis():
     return redirect(url_for('.analysis_works', cat_id=cat_id))
 
 
-@app.route('/internal_reviews')
-def internal_reviews():
-    works = get_works()
-    return render_template('internal_reviews/internal_reviews.html')
+@app.route('/add_reviews', defaults={'done': None})
+@app.route('/add_reviews/<done>')
+def add_reviews(done):
+    return render_template('internal_reviews/add_reviews.html', done=done)
+
+
+@app.route('/save_reviews')
+def save_reviews():
+    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
+                                        headers={'Token': 'EFKNE9PE9FT8B9PT'}).text)
+    for work in response:
+        if work['reviews']:
+            if int(work['number']) not in [w.work_id for w in InternalReviews.query.all()]:
+                to_add = InternalReviews(work['number'], ', '.join([r['reviewer'] for r in work['reviews']]))
+                db.session.add(to_add)
+                db.session.commit()
+            else:
+                db.session.query(InternalReviews
+                                 ).filter(InternalReviews.work_id == work['number']
+                                          ).update({InternalReviews.reviewers:
+                                                                            ', '.join([r['reviewer'] for r
+                                                                                       in work['reviews']])})
+                db.session.commit()
+    done = True
+    return redirect(url_for('.add_reviews', done=done))
+
+
+@app.route('/int_analysis')
+def int_analysis():
+    return render_template('internal_reviews/int_analysis.html')
+
+
+@app.route('/reviewers_to_review')
+def reviewers_to_review():
+    c, cats = categories_info()
+    for cat in cats:
+        cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])]
+        reviews = [{'work_id': w.work_id, 'reviewers': w.reviewers} for w in InternalReviews.query.all()
+                   if w.work_id in cat_works]
+        reviewers = []
+        for rev in reviews:
+            reviewers.extend([rev.strip() for rev in rev['reviewers'].split(',')])
+        reviewers = set(reviewers)
+        cat['reviewers'] = sorted(list(reviewers))
+    print(cats[0])
+    return render_template('internal_reviews/reviewers_to_review.html', cats=cats)
+
+
+# @app.route('/internal_reviews')
+# def internal_reviews():
+#     works = get_works()
+#     return render_template('internal_reviews/internal_reviews.html')
 
 
 @app.route('/add_works', defaults={'works_added': None, 'works_edited': None})

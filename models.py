@@ -258,6 +258,18 @@ class WorkCategories(db.Model):
         self.cat_id = cat_id
 
 
+class InternalReviews(db.Model):
+    __tablename__ = 'internal_reviews'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    reviewers = db.Column('reviewers', db.Text)
+
+    def __init__(self, work_id, reviewers):
+        self.work_id = work_id
+        self.reviewers = reviewers
+
+
 class News(db.Model):
     __tablename__ = 'news'
 
