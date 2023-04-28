@@ -867,7 +867,6 @@ def no_fee_nums():
 
 
 def application_2_tour(appl):
-    print(appl)
     application = {'id': appl, 'works': [work_info(w.work_id) for w
                                          in Applications2Tour.query.filter(Applications2Tour.appl_no == appl).all()],
                    'participants': []}
@@ -2412,7 +2411,6 @@ def reviewers_to_review():
             reviewers.extend([rev.strip() for rev in rev['reviewers'].split(',')])
         reviewers = set(reviewers)
         cat['reviewers'] = sorted(list(reviewers))
-    print(cats[0])
     return render_template('internal_reviews/reviewers_to_review.html', cats=cats)
 
 
@@ -2720,13 +2718,13 @@ def set_report_dates(message):
                 c_dates['d_1'] = None
             if dates_db.day_2:
                 c_dates['day_2'] = dates_db.day_2.strftime('%Y-%m-%d')
-                c_dates['d_2'] = days[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
+                c_dates['d_2'] = days[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d.%m')
             else:
                 c_dates['day_2'] = None
                 c_dates['d_2'] = None
             if dates_db.day_3:
                 c_dates['day_3'] = dates_db.day_3.strftime('%Y-%m-%d')
-                c_dates['d_3'] = days[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
+                c_dates['d_3'] = days[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d.%m')
             else:
                 c_dates['day_3'] = None
                 c_dates['d_3'] = None
@@ -2741,17 +2739,23 @@ def set_report_dates(message):
 @app.route('/save_report_dates', methods=['POST'])
 def save_report_dates():
     dates = []
-    for cat_id in [c.cat_id for c in Categories.query.all()]:
+    for cat_id in [c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()]:
         if str(cat_id) + '_day_1' in request.form.keys() and request.form[str(cat_id) + '_day_1'] != '':
             day_1 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_1'], '%Y-%m-%d').date()
+        elif cat_id in [c.cat_id for c in ReportDates.query.all()]:
+            day_1 = ReportDates.query.filter(ReportDates.cat_id == cat_id).first().day_1
         else:
             day_1 = None
         if str(cat_id) + '_day_2' in request.form.keys() and request.form[str(cat_id) + '_day_2'] != '':
             day_2 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_2'], '%Y-%m-%d').date()
+        elif cat_id in [c.cat_id for c in ReportDates.query.all()]:
+            day_2 = ReportDates.query.filter(ReportDates.cat_id == cat_id).first().day_2
         else:
             day_2 = None
         if str(cat_id) + '_day_3' in request.form.keys() and request.form[str(cat_id) + '_day_3'] != '':
             day_3 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_3'], '%Y-%m-%d').date()
+        elif cat_id in [c.cat_id for c in ReportDates.query.all()]:
+            day_3 = ReportDates.query.filter(ReportDates.cat_id == cat_id).first().day_3
         else:
             day_3 = None
         dates.append({'cat_id': cat_id, 'day_1': day_1, 'day_2': day_2, 'day_3': day_3})
@@ -2766,7 +2770,7 @@ def save_report_dates():
             rep_d = ReportDates(date['cat_id'], date['day_1'], date['day_2'], date['day_3'])
             db.session.add(rep_d)
             db.session.commit()
-
+            db.session.commit()
         success = 'Даты добавлены'
     return redirect(url_for('.set_report_dates', message=success))
 
