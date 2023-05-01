@@ -614,12 +614,16 @@ def work_info(work_id):
         disc = db.session.query(Discounts).filter(Discounts.work_id == work['work_id']).first()
         work['fee'] = disc.payment
         work['format'] = disc.participation_format
+    elif work['work_id'] in [w.work_id for w in WorksNoFee.query.all()]:
+        work['fee'] = 0
     elif work['reg_tour'] is not None:
         work['fee'] = tour_fee
-    elif work['reg_tour'] in [w.work_id for w in WorksNoFee.query.all()]:
+    elif work['work_id'] in [w.work_id for w in WorksNoFee.query.all()]:
         work['fee'] = 0
     else:
         work['fee'] = fee
+    if work['work_id'] in [w.work_id for w in AppliedForOnline.query.all()]:
+        work['format'] = 'online'
     work['site_id'] = work_db.work_site_id
     if work_id in [w.work_id for w in Applications2Tour.query.all()]:
         appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()
@@ -636,6 +640,9 @@ def work_info(work_id):
         work['payed'] = True
         work['payment_id'] = PaymentRegistration.query.filter(PaymentRegistration.participant ==
                                                               work['work_id']).first().payment_id
+    elif work['fee'] == 0:
+        work['payed'] = True
+        work['payment_id'] = 'Работа участвует без оргвзноса'
     else:
         work['payed'] = False
     return work
