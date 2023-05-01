@@ -2629,6 +2629,14 @@ def top_100():
 @app.route('/apply_for_online', defaults={'errs_a': None, 'errs_b': None})
 @app.route('/apply_for_online/<errs_a>/<errs_b>')
 def apply_for_online(errs_a, errs_b):
+    if errs_b == 'a':
+        errs_b = None
+    else:
+        errs_b = errs_b.split('\n')
+    if errs_a == 'a':
+        errs_a = None
+    else:
+        errs_a = errs_a.split('\n')
     return render_template('online_reports/apply_for_online.html', errors_a=errs_a, errors_b=errs_b)
 
 
@@ -2670,7 +2678,7 @@ def applied_for_online():
             errs += str(work) + ' - ' + error + '\n'
     else:
         errs = None
-    return redirect(url_for('.apply_for_online', errs_a=errs))
+    return redirect(url_for('.apply_for_online', errs_a=errs, errs_b='a'))
 
 
 @app.route('/participated', methods=['POST'])
@@ -2687,11 +2695,12 @@ def participated():
         try:
             work = int(work.strip())
             if work in [w.work_id for w in Works.query.all()]:
-                work_db = db.session.query(Works).filter(Works.work_id == work).first()
-                w = ParticipatedWorks(work_db.work_id)
-                db.session.add(w)
-                db.session.commit()
-                success = True
+                if work not in [w.work_id for w in ParticipatedWorks.query.all()]:
+                    work_db = db.session.query(Works).filter(Works.work_id == work).first()
+                    w = ParticipatedWorks(work_db.work_id)
+                    db.session.add(w)
+                    db.session.commit()
+                    success = True
             else:
                 errors[work] = 'работа не найдена'
         except ValueError:
@@ -2704,7 +2713,7 @@ def participated():
             errs += str(work) + ' - ' + error + '\n'
     else:
         errs = None
-    return redirect(url_for('.apply_for_online', errs_b=errs))
+    return redirect(url_for('.apply_for_online', errs_b=errs, errs_a='a'))
 
 
 @app.route('/online_applicants')

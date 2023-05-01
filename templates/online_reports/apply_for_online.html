@@ -5,9 +5,11 @@
 <h2>Работы, заявленные на Дополнительный онлайн-конкурс</h2>
 
 <div class="alarm">
-    {% if errors != None %}
+    {% if errors_a != None %}
     <span>Не удалось добавить работы:</span><br>
-    {{ errors_a }}<br>
+    {% for er in errors_a %}
+    {{ er }}<br>
+    {% endfor %}
     {% endif %}
 </div>
 <form action="/applied_for_online" method="post">
@@ -21,9 +23,11 @@
 <h2>Работы, которые уже участвовали во 2 туре!</h2>
 
 <div class="alarm">
-    {% if errors != None %}
+    {% if errors_b != None %}
     <span>Не удалось добавить работы:</span><br>
-    {{ errors_b }}<br>
+    {% for er in errors_b %}
+    {{ er }}<br>
+    {% endfor %}
     {% endif %}
 </div>
 <form action="/participated" method="post">
