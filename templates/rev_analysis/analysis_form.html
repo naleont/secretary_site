@@ -1,10 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-<form action="/write_analysis" method = 'POST'>
-    <legend><h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
-    <h4><b>"{{ work['work_name'] }}"</b></h4></legend>
+<form action="/write_analysis/{{ internal }}" method = 'POST'>
+    <legend><h2><b>Анализ рецензии
+        {% if internal %}
+        {{ work['work_id'] }}
+        {% else %}
+        на работу {{ work['work_id'] }}
+        {% endif %}
+    </b></h2>
+        {% if internal %}
+    <h4><b>{{ work['work_name'] }}</b></h4>
+        {% endif %}
+    </legend>
     <fieldset>
         <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
         {% for key in criteria %}

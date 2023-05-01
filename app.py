@@ -3,6 +3,7 @@ import json
 import os
 import re
 
+import dateutil.rrule
 import requests
 from cryptography.fernet import Fernet
 from flask import Flask
@@ -776,10 +777,13 @@ def get_pre_analysis(work_id):
     return pre
 
 
-def get_analysis(work_id):
+def get_analysis(work_id, internal=None):
     rk = 0
     analysis = dict()
-    analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
+    if not internal:
+        analysis_db = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id).all()
+    else:
+        analysis_db = db.session.query(InternalAnalysis).filter(InternalAnalysis.review_id == work_id).all()
     values_db = db.session.query(RevCritValues)
     criteria = db.session.query(RevCriteria)
     if analysis_db is not None:
@@ -850,8 +854,8 @@ def analysis_nums():
 
 def check_analysis(cat_id):
     cat_works = [w.work_id for w in Works.query.select_from(WorkCategories
-                                                        ).join(Works, Works.work_id == WorkCategories.work_id
-                                                               ).filter(WorkCategories.cat_id == cat_id).all()
+                                                            ).join(Works, Works.work_id == WorkCategories.work_id
+                                                                   ).filter(WorkCategories.cat_id == cat_id).all()
                  if w.reg_tour is not None]
     for work in cat_works:
         if work not in [w.work_id for w in PreAnalysis.query.all()]:
@@ -1956,7 +1960,7 @@ def supervisor_user(user_id):
 @app.route('/organising_committee')
 def organising_committee():
     membs = [get_org_info(u.user_id) for u
-               in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year)]
+             in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year)]
     m = sorted(membs, key=lambda u: u['first_name'])
     members = sorted(m, key=lambda u: u['last_name'])
     return render_template('organising_committee/organising_committee.html', members=members,
@@ -2321,61 +2325,125 @@ def write_pre_analysis():
         return redirect(url_for('.analysis_works', cat_id=cat_id))
 
 
-@app.route('/analysis_form/<work_id>')
-def analysis_form(work_id):
+@app.route('/analysis_form/<work_id>', defaults={'internal': None})
+@app.route('/analysis_form/<work_id>/<internal>')
+def analysis_form(work_id, internal):
     renew_session()
     if check_access(url='/analysis_form' + work_id) < 6:
         return redirect(url_for('.no_access'))
     criteria = get_criteria(curr_year)
-    work = work_info(work_id)
-    work_id = int(work_id)
-    rk, analysis = get_analysis(work_id)
-    if work_id in [w.work_id for w in RevComment.query.all()]:
-        rev_comment = RevComment.query.filter(RevComment.work_id == work_id).first().rev_comment
-        if rev_comment is None:
+    if not internal:
+        work_id = int(work_id)
+        work = work_info(work_id)
+        rk, analysis = get_analysis(work_id)
+        if work_id in [w.work_id for w in RevComment.query.all()]:
+            rev_comment = RevComment.query.filter(RevComment.work_id == work_id).first().rev_comment
+            if rev_comment is None:
+                rev_comment = ''
+        else:
             rev_comment = ''
+        return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, analysis=analysis,
+                               rev_comment=rev_comment, internal=None)
     else:
-        rev_comment = ''
-    return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, analysis=analysis,
-                           rev_comment=rev_comment)
+        work = {'work_id': int(work_id)}
+        rk, analysis = get_analysis(work_id, 'internal')
+        if int(work_id) in [r.review_id for r in InternalReviewComments.query.all()]:
+            rev_comment = InternalReviewComments.query.filter(InternalReviewComments.review_id == int(work_id))\
+                .first().comment
+        else:
+            rev_comment = ''
+        return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, internal=internal,
+                               analysis=analysis, rev_comment=rev_comment)
 
 
-@app.route('/write_analysis', methods=['POST'])
-def write_analysis():
+@app.route('/write_analysis/<internal>', methods=['POST'])
+def write_analysis(internal):
+    if internal == 'None':
+        internal = None
     renew_session()
     work_id = int(request.form['work_id'])
     criteria_ids = [criterion.criterion_id for criterion in RevCriteria.query.all()]
     for criterion_id in criteria_ids:
         if str(criterion_id) in request.form.keys():
             value = int(request.form[str(criterion_id)])
-            if work_id in [w.work_id for w in RevAnalysis.query.all()]:
-                if criterion_id in [c.criterion_id for c in
-                                    RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()]:
-                    d = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
-                    d.filter(RevAnalysis.criterion_id == criterion_id).update({RevAnalysis.value_id: value})
-                    db.session.commit()
+            if not internal:
+                if work_id in [w.work_id for w in RevAnalysis.query.all()]:
+                    if criterion_id in [c.criterion_id for c in
+                                        RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()]:
+                        d = db.session.query(RevAnalysis).filter(RevAnalysis.work_id == work_id)
+                        d.filter(RevAnalysis.criterion_id == criterion_id).update({RevAnalysis.value_id: value})
+                        db.session.commit()
+                    else:
+                        crit_value = RevAnalysis(work_id, criterion_id, value)
+                        db.session.add(crit_value)
+                        db.session.commit()
                 else:
                     crit_value = RevAnalysis(work_id, criterion_id, value)
                     db.session.add(crit_value)
                     db.session.commit()
             else:
-                crit_value = RevAnalysis(work_id, criterion_id, value)
-                db.session.add(crit_value)
-                db.session.commit()
-    if 'rev_comment' in request.form.keys() and request.form['rev_comment'] != '':
-        rev_comment = request.form['rev_comment']
+                review_id = work_id
+                if review_id in [r.review_id for r in InternalAnalysis.query.all()]:
+                    if criterion_id in [c.criterion_id for c in
+                                        InternalAnalysis.query.filter(InternalAnalysis.review_id == review_id).all()]:
+                        d = db.session.query(InternalAnalysis).filter(InternalAnalysis.review_id == review_id)
+                        d.filter(InternalAnalysis.criterion_id == criterion_id) \
+                            .update({InternalAnalysis.value_id: value})
+                        db.session.commit()
+                    else:
+                        crit_value = InternalAnalysis(review_id, criterion_id, value)
+                        db.session.add(crit_value)
+                        db.session.commit()
+                else:
+                    crit_value = InternalAnalysis(review_id, criterion_id, value)
+                    db.session.add(crit_value)
+                    db.session.commit()
+    if not internal:
+        if 'rev_comment' in request.form.keys() and request.form['rev_comment'] != '':
+            rev_comment = request.form['rev_comment']
+        else:
+            rev_comment = None
+        if work_id in [w.work_id for w in RevComment.query.all()]:
+            db.session.query(RevComment).filter(RevComment.work_id == int(work_id)).update(
+                {RevComment.rev_comment: rev_comment})
+            db.session.commit()
+        elif rev_comment is not None:
+            rev_comm = RevComment(work_id, None, rev_comment)
+            db.session.add(rev_comm)
+            db.session.commit()
+        cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+        return redirect(url_for('.analysis_works', cat_id=cat_id))
     else:
-        rev_comment = None
-    if work_id in [w.work_id for w in RevComment.query.all()]:
-        db.session.query(RevComment).filter(RevComment.work_id == int(work_id)).update(
-            {RevComment.rev_comment: rev_comment})
+        review_id = int(work_id)
+        if 'rev_comment' in request.form.keys() and request.form['rev_comment'] != '':
+            rev_comment = request.form['rev_comment']
+        else:
+            rev_comment = None
+        if review_id in [r.review_id for r in InternalReviewComments.query.all()]:
+            db.session.query(InternalReviewComments).filter(InternalReviewComments.review_id == review_id).update(
+                {InternalReviewComments.comment: rev_comment})
+            db.session.commit()
+        elif rev_comment:
+            rev_comm = InternalReviewComments(review_id=review_id, comment=rev_comment)
+            db.session.add(rev_comm)
+            db.session.commit()
+        reviewer_id = InternalReviews.query.filter(InternalReviews.review_id == review_id).first().reviewer_id
+        return redirect(url_for('.see_reviews', reviewer_id=reviewer_id))
+
+
+@app.route('/reviewer_comment/<reviewer_id>', methods=['POST'])
+def reviewer_comment(reviewer_id):
+    reviewer_id = int(reviewer_id)
+    comment = request.form['text']
+    if reviewer_id not in [r.reviewer_id for r in InternalReviewerComments.query.all()]:
+        r = InternalReviewerComments(reviewer_id, comment)
+        db.session.add(r)
         db.session.commit()
-    elif rev_comment is not None:
-        rev_comm = RevComment(work_id, None, rev_comment)
-        db.session.add(rev_comm)
+    else:
+        db.session.query(InternalReviewerComments).filter(InternalReviewerComments.reviewer_id == reviewer_id) \
+            .update({InternalReviewerComments.comment: comment})
         db.session.commit()
-    cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
-    return redirect(url_for('.analysis_works', cat_id=cat_id))
+    return redirect(url_for('.see_reviews', reviewer_id=reviewer_id))
 
 
 @app.route('/add_reviews', defaults={'done': None})
@@ -2404,7 +2472,7 @@ def save_reviews():
                     db.session.add(rev)
                     db.session.commit()
                 else:
-                    db.session.query(InternalReviews).filter(InternalReviews.review_id == review_id)\
+                    db.session.query(InternalReviews).filter(InternalReviews.review_id == review_id) \
                         .update({InternalReviews.reviewer_id: reviewer_id})
                     db.session.commit()
                 if review_id not in [w.review_id for w in
@@ -2413,7 +2481,7 @@ def save_reviews():
                     db.session.add(to_add)
                     db.session.commit()
                 else:
-                    db.session.query(WorkReviews).filter(WorkReviews.review_id == review_id)\
+                    db.session.query(WorkReviews).filter(WorkReviews.review_id == review_id) \
                         .update({WorkReviews.work_id: work_id})
                     db.session.commit()
     done = True
@@ -2440,10 +2508,66 @@ def reviewers_to_review():
     return render_template('internal_reviews/reviewers_to_review.html', cats=cats)
 
 
-# @app.route('/internal_reviews')
-# def internal_reviews():
-#     works = get_works()
-#     return render_template('internal_reviews/internal_reviews.html')
+@app.route('/internal_reviews')
+def internal_reviews():
+    reviewers = [{'id': r.reviewer_id, 'name': r.reviewer} for r in InternalReviewers.query.all()]
+    for reviewer in reviewers:
+        if reviewer['id'] in [r.reviewer_id for r in ReadingReviews.query.all()]:
+            u = ReadingReviews.query.filter(ReadingReviews.reviewer_id == reviewer['id']).first()
+            user = db.session.query(Users).filter(Users.user_id == u.reader_id).first()
+            reader = {'id': user.user_id, 'name': user.first_name, 'l_name': user.last_name}
+            reviewer['reader'] = reader
+    return render_template('internal_reviews/internal_reviews.html', reviewers=reviewers)
+
+
+@app.route('/see_reviews/<reviewer_id>')
+def see_reviews(reviewer_id):
+    reviews = []
+    for r in InternalReviews.query.filter(InternalReviews.reviewer_id == int(reviewer_id)).all():
+        if r.review_id in [a.review_id for a in InternalAnalysis.query.all()]:
+            read = True
+        else:
+            read = False
+        reviews.append({'id': r.review_id,
+                        'text': requests.post(url='https://vernadsky.info/personal_office/'
+                                                  'works_distribution_to_reviewers/?review=' + str(r.review_id)
+                                                  + '&raw=1', headers=mail_data.headers).text, 'read': read})
+    rev_no = len(reviews)
+    read = len([r for r in reviews if r['read'] is True])
+    if int(reviewer_id) in [r.reviewer_id for r in ReadingReviews.query.all()]:
+        read_by = ReadingReviews.query.filter(ReadingReviews.reviewer_id == reviewer_id).first().reader_id
+    else:
+        read_by = None
+    if int(reviewer_id) in [r.reviewer_id for r in InternalReviewerComments.query.all()]:
+        comment = InternalReviewerComments.query.filter(InternalReviewerComments.reviewer_id == int(reviewer_id)) \
+            .first().comment
+    else:
+        comment = None
+    return render_template('internal_reviews/see_reviews.html', reviews=reviews, reviewer_id=reviewer_id,
+                           rev_no=rev_no, read_by=read_by, comment=comment, read=read)
+
+
+@app.route('/assign_reviewer/<do>/<reviewer_id>/<user_id>')
+def assign_reviewer(do, reviewer_id, user_id):
+    reviewer_id = int(reviewer_id)
+    user_id = int(user_id)
+    if do == 'do':
+        if reviewer_id not in [r.reviewer_id for r in ReadingReviews.query.all()]:
+            read = ReadingReviews(reviewer_id, user_id)
+            db.session.add(read)
+            db.session.commit()
+        else:
+            db.session.query(ReadingReviews).filter(ReadingReviews.reviewer_id == reviewer_id) \
+                .update({ReadingReviews.reader_id: user_id})
+            db.session.commit()
+    elif do == 'undo':
+        if reviewer_id in [r.reviewer_id for r in
+                           ReadingReviews.query.filter(ReadingReviews.reader_id == user_id).all()]:
+            to_del = db.session.query(ReadingReviews).filter(ReadingReviews.reviewer_id == reviewer_id) \
+                .filter(ReadingReviews.reader_id == user_id).first()
+            db.session.delete(to_del)
+            db.session.commit()
+    return redirect(url_for('.see_reviews', reviewer_id=reviewer_id))
 
 
 @app.route('/add_works', defaults={'works_added': None, 'works_edited': None})

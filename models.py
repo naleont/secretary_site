@@ -268,6 +268,18 @@ class InternalReviewers(db.Model):
         self.reviewer = reviewer
 
 
+class ReadingReviews(db.Model):
+    __tablename__ = 'reading_reviews'
+    __table_args__ = (PrimaryKeyConstraint('reviewer_id', 'user_id'),)
+
+    reviewer_id = db.Column('reviewer_id', db.Integer, ForeignKey('internal_reviewers.reviewer_id'))
+    reader_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'))
+
+    def __init__(self, reviewer_id, reader_id):
+        self.reviewer_id = reviewer_id
+        self.reader_id = reader_id
+
+
 class InternalReviews(db.Model):
     __tablename__ = 'internal_reviews'
 
@@ -286,10 +298,45 @@ class WorkReviews(db.Model):
     work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
     review_id = db.Column('review_id', db.Integer, ForeignKey('internal_reviews.review_id'))
 
-
     def __init__(self, work_id, review_id):
         self.work_id = work_id
         self.review_id = review_id
+
+
+class InternalAnalysis(db.Model):
+    __tablename__ = 'internal_analysis'
+    __table_args__ = (PrimaryKeyConstraint('review_id', 'criterion_id', 'value_id'),)
+
+    review_id = db.Column('review_id', db.Integer, ForeignKey('works.work_id'))
+    criterion_id = db.Column('criterion_id', db.Integer, ForeignKey('rev_criteria.criterion_id'), unique=False)
+    value_id = db.Column('value_id', db.Integer, ForeignKey('rev_crit_values.value_id'), unique=False)
+
+    def __init__(self, review_id, criterion_id, value_id):
+        self.review_id = review_id
+        self.criterion_id = criterion_id
+        self.value_id = value_id
+
+
+class InternalReviewComments(db.Model):
+    __tablename__ = 'int_rev_comments'
+
+    review_id = db.Column('review_id', db.Integer, primary_key=True)
+    comment = db.Column('comment', db.Text)
+
+    def __init__(self, review_id, comment):
+        self.review_id = review_id
+        self.comment = comment
+
+
+class InternalReviewerComments(db.Model):
+    __tablename__ = 'reviewer_comments'
+
+    reviewer_id = db.Column('reviewer_id', db.Integer, primary_key=True)
+    comment = db.Column('comment', db.Text)
+
+    def __init__(self, reviewer_id, comment):
+        self.reviewer_id = reviewer_id
+        self.comment = comment
 
 
 class News(db.Model):
