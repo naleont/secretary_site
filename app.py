@@ -2631,11 +2631,11 @@ def top_100():
 def apply_for_online(errs_a, errs_b):
     if errs_b == 'a':
         errs_b = None
-    else:
+    elif errs_b is not None:
         errs_b = errs_b.split('\n')
     if errs_a == 'a':
         errs_a = None
-    else:
+    elif errs_a is not None:
         errs_a = errs_a.split('\n')
     return render_template('online_reports/apply_for_online.html', errors_a=errs_a, errors_b=errs_b)
 
