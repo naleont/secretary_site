@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Рецензенты</h2>
+<form>
+    <fieldset>
+<input class="button" type="submit" value="Сохранить"><br><br>
+        <table frame="void" border="2px" bordercolor="#4962A4">
+            {% for cat in cats %}
+            <tr>
+                <td colspan="2" align="center"><b>
+                    {{ cat['name'] }}
+                </b></td>
+            </tr>
+            {% for rev in cat['reviewers'] %}
+            <tr>
+                <td>
+                    {{ rev }}
+                </td>
+                <td>
+                    <label><input type="checkbox" name="reviewer"> Читать</label>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </table>
+<input class="button" type="submit" value="Сохранить"><br><br>
+    </fieldset>
+</form>
+
+{% endblock %}

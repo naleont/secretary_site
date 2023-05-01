@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Загрузить рецензентов</h2>
+
+<p>Да, просто нажать кнопку</p>
+
+{% if done == 'True' %}
+<span class="green-text">Успешно загружено</span><br><br>
+{% elif done == 'False' %}
+<span class="alarm">Не удалось</span><br><br>
+{% endif %}
+
+<a href="/save_reviews"><button>Загрузить</button></a>
+
+{% endblock %}
