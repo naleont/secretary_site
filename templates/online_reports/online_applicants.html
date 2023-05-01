@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Работы, заявленные для участия в Дополнительном онлайн-конкурсе</h2>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td width="6%" align="сenter"><b>
+            Номер работы
+        </b></td>
+        <td width="59%" align="сenter"><b>
+            Название
+        </b></td>
+        <td width="25%" align="сenter"><b>
+            Авторы
+        </b></td>
+        <td width="10%" align="сenter"><b>
+            Оргвзнос
+        </b></td>
+    </tr>
+    {% for cat in cats %}
+    {% if cat['works'] != [] %}
+    <tr>
+        <td align="сenter" colspan="4"><b>
+            {{ cat['name'] }}
+        </b></td>
+    </tr>
+    {% for work in cat['works'] %}
+    <tr>
+        <td align="сenter">
+            {{ work['work_id'] }}
+        </td>
+        <td>
+            {{ work['work_name'] }}
+        </td>
+        <td>
+            {{ work['authors'] }}
+        </td>
+        <td align="сenter">
+            {% if work['payed'] == True %}
+            <span class="green-text">Оплачен</span>
+            {% else %}
+            <span class="alarm">Не оплачен</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+</table>
+
+{% endblock %}

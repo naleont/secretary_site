@@ -61,7 +61,7 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
 <div class="alarm">
     {% if errors != None %}
     <span>Не удалось добавить работы:</span><br>
-    {{ errors }}
+    {{ errors }}<br>
     {% endif %}
 </div>
 <form action="/works_for_free/{{ category['id'] }}" method="post">

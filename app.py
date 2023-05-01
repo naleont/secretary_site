@@ -2626,6 +2626,101 @@ def top_100():
     return render_template('works/top_100.html', no_fee=no_fee, total=total)
 
 
+@app.route('/apply_for_online', defaults={'errs_a': None, 'errs_b': None})
+@app.route('/apply_for_online/<errs_a>/<errs_b>')
+def apply_for_online(errs_a, errs_b):
+    return render_template('online_reports/apply_for_online.html', errors_a=errs_a, errors_b=errs_b)
+
+
+@app.route('/applied_for_online', methods=['POST'])
+def applied_for_online():
+    works = request.form['works']
+    works_list = []
+    success = False
+    if ',' in works:
+        works_list.extend(works.split(','))
+    else:
+        works_list.append(works)
+    errors = {}
+    for work in set(works_list):
+        try:
+            work = int(work.strip())
+            if work in [w.work_id for w in Works.query.all()]:
+                work_db = db.session.query(Works).filter(Works.work_id == work).first()
+                if WorkStatuses.query.filter(WorkStatuses.work_id == work).first().status_id < 6:
+                    errors[work] = 'работа не прошла во Второй тур'
+                else:
+                    if work_db.work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
+                        errors[work] = 'работа уже участвовала во 2 туре'
+                    else:
+                        if work not in [w.work_id for w in AppliedForOnline.query.all()]:
+                            w = AppliedForOnline(work_db.work_id)
+                            db.session.add(w)
+                            db.session.commit()
+                            success = True
+            else:
+                errors[work] = 'работа не найдена'
+        except ValueError:
+            if success is False and work not in errors.keys():
+                errors[work] = 'некорректный номер работы'
+            pass
+    errs = ''
+    if errors != {}:
+        for work, error in errors.items():
+            errs += str(work) + ' - ' + error + '\n'
+    else:
+        errs = None
+    return redirect(url_for('.apply_for_online', errs_a=errs))
+
+
+@app.route('/participated', methods=['POST'])
+def participated():
+    works = request.form['works']
+    works_list = []
+    success = False
+    if ',' in works:
+        works_list.extend(works.split(','))
+    else:
+        works_list.append(works)
+    errors = {}
+    for work in set(works_list):
+        try:
+            work = int(work.strip())
+            if work in [w.work_id for w in Works.query.all()]:
+                work_db = db.session.query(Works).filter(Works.work_id == work).first()
+                w = ParticipatedWorks(work_db.work_id)
+                db.session.add(w)
+                db.session.commit()
+                success = True
+            else:
+                errors[work] = 'работа не найдена'
+        except ValueError:
+            if success is False and work not in errors.keys():
+                errors[work] = 'некорректный номер работы'
+            pass
+    errs = ''
+    if errors != {}:
+        for work, error in errors.items():
+            errs += str(work) + ' - ' + error + '\n'
+    else:
+        errs = None
+    return redirect(url_for('.apply_for_online', errs_b=errs))
+
+
+@app.route('/online_applicants')
+def online_applicants():
+    cats = []
+    for cat in [c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()]:
+        c, cat_info = categories_info(cat)
+        cat_works = [work_info(w.work_id) for w in
+                     Works.query.join(WorkCategories, Works.work_id == WorkCategories.work_id)
+                     .filter(WorkCategories.cat_id == cat).all() if w.work_id in [wo.work_id for wo
+                                                                                  in AppliedForOnline.query.all()]]
+        cat_info['works'] = cat_works
+        cats.append(cat_info)
+    return render_template('online_reports/online_applicants.html', cats=cats)
+
+
 @app.route('/works_for_free/<cat_id>', methods=['POST'])
 def works_for_free(cat_id):
     works = request.form['works']

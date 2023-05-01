@@ -414,6 +414,26 @@ class WorksNoFee(db.Model):
         self.work_id = work_id
 
 
+class ParticipatedWorks(db.Model):
+    __tablename__ = 'participated_works'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+
+    def __init__(self, work_id):
+        self.work_id = work_id
+
+
+class AppliedForOnline(db.Model):
+    __tablename__ = 'applied_for_online'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+
+    def __init__(self, work_id):
+        self.work_id = work_id
+
+
 class ReportDates(db.Model):
     __tablename__ = 'report_dates'
     __table_args__ = (PrimaryKeyConstraint('cat_id'),)
