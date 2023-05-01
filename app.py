@@ -648,12 +648,16 @@ def work_info(work_id):
     return work
 
 
-def get_works(cat_id, status):
+def get_works(cat_id, status, mode='all'):
     works = dict()
     works_cat = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
     works_stat = [w.work_id for w in WorkStatuses.query.filter(WorkStatuses.status_id >= status).all() if w.work_id
                   in works_cat]
-    for w in works_stat:
+    if mode == 'online':
+        works_searched = [w.work_id for w in AppliedForOnline.query.all() if w.work_id in works_stat]
+    else:
+        works_searched = works_stat
+    for w in works_searched:
         works[w] = work_info(w)
     return works
 
@@ -2726,6 +2730,29 @@ def participated():
 @app.route('/online_applicants')
 def online_applicants():
     cats = []
+
+    text = '<h2>Работы, заявленные для участия в Дополнительном онлайн-конкурсе</h2>\n'
+    text += '''<p>В список выступающих работа будет включена только после оплаты оргвзноса.
+        Если вы оплатили оргвзнос 3 или больше рабочих дня назад, и это не отражено в таблице,
+        пришлите чек оплаты оргвзноса на <a href="info@vernadsky.info" target="_blank">info@vernadsky.info</a>.
+        <br>Если вы подали заявку на участие, но не были включены в список ниже,
+        напишите об этом на <a href="info@vernadsky.info" target="_blank">info@vernadsky.info</a>.</p>\n'''
+    table = '''<table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
+        <tr>
+            <td width="6%" align="сenter"><b>
+                Номер работы
+            </b></td>
+            <td width="59%" align="сenter"><b>
+                Название
+            </b></td>
+            <td width="25%" align="сenter"><b>
+                Авторы
+            </b></td>
+            <td width="10%" align="сenter"><b>
+                Оргвзнос
+            </b></td>
+        </tr>'''
+
     for cat in [c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()]:
         c, cat_info = categories_info(cat)
         cat_works = [work_info(w.work_id) for w in
@@ -2734,7 +2761,34 @@ def online_applicants():
                                                                                   in AppliedForOnline.query.all()]]
         cat_info['works'] = cat_works
         cats.append(cat_info)
+        if cat_info['works']:
+            table += '''\n<tr><td align="сenter" colspan="4"><b>'''
+            cat_row = cat_info['name'] + '''</b></td>\n</tr>'''
+            table += cat_row
+            for work in cat_info['works']:
+                table += '''\n<tr><td align="сenter">'''
+                to_add = str(work['work_id']) + '''</td><td>'''
+                table += to_add
+                to_add = work['work_name'] + '''</td><td>'''
+                table += to_add
+                to_add = work['authors'] + '''</td><td align="сenter">'''
+                table += to_add
+                if work['payed'] is True:
+                    to_add = '''Оплачен</td><td>'''
+                else:
+                    to_add = '''Не оплачен</td></tr>'''
+                table += to_add
+
+    table += '''\n</table>'''
+    text += table
+    with open('static/files/generated_files/online_applicants.html', 'w', encoding='utf-8') as f:
+        f.write(text)
     return render_template('online_reports/online_applicants.html', cats=cats)
+
+
+@app.route('/download_applicants')
+def download_applicants():
+    return send_file('static/files/generated_files/online_applicants.html', as_attachment=True)
 
 
 @app.route('/works_for_free/<cat_id>', methods=['POST'])
@@ -2889,7 +2943,7 @@ def save_report_dates():
 @app.route('/reports_order/<cat_id>')
 def reports_order(cat_id):
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    works = get_works(cat_id, 2)
+    works = get_works(cat_id, 2, 'online')
     participating = 0
     works_unordered = []
     approved_for_2 = len(works)
@@ -2901,42 +2955,39 @@ def reports_order(cat_id):
     dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
     c_dates = []
     if dates_db.day_1:
-        d_1 = {'d': 'day_1'}
-        d_1['day'] = days[dates_db.day_1.strftime('%w')]
-        d_1['day_full'] = days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
-                          months_full[dates_db.day_1.strftime('%m')]
+        d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
+               'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+                           months_full[dates_db.day_1.strftime('%m')]}
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_1':
                 day_works.append(work)
         d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_1['works']] != []:
+        if [w['report_order'] for w in d_1['works']]:
             d_1['max_order'] = max([w['report_order'] for w in d_1['works']])
         c_dates.append(d_1)
     if dates_db.day_2:
-        d_2 = {'d': 'day_2'}
-        d_2['day'] = days[dates_db.day_2.strftime('%w')]
-        d_2['day_full'] = days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
-                          months_full[dates_db.day_2.strftime('%m')]
+        d_2 = {'d': 'day_2', 'day': days[dates_db.day_2.strftime('%w')],
+               'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
+                           months_full[dates_db.day_2.strftime('%m')]}
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_2':
                 day_works.append(work)
         d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_2['works']] != []:
+        if [w['report_order'] for w in d_2['works']]:
             d_2['max_order'] = max([w['report_order'] for w in d_2['works']])
         c_dates.append(d_2)
     if dates_db.day_3:
-        d_3 = {'d': 'day_3'}
-        d_3['day'] = days[dates_db.day_3.strftime('%w')]
-        d_3['day_full'] = days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
-                          months_full[dates_db.day_3.strftime('%m')]
+        d_3 = {'d': 'day_3', 'day': days[dates_db.day_3.strftime('%w')],
+               'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+                           months_full[dates_db.day_3.strftime('%m')]}
         day_works = []
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == 'day_3':
                 day_works.append(work)
         d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_3['works']] != []:
+        if [w['report_order'] for w in d_3['works']]:
             d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
         c_dates.append(d_3)
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,

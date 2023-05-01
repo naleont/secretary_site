@@ -60,7 +60,7 @@
                             {% endif %},
                             {% if not participant['participant']['format'] or participant['participant']['format'] == 'face-to-face' %}
                                 Очное участие
-                            {% elif response['value']['format'] == 'online'%}
+                            {% elif participant['participant']['format'] == 'online'%}
                                 Дистанционное участие
                             {% endif %}
                     <br>
