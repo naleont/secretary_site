@@ -2387,7 +2387,7 @@ def add_reviews(done):
 @app.route('/save_reviews')
 def save_reviews():
     response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
-                                        headers={'Token': 'EFKNE9PE9FT8B9PT'}).text)
+                                        headers=mail_data.headers).text)
     for work in response:
         work_id = int(work['number'])
         if work['reviews']:
