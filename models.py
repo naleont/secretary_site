@@ -258,16 +258,38 @@ class WorkCategories(db.Model):
         self.cat_id = cat_id
 
 
+class InternalReviewers(db.Model):
+    __tablename__ = 'internal_reviewers'
+
+    reviewer_id = db.Column('reviewer_id', db.Integer, primary_key=True)
+    reviewer = db.Column('reviewer', db.Text)
+
+    def __init__(self, reviewer):
+        self.reviewer = reviewer
+
+
 class InternalReviews(db.Model):
     __tablename__ = 'internal_reviews'
-    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    review_id = db.Column('review_id', db.Integer, primary_key=True)
+    reviewer_id = db.Column('reviewer_id', db.Integer)
+
+    def __init__(self, review_id, reviewer_id):
+        self.review_id = review_id
+        self.reviewer = reviewer_id
+
+
+class WorkReviews(db.Model):
+    __tablename__ = 'work_reviews'
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'review_id'),)
 
     work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
-    reviewers = db.Column('reviewers', db.Text)
+    review_id = db.Column('review_id', db.Integer, ForeignKey('internal_reviews.review_id'))
 
-    def __init__(self, work_id, reviewers):
+
+    def __init__(self, work_id, review_id):
         self.work_id = work_id
-        self.reviewers = reviewers
+        self.review_id = review_id
 
 
 class News(db.Model):

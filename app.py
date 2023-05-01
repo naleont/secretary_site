@@ -2389,18 +2389,33 @@ def save_reviews():
     response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
                                         headers={'Token': 'EFKNE9PE9FT8B9PT'}).text)
     for work in response:
+        work_id = int(work['number'])
         if work['reviews']:
-            if int(work['number']) not in [w.work_id for w in InternalReviews.query.all()]:
-                to_add = InternalReviews(work['number'], ', '.join([r['reviewer'] for r in work['reviews']]))
-                db.session.add(to_add)
-                db.session.commit()
-            else:
-                db.session.query(InternalReviews
-                                 ).filter(InternalReviews.work_id == work['number']
-                                          ).update({InternalReviews.reviewers:
-                                                                            ', '.join([r['reviewer'] for r
-                                                                                       in work['reviews']])})
-                db.session.commit()
+            for revs in work['reviews']:
+                reviewer = revs['reviewer'].strip()
+                review_id = int(revs['id'].strip())
+                if reviewer not in [r.reviewer for r in InternalReviewers.query.all()]:
+                    ir = InternalReviewers(reviewer)
+                    db.session.add(ir)
+                    db.session.commit()
+                reviewer_id = InternalReviewers.query.filter(InternalReviewers.reviewer == reviewer).first().reviewer_id
+                if review_id not in [r.review_id for r in InternalReviews.query.all()]:
+                    rev = InternalReviews(review_id=review_id, reviewer_id=reviewer_id)
+                    db.session.add(rev)
+                    db.session.commit()
+                else:
+                    db.session.query(InternalReviews).filter(InternalReviews.review_id == review_id)\
+                        .update({InternalReviews.reviewer_id: reviewer_id})
+                    db.session.commit()
+                if review_id not in [w.review_id for w in
+                                     WorkReviews.query.filter(WorkReviews.work_id == work_id).all()]:
+                    to_add = WorkReviews(work_id, review_id)
+                    db.session.add(to_add)
+                    db.session.commit()
+                else:
+                    db.session.query(WorkReviews).filter(WorkReviews.review_id == review_id)\
+                        .update({WorkReviews.work_id: work_id})
+                    db.session.commit()
     done = True
     return redirect(url_for('.add_reviews', done=done))
 
