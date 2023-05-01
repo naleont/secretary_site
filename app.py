@@ -2490,11 +2490,15 @@ def save_reviews():
 
 @app.route('/int_analysis')
 def int_analysis():
+    if check_access(url='/int_analysis') < 8:
+        return redirect(url_for('.no_access'))
     return render_template('internal_reviews/int_analysis.html')
 
 
 @app.route('/reviewers_to_review')
 def reviewers_to_review():
+    if check_access(url='/reviewers_to_review') < 8:
+        return redirect(url_for('.no_access'))
     c, cats = categories_info()
     for cat in cats:
         cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])]
@@ -2510,6 +2514,8 @@ def reviewers_to_review():
 
 @app.route('/internal_reviews')
 def internal_reviews():
+    if check_access(url='/internal_reviews') < 8:
+        return redirect(url_for('.no_access'))
     reviewers = [{'id': r.reviewer_id, 'name': r.reviewer} for r in InternalReviewers.query.all()]
     for reviewer in reviewers:
         if reviewer['id'] in [r.reviewer_id for r in ReadingReviews.query.all()]:
@@ -2522,6 +2528,8 @@ def internal_reviews():
 
 @app.route('/see_reviews/<reviewer_id>')
 def see_reviews(reviewer_id):
+    if check_access(url='/see_reviews/' + str(reviewer_id)) < 8:
+        return redirect(url_for('.no_access'))
     reviews = []
     for r in InternalReviews.query.filter(InternalReviews.reviewer_id == int(reviewer_id)).all():
         if r.review_id in [a.review_id for a in InternalAnalysis.query.all()]:
