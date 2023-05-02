@@ -3246,7 +3246,7 @@ def reports_order(cat_id):
 @app.route('/works_list_schedule/<cat_id>')
 def works_list_schedule(cat_id):
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    works = get_works(cat_id, 2)
+    works = get_works(cat_id, 2, 'online')
     participating = 0
     works_unordered = []
     approved_for_2 = len(works)
