@@ -57,6 +57,7 @@
                         {% if participant['participant']['reg_tour'] %}
                         <span class="alarm">{{ participant['participant']['reg_tour'] }} тур</span>
                         {% endif %}<br>
+                    <i>{{ participant['participant']['authors'] }}</i><br>
                         Оргвзнос {{ participant['participant']['fee'] }}р.
                             {% if participant['participant']['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
