@@ -16,27 +16,35 @@
         <h2>Результаты поиска</h2>
         <p>
         {% if response['type'] == None %}
-        Ничего не найдено
+        {{ response['value'] }} - ничего не найдено
 
         {% elif response['type'] == 'work' %}
-        <b>Работа {{ response['value']['work_id'] }}
-            <a href="/discount_and_participation_mode/{{ response['value']['work_id'] }}">
+        <b>Работа {{ response['works']['work_id'] }}
+                    {% if response['works']['part_offline'] == True %}
+                        <span class="alarm">Участвовала очно</span>
+                    {% else %}
+                        <span class="green-text">Д</span>
+                    {% endif %}
+            <a href="/discount_and_participation_mode/{{ response['works']['work_id'] }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                      class="bi bi-credit-card" viewBox="0 0 16 16">
                     <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
                     <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
                 </svg>
             </a><br>
-        {{ response['value']['work_name'] }}</b>
-            {% if response['value']['reg_tour'] %}<br>
-            <span class="alarm">{{ response['value']['reg_tour'] }} тур</span>
+        {{ response['works']['work_name'] }}</b>
+            {% if response['works']['reg_tour'] %}<br>
+            <span class="alarm">{{ response['works']['reg_tour'] }} тур</span>
             {% endif %}<br>
-        Заявка {{ response['value']['appl_no'] }}<br>
-        Оргвзнос {{ response['value']['fee'] }}р.,
-            {% if not response['value']['format'] or response['value']['format'] == 'face-to-face' %}
+        Заявка {{ response['works']['appl_no'] }}<br>
+        Оргвзнос {{ response['works']['fee'] }} р.,
+            {% if not response['works']['format'] or response['works']['format'] == 'face-to-face' %}
                 Очное участие
-            {% elif response['value']['format'] == 'online'%}
+            {% elif response['works']['format'] == 'online'%}
                 Дистанционное участие
+            {% endif %}
+            {% if response['works']['payed'] == True %}
+            - <a target="_blank" href="/set_payee/{{ response['works']['payment_id'] }}/{{ response['works']['work_id'] }}">Посмотреть платеж</a>
             {% endif %}<br>
 
         {% elif response['type'] == 'appl' %}
@@ -50,7 +58,12 @@
         </a><br><br>
         <b>Работы</b><br>
                 {% for work in response['value']['works'] %}
-                Работа {{ work['work_id'] }} -
+                Работа {{ work['work_id'] }}
+                    {% if work['part_offline'] == True %}
+                        <span class="alarm"><b>Участвовала очно</b></span>
+                    {% else %}
+                        <span class="green-text"><b>Д</b></span>
+                    {% endif %} -
                 {{ work['work_name'] }}
                     {% if work['reg_tour'] %}
                     <span class="alarm">{{ work['reg_tour'] }} тур</span>
@@ -76,7 +89,7 @@
                     {% endif %}<br>
                 {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
                     {% if session['access'] >= 8 %}
-                    Оргвзнос {{ participant['fee'] }}р.
+                    Оргвзнос {{ participant['fee'] }} р.
                         {% if participant['payed'] == True %}
                         <span class="green-text">(Оплачен)</span>
                         {% elif participant['payed'] == False %}
@@ -92,7 +105,40 @@
                         {% endif %}
                     {% endif %}<br><br>
                 {% endfor %}
+
         {% elif response['type'] == 'appls' %}
+            <h3>В работах</h3>
+        {% for work in response['works'] %}
+            <b>Работа {{ work['work_id'] }}
+                    {% if work['part_offline'] == True %}
+                        <span class="alarm">Участвовала очно</span>
+                    {% else %}
+                        <span class="green-text">Д</span>
+                    {% endif %}
+            <a href="/discount_and_participation_mode/{{ work['work_id'] }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                     class="bi bi-credit-card" viewBox="0 0 16 16">
+                    <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
+                    <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
+                </svg>
+            </a><br>
+        {{ work['work_name'] }}</b>
+            {% if work['reg_tour'] %}<br>
+            <span class="alarm">{{ work['reg_tour'] }} тур</span>
+            {% endif %}<br>
+        Заявка {{ work['appl_no'] }}<br>
+        Оргвзнос {{ work['fee'] }} р.,
+            {% if not work['format'] or work['format'] == 'face-to-face' %}
+                Очное участие
+            {% elif work['format'] == 'online'%}
+                Дистанционное участие
+            {% endif %}
+            {% if work['payed'] == True %}
+            - <a target="_blank" href="/set_payee/{{ work['payment_id'] }}/{{ work['work_id'] }}">Посмотреть платеж</a>
+            {% endif %}<br><br>
+            {% endfor %}
+
+            <h3>В заявках</h3>
             {% for appl in response['value'] %}
             <br><b>Заявка {{ appl['id'] }}</b>
             <a href="/discount_and_participation_mode/{{ response['value']['id'] }}">
@@ -104,7 +150,12 @@
             </a><br><br>
             <b>Работы</b><br>
                 {% for work in appl['works'] %}
-                Работа {{ work['work_id'] }} -
+                Работа {{ work['work_id'] }}
+                    {% if work['part_offline'] == True %}
+                        <span class="alarm"><b>Участвовала очно</b></span>
+                    {% else %}
+                        <span class="green-text"><b>Д</b></span>
+                    {% endif %} -
                 {{ work['work_name'] }}
                     {% if work['reg_tour'] %}
                     <span class="alarm">{{ work['reg_tour'] }} тур</span>
@@ -145,7 +196,7 @@
                         - <a target="_blank" href="/set_payee/{{ participant['payment_id'] }}/{{ response['value']['id'] }}">Посмотреть платеж</a>
                         {% endif %}<br>
                     {% endif %}<br>
-            {% endfor %}
+            {% endfor %}<br>
         {% endfor %}
         {% endif %}</b>
         </p>

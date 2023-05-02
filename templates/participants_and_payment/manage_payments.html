@@ -31,8 +31,10 @@
   {% for payment in statement %}
 
   <tr
-  {% if payment['remainder'] == '0 р.' %}
+  {% if payment['remainder'] == '0' %}
   bgcolor="#C6E0B4"
+  {% elif payment['remainder'] != payment['debit'] %}
+  bgcolor="#FFEE91"
   {% endif %}>
     <td align="center" valign="middle"><a href="/delete_payment/{{ payment['payment_id'] }}" class="alarm">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
@@ -46,10 +48,10 @@
       {{ payment['date'] }}
     </a></td>
     <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['debit'] }}
+      {{ payment['debit'] }} р.
     </a></td>
     <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['remainder'] }}
+      {{ payment['remainder'] }} р.
     </a></td>
     <td><a href="/set_payee/{{ payment['payment_id'] }}">
       {{ payment['comment'] }}

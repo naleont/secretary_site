@@ -41,41 +41,41 @@
 {{ participant['participant'] }}: Не найдено таких участников
 
 {% elif participant['type'] == 'work' %}
-<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['participant']['work_id'] }}" method = 'POST'>
+<form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['works']['work_id'] }}" method = 'POST'>
     <fieldset>
         <table>
             <tr>
                 <td width="70%">
-                    <input type="checkbox" name="{{ participant['participant']['work_id'] }}" checked>
-                    <b>Работа {{ participant['participant']['work_id'] }}
-                    {% if participant['participant']['part_offline'] == True %}
+                    <input type="checkbox" name="{{ participant['works']['work_id'] }}" checked>
+                    <b>Работа {{ participant['works']['work_id'] }}
+                    {% if participant['works']['part_offline'] == True %}
                         <span class="alarm">Участвовала очно</span>
                     {% else %}
                         <span class="green-text">Д</span>
                     {% endif %}</b><br>
-                        {{ participant['participant']['work_name'] }}
-                        {% if participant['participant']['reg_tour'] %}
-                        <span class="alarm">{{ participant['participant']['reg_tour'] }} тур</span>
+                        {{ participant['works']['work_name'] }}
+                        {% if participant['works']['reg_tour'] %}
+                        <span class="alarm">{{ participant['works']['reg_tour'] }} тур</span>
                         {% endif %}<br>
-                    <i>{{ participant['participant']['authors'] }}</i><br>
-                        Оргвзнос {{ participant['participant']['fee'] }}р.
-                            {% if participant['participant']['payed'] == True %}
+                    <i>{{ participant['works']['authors'] }}</i><br>
+                        Оргвзнос {{ participant['works']['fee'] }}р.
+                            {% if participant['works']['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
-                            {% elif participant['participant']['payed'] == False %}
+                            {% elif participant['works']['payed'] == False %}
                             <span class="alarm">(Не оплачен)</span>
                             {% endif %},
-                            {% if not participant['participant']['format'] or participant['participant']['format'] == 'face-to-face' %}
+                            {% if not participant['works']['format'] or participant['works']['format'] == 'face-to-face' %}
                                 Очное участие
-                            {% elif participant['participant']['format'] == 'online'%}
+                            {% elif participant['works']['format'] == 'online'%}
                                 Дистанционное участие
                             {% endif %}
                     <br>
-                            <a href="/application_payment/{{ payment['payment_id'] }}/{{ participant['participant']['appl_no'] }}"><div class="blue_no_border" type="submit">
-                    <b>Заявка {{ participant['participant']['appl_no'] }}</b></div></a>
+                            <a href="/application_payment/{{ payment['payment_id'] }}/{{ participant['works']['appl_no'] }}"><div class="blue_no_border" type="submit">
+                    <b>Заявка {{ participant['works']['appl_no'] }}</b></div></a>
                 </td>
                 <td width="30%">
                     <input class="button" type="submit" value="Назначить платеж работе"><br><br>
-                    <a href="/discount_and_participation_mode/{{ participant['participant']['work_id'] }}">
+                    <a href="/discount_and_participation_mode/{{ participant['works']['work_id'] }}">
                         <div class="green-button">Исправить суммы оргвзносов</div></a>
                 </td>
             </tr>
@@ -93,9 +93,111 @@
                 {% for work in appl['works'] %}
                 <i>Работа {{ work['work_id'] }}</i>
                 {{ work['work_name'] }}<br>
+                    {% if work['part_offline'] == True %}
+                        <span class="alarm">Участвовала очно</span>
+                    {% else %}
+                        <span class="green-text">Д</span>
+                    {% endif %}
                 {% if work['reg_tour'] %}
                 <span class="alarm">{{ work['reg_tour'] }} тур</span>
                 {% endif %}<br>
+                    <i>{{ work['authors'] }}</i><br><br>
+                {% endfor %}<br>
+                <b>Участники</b><br>
+                {% for member in appl['participants'] %}
+                <i>{{ member['role'] }} {{ member['id'] }}</i><br>
+                {{ member['last_name'] }} {{ member['first_name'] }} {{ member['patronymic_name'] }}<br>
+                Оргвзнос {{ member['fee'] }}р.
+                    {% if member['payed'] == True %}
+                    <span class="green-text">(Оплачен)</span>
+                    {% elif member['payed'] == False %}
+                    <span class="alarm">(Не оплачен)</span>
+                    {% endif %},
+                {% if member['format'] == 'face-to-face' %}
+                    Очное участие
+                {% elif member['format'] == 'online'%}
+                    Дистанционное участие
+                {% endif %}
+                {% if member['payed'] == True %}
+                - <a target="_blank" href="/set_payee/{{ member['payment_id'] }}/{{ appl['id'] }}">Посмотреть платеж</a>
+                {% endif %}<br><br>
+                {% endfor %}
+        </td>
+        <td width="30%" valign="top" align="center">
+            <a href="/сheck_payees/{{ payment['payment_id'] }}/{{ appl['id'] }}">
+                <button>Назначить платеж заявке</button></a><br><br>
+                    <a href="/discount_and_participation_mode/{{ appl['id'] }}">
+                        <button>Исправить суммы оргвзносов</button></a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% elif participant['type'] == 'name' %}
+<h3>В работах</h3>
+{% for work in participant['works'] %}
+<form action="/set_payment/{{ payment['payment_id'] }}/{{ work['work_id'] }}" method = 'POST'>
+    <fieldset>
+        <table>
+            <tr>
+                <td width="70%">
+                    <input type="checkbox" name="{{ work['work_id'] }}" checked>
+                    <b>Работа {{ work['work_id'] }}
+                    {% if work['part_offline'] == True %}
+                        <span class="alarm">Участвовала очно</span>
+                    {% else %}
+                        <span class="green-text">Д</span>
+                    {% endif %}</b><br>
+                        {{ work['work_name'] }}
+                        {% if work['reg_tour'] %}
+                        <span class="alarm">{{ work['reg_tour'] }} тур</span>
+                        {% endif %}<br>
+                    <i>{{ work['authors'] }}</i><br>
+                        Оргвзнос {{ work['fee'] }}р.
+                            {% if work['payed'] == True %}
+                            <span class="green-text">(Оплачен)</span>
+                            {% elif work['payed'] == False %}
+                            <span class="alarm">(Не оплачен)</span>
+                            {% endif %},
+                            {% if not work['format'] or work['format'] == 'face-to-face' %}
+                                Очное участие
+                            {% elif work['format'] == 'online'%}
+                                Дистанционное участие
+                            {% endif %}
+                    <br>
+                            <a href="/application_payment/{{ payment['payment_id'] }}/{{ work['appl_no'] }}"><div class="blue_no_border" type="submit">
+                    <b>Заявка {{ work['appl_no'] }}</b></div></a>
+                </td>
+                <td width="30%">
+                    <input class="button" type="submit" value="Назначить платеж работе"><br><br>
+                    <a href="/discount_and_participation_mode/{{ work['work_id'] }}">
+                        <div class="green-button">Исправить суммы оргвзносов</div></a>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+</form><br>
+{% endfor %}
+
+<h3>В заявках</h3>
+<table>
+    {% for appl in participant['participant'] %}
+    <tr>
+        <td>
+            <b>Заявка {{ appl['id'] }}</b><br>
+                <b>Работы</b><br>
+                {% for work in appl['works'] %}
+                <i>Работа {{ work['work_id'] }}</i>
+                {{ work['work_name'] }}<br>
+                    {% if work['part_offline'] == True %}
+                        <span class="alarm">Участвовала очно</span>
+                    {% else %}
+                        <span class="green-text">Д</span>
+                    {% endif %}
+                {% if work['reg_tour'] %}
+                <span class="alarm">{{ work['reg_tour'] }} тур</span>
+                {% endif %}<br>
+                    <i>{{ work['authors'] }}</i><br><br>
                 {% endfor %}<br>
                 <b>Участники</b><br>
                 {% for member in appl['participants'] %}

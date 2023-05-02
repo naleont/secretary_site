@@ -972,12 +972,12 @@ def statement_info():
                 else:
                     payed = fee
                 remainder -= payed
-        remainder = str(int(remainder)) + ' р.'
+        remainder = str(int(remainder))
         date = datetime.datetime.strftime(payment.date, '%d.%m.%Y')
         if payment.debit % 1 == 0:
-            debit = str(int(payment.debit)) + ' р.'
+            debit = str(int(payment.debit))
         else:
-            debit = str(payment.debit).replace('.', ',') + ' р.'
+            debit = str(payment.debit).replace('.', ',')
         pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
                'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
                'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment,
@@ -3526,11 +3526,12 @@ def search_participant(query):
     renew_session()
     if check_access(url='/search_participant') < 3:
         return redirect(url_for('.no_access'))
+    response = {'type': None, 'value': query}
     if query:
         try:
             qu = int(query)
             if len(query) == 6 and qu:
-                response = {'type': 'work', 'value': work_info(int(query))}
+                response = {'type': 'work', 'works': work_info(int(query))}
             elif len(query) == 5:
                 response = {'type': 'appl', 'value': application_2_tour(int(query))}
             else:
@@ -3555,8 +3556,19 @@ def search_participant(query):
                         partic = application_2_tour(appl)
                         p.append(partic)
                 response = {'type': 'appls', 'value': p}
+            authors = [{'id': a.work_id, 'authors': [a.author_1_name, a.author_2_name, a.author_3_name]} for a in
+                       Works.query.all()]
+            wks = []
+            for a in authors:
+                if query.lower() in [a[:len(query)].lower() for a in a['authors'] if a is not None]:
+                    wks.append(a['id'])
+            w = [work_info(wo) for wo in wks]
+            if response['type']:
+                response['works'] = w
             else:
-                response = {'type': None}
+                response = {'type': 'name', 'value': w}
+    else:
+        response = {'type': None, 'value': query}
     return render_template('participants_and_payment/search_participant.html', response=response)
 
 
@@ -3656,6 +3668,7 @@ def id_payments():
 @app.route('/set_payee/<payment_id>/<payee>')
 def set_payee(payment_id, payee):
     payment = payment_info(payment_id)
+    participant = {'type': None, 'participant': payee}
     if payee is not None:
         payee = payee.strip()
         try:
@@ -3665,24 +3678,34 @@ def set_payee(payment_id, payee):
         if payee in [p.appl_id for p in ParticipantsApplied.query.all()]:
             participant = {'type': 'appl', 'participant': [application_2_tour(payee)]}
         elif payee in [w.work_id for w in Works.query.all()]:
-            participant = {'type': 'work', 'participant': work_info(payee)}
-        elif payee.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
-            parts = [p.participant_id for p
-                     in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
-            parts.extend([p.participant_id for p
-                          in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
-            parts.extend([p.participant_id for p
-                          in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
-                                                              ''.join([payee[0].upper(), payee[1:].lower()])).all()])
-            p = []
-            for part in parts:
-                appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
-                if appl not in [pa['id'] for pa in p]:
-                    partic = application_2_tour(appl)
-                    p.append(partic)
-            participant = {'type': 'appl', 'participant': p}
+            participant = {'type': 'work', 'works': work_info(payee)}
         else:
-            participant = {'type': None, 'participant': payee}
+            if payee.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
+                parts = [p.participant_id for p
+                         in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
+                parts.extend([p.participant_id for p
+                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
+                parts.extend([p.participant_id for p
+                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
+                                                                  ''.join([payee[0].upper(), payee[1:].lower()])).all()])
+                p = []
+                for part in parts:
+                    appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
+                    if appl not in [pa['id'] for pa in p]:
+                        partic = application_2_tour(appl)
+                        p.append(partic)
+                participant = {'type': 'name', 'participant': p}
+            authors = [{'id': a.work_id, 'authors': [a.author_1_name, a.author_2_name, a.author_3_name]} for a in
+                       Works.query.all()]
+            wks = []
+            for a in authors:
+                if payee.lower() in [a[:len(payee)].lower() for a in a['authors'] if a is not None]:
+                    wks.append(a['id'])
+            w = [work_info(wo) for wo in wks]
+            if participant['type']:
+                participant['works'] = w
+            else:
+                participant = {'type': 'name', 'works': w}
     else:
         participant = {'type': None, 'participant': payee}
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
