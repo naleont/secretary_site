@@ -246,6 +246,15 @@ def get_user_info(user):
 
 def get_org_info(user_id):
     org = get_user_info(user_id)
+    resps = [r.responsibility_id for r
+             in ResponsibilityAssignment.query.filter(ResponsibilityAssignment.user_id == org['user_id']).all()]
+    responsibilities = []
+    for resp in resps:
+        resp_db = db.session.query(Responsibilities).filter(Responsibilities.responsibility_id == resp).first()
+        responsibility = {'id': resp_db.responsibility_id, 'name': resp_db.name, 'description': resp_db.description}
+        responsibilities.append(responsibility)
+    responsibs = sorted(responsibilities, key=lambda u: u['name'])
+    org['responsibilities'] = responsibs
     return org
 
 
@@ -1959,16 +1968,6 @@ def supervisor_user(user_id):
     return redirect(url_for('.user_page', user=user_id))
 
 
-# @app.route('/set_responsibilities')
-# def set_responsibilities():
-#     return render_template('organising_committee/responsibilities.html')
-#
-#
-# @app.route('/set_tasks')
-# def set_tasks():
-#     return render_template('organising_committee/set_tasks.html')
-#
-#
 @app.route('/organising_committee')
 def organising_committee():
     membs = [get_org_info(u.user_id) for u
@@ -2012,7 +2011,8 @@ def save_orgcom():
 def responsibilities():
     resps = [get_responsibility(r.responsibility_id) for r
              in Responsibilities.query.filter(Responsibilities.year == curr_year).all()]
-    return render_template('organising_committee/responsibilities.html', responsibilities=resps, curr_year=curr_year)
+    respons = sorted(resps, key=lambda u: u['name'])
+    return render_template('organising_committee/responsibilities.html', responsibilities=respons, curr_year=curr_year)
 
 
 @app.route('/add_responsibilities', defaults={'responsibility_id': ''})
