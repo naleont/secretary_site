@@ -3556,17 +3556,17 @@ def search_participant(query):
                         partic = application_2_tour(appl)
                         p.append(partic)
                 response = {'type': 'appls', 'value': p}
-            authors = [{'id': a.work_id, 'authors': [a.author_1_name, a.author_2_name, a.author_3_name]} for a in
-                       Works.query.all()]
-            wks = []
-            for a in authors:
-                if query.lower() in [a[:len(query)].lower() for a in a['authors'] if a is not None]:
-                    wks.append(a['id'])
-            w = [work_info(wo) for wo in wks]
-            if response['type']:
-                response['works'] = w
-            else:
-                response = {'type': 'name', 'value': w}
+                authors = [{'id': a.work_id, 'authors': [a.author_1_name, a.author_2_name, a.author_3_name]} for a in
+                           Works.query.all()]
+                wks = []
+                for a in authors:
+                    if query.lower() in [a[:len(query)].lower() for a in a['authors'] if a is not None]:
+                        wks.append(a['id'])
+                w = [work_info(wo) for wo in wks]
+                if response['type']:
+                    response['works'] = w
+                else:
+                    response = {'type': 'name', 'value': w}
     else:
         response = {'type': None, 'value': query}
     return render_template('participants_and_payment/search_participant.html', response=response)
