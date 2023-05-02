@@ -3561,7 +3561,8 @@ def search_participant(query):
                 wks = []
                 for a in authors:
                     if query.lower() in [a[:len(query)].lower() for a in a['authors'] if a is not None]:
-                        wks.append(a['id'])
+                        if str(a['id'])[:2] == str(curr_year)[-2:]:
+                            wks.append(a['id'])
                 w = [work_info(wo) for wo in wks]
                 if response['type']:
                     response['works'] = w
@@ -3700,7 +3701,8 @@ def set_payee(payment_id, payee):
             wks = []
             for a in authors:
                 if payee.lower() in [a[:len(payee)].lower() for a in a['authors'] if a is not None]:
-                    wks.append(a['id'])
+                    if str(a['id'])[:2] == str(curr_year)[-2:]:
+                        wks.append(a['id'])
             w = [work_info(wo) for wo in wks]
             if participant['type']:
                 participant['works'] = w

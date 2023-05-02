@@ -107,7 +107,9 @@
                 {% endfor %}
 
         {% elif response['type'] == 'appls' %}
+            {% if response['works'] != [] %}
             <h3>В работах</h3>
+            {% endif %}
         {% for work in response['works'] %}
             <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
@@ -138,7 +140,9 @@
             {% endif %}<br><br>
             {% endfor %}
 
+            {% if response['value'] != [] %}
             <h3>В заявках</h3>
+            {% endif %}
             {% for appl in response['value'] %}
             <br><b>Заявка {{ appl['id'] }}</b>
             <a href="/discount_and_participation_mode/{{ response['value']['id'] }}">

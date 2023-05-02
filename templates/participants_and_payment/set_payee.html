@@ -134,7 +134,9 @@
 </table>
 
 {% elif participant['type'] == 'name' %}
+{% if participant['works'] != [] %}
 <h3>В работах</h3>
+{% endif %}
 {% for work in participant['works'] %}
 <form action="/set_payment/{{ payment['payment_id'] }}/{{ work['work_id'] }}" method = 'POST'>
     <fieldset>
@@ -179,7 +181,9 @@
 </form><br>
 {% endfor %}
 
+{% if participant['participant'] %}
 <h3>В заявках</h3>
+{% endif %}
 <table>
     {% for appl in participant['participant'] %}
     <tr>
