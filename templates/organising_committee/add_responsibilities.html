@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Зоны ответственности в {{ curr_year }} году</h2>
+<form action="/save_responsibilities" method="POST">
+    <fieldset>
+        <input size="30" name="responsibility_id" type="hidden"
+               {% if responsibility['id'] %} value="{{ responsibility['id'] }} {% endif %}">
+
+        <span class="required">Название</span><br>
+        <input type="text" size="100" name="name" value="{{ responsibility['name'] }}" required><br><br>
+
+        <span>Описание</span><br>
+        <textarea cols="100" rows="5" name="description">{{ responsibility['description'] }}</textarea><br><br>
+
+        <span>Ответственный</span><br>
+            {% for org in orgcom %}
+            <p><label>
+            <input type="checkbox" name="assignees" value="{{ org['user_id'] }}" {% if org['user_id'] in assignees_ids %} checked {% endif %}>
+                {{ org['last_name'] }} {{ org['first_name'] }} {{ org['patronymic'] }}
+            </label></p>
+            {% endfor %}
+
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form>
+
+{% endblock %}

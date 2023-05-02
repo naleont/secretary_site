@@ -672,3 +672,29 @@ class OrganisingCommittee(db.Model):
     def __init__(self, user_id, year):
         self.user_id = user_id
         self.year = year
+
+
+class Responsibilities(db.Model):
+    __tablename__ = 'responsibilities'
+
+    responsibility_id = db.Column('responsibility_id', db.Integer, primary_key=True)
+    name = db.Column('name', db.Text)
+    description = db.Column('description', db.Text)
+    year = db.Column('year', db.Integer)
+
+    def __init__(self, name, description, year):
+        self.name = name
+        self.description = description
+        self.year = year
+
+
+class ResponsibilityAssignment(db.Model):
+    __tablename__ = 'resp_assignment'
+    __table_args__ = (PrimaryKeyConstraint('user_id', 'responsibility_id'),)
+
+    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'))
+    responsibility_id = db.Column('responsibility_id', db.Integer, ForeignKey('responsibilities.responsibility_id'))
+
+    def __init__(self, user_id, responsibility_id):
+        self.user_id = user_id
+        self.responsibility_id = responsibility_id

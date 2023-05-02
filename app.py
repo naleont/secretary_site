@@ -1025,6 +1025,18 @@ def write_work_date(cat_id, work_id, day):
     return 'done'
 
 
+def get_responsibility(responsibility_id):
+    responsibility_id = int(responsibility_id)
+    resp_db = db.session.query(Responsibilities).filter(Responsibilities.responsibility_id == responsibility_id).first()
+    assignees = [get_org_info(u.user_id) for u
+                 in ResponsibilityAssignment.query
+                 .filter(ResponsibilityAssignment.responsibility_id == responsibility_id).all()]
+    assignees_ids = [u['user_id'] for u in assignees]
+    responsibility = {'id': resp_db.responsibility_id, 'name': resp_db.name, 'description': resp_db.description,
+                      'assignees': assignees, 'assignees_ids': assignees_ids}
+    return responsibility
+
+
 # САЙТ
 # Главная страница
 @app.route('/')
@@ -1949,7 +1961,7 @@ def supervisor_user(user_id):
 
 # @app.route('/set_responsibilities')
 # def set_responsibilities():
-#     return render_template('organising_committee/set_responsibilities.html')
+#     return render_template('organising_committee/responsibilities.html')
 #
 #
 # @app.route('/set_tasks')
@@ -1960,7 +1972,7 @@ def supervisor_user(user_id):
 @app.route('/organising_committee')
 def organising_committee():
     membs = [get_org_info(u.user_id) for u
-             in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year)]
+             in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year).all()]
     m = sorted(membs, key=lambda u: u['first_name'])
     members = sorted(m, key=lambda u: u['last_name'])
     return render_template('organising_committee/organising_committee.html', members=members,
@@ -1974,26 +1986,110 @@ def set_orgcom():
                 if u.user_type in [u for u in access_types.keys() if access_types[u] >= 8]]
     for u in user_ids:
         users.append(get_user_info(u))
-    return render_template('organising_committee/set_orgcom.html', curr_year=curr_year, users=users)
+    org = [o.user_id for o in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year).all()]
+    return render_template('organising_committee/set_orgcom.html', curr_year=curr_year, users=users, org=org)
 
 
 @app.route('/save_orgcom', methods=['POST'])
 def save_orgcom():
-    users = [u.user_id for u in Users.query.all() if u.user_type in [u for u in access_types.keys()
-                                                                     if access_types[u] >= 8]]
-    orgcom = [u for u in users if str(u) in request.form.keys() and request.form[str(u)] == 'on']
+    org = request.form.getlist('orgcom')
+    orgcom = [int(o) for o in org]
     for org in orgcom:
         if org not in [o.user_id for o in OrganisingCommittee.query.filter(OrganisingCommittee.year ==
                                                                            curr_year).all()]:
             member = OrganisingCommittee(user_id=org, year=curr_year)
             db.session.add(member)
             db.session.commit()
-    check = [u.user_id for u in Users.query.all() if u.user_id not in orgcom]
+    check = [u.user_id for u in OrganisingCommittee.query.all() if u.user_id not in orgcom]
     if check:
         for user in check:
             OrganisingCommittee.query.filter(OrganisingCommittee.user_id == user).delete()
             db.session.commit()
     return redirect(url_for('.organising_committee'))
+
+
+@app.route('/responsibilities')
+def responsibilities():
+    resps = [get_responsibility(r.responsibility_id) for r
+             in Responsibilities.query.filter(Responsibilities.year == curr_year).all()]
+    return render_template('organising_committee/responsibilities.html', responsibilities=resps, curr_year=curr_year)
+
+
+@app.route('/add_responsibilities', defaults={'responsibility_id': ''})
+@app.route('/add_responsibilities/<responsibility_id>')
+def add_responsibilities(responsibility_id):
+    orgcom = [get_org_info(u.user_id) for u
+              in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year).all()]
+    m = sorted(orgcom, key=lambda u: u['first_name'])
+    orgcom = sorted(m, key=lambda u: u['last_name'])
+    if responsibility_id:
+        responsibility = get_responsibility(responsibility_id)
+    else:
+        responsibility = None
+    return render_template('organising_committee/add_responsibilities.html', curr_year=curr_year, orgcom=orgcom,
+                           responsibility=responsibility)
+
+
+@app.route('/save_responsibilities', methods=['POST'])
+def save_responsibilities():
+    year = curr_year
+    name = request.form['name']
+    if 'description' in request.form.keys():
+        description = request.form['description']
+    else:
+        description = None
+    if 'responsibility_id' in request.form.keys() and request.form['responsibility_id'] != '':
+        responsibility_id = int(request.form['responsibility_id'])
+        if responsibility_id in [r.responsibility_id for r in Responsibilities.query.all()]:
+            db.session.query(Responsibilities).filter(Responsibilities.responsibility_id == responsibility_id) \
+                .update({Responsibilities.name: name, Responsibilities.description: description})
+        db.session.commit()
+    else:
+        resp = Responsibilities(name, description, year)
+        db.session.add(resp)
+        db.session.commit()
+        responsibility_id = Responsibilities.query.filter(Responsibilities.year == curr_year) \
+            .filter(Responsibilities.name == name).first().responsibility_id
+    if 'assignees' in request.form.keys() and request.form['assignees']:
+        ass = request.form.getlist('assignees')
+        assignees = [int(assn) for assn in ass]
+        for org in assignees:
+            if org not in [r.user_id for r
+                           in ResponsibilityAssignment.query.filter(ResponsibilityAssignment.responsibility_id
+                                                                    == responsibility_id).all()]:
+                ra = ResponsibilityAssignment(org, responsibility_id)
+                db.session.add(ra)
+                db.session.commit()
+        org_users = [o.user_id for o
+                     in ResponsibilityAssignment.query.filter(ResponsibilityAssignment.responsibility_id
+                                                              == responsibility_id).all()]
+        for user in org_users:
+            if user not in assignees:
+                to_del = db.session.query(ResponsibilityAssignment)\
+                    .filter(ResponsibilityAssignment.responsibility_id == responsibility_id)\
+                    .filter(ResponsibilityAssignment.user_id == user).first()
+                db.session.delete(to_del)
+            db.session.commit()
+    return redirect(url_for('.responsibilities'))
+
+
+@app.route('/delete_responsibility/<resp_id>')
+def delete_responsibility(resp_id):
+    resp_id = int(resp_id)
+    if resp_id in [r.responsibility_id for r in Responsibilities.query.all()]:
+        to_del = db.session.query(Responsibilities).filter(Responsibilities.responsibility_id == resp_id).first()
+        db.session.delete(to_del)
+        db.session.commit()
+    if resp_id in [r.responsibility_id for r in ResponsibilityAssignment.query.all()]:
+        for user in [u.user_id for u
+                     in ResponsibilityAssignment.query
+                             .filter(ResponsibilityAssignment.responsibility_id == resp_id).all()]:
+            to_del = db.session.query(ResponsibilityAssignment)\
+                .filter(ResponsibilityAssignment.responsibility_id == resp_id)\
+                .filter(ResponsibilityAssignment.user_id == user).first()
+            db.session.delete(to_del)
+            db.session.commit()
+    return redirect(url_for('.responsibilities'))
 
 
 @app.route('/rev_analysis')
@@ -2348,7 +2444,7 @@ def analysis_form(work_id, internal):
         work = {'work_id': int(work_id)}
         rk, analysis = get_analysis(work_id, 'internal')
         if int(work_id) in [r.review_id for r in InternalReviewComments.query.all()]:
-            rev_comment = InternalReviewComments.query.filter(InternalReviewComments.review_id == int(work_id))\
+            rev_comment = InternalReviewComments.query.filter(InternalReviewComments.review_id == int(work_id)) \
                 .first().comment
         else:
             rev_comment = ''
