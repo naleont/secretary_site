@@ -634,6 +634,11 @@ def work_info(work_id):
         work['fee'] = fee
     if work['work_id'] in [w.work_id for w in AppliedForOnline.query.all()]:
         work['format'] = 'online'
+    if work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
+        work['part_offline'] = True
+        work['format'] = 'face-to-face'
+    else:
+        work['part_offline'] = False
     work['site_id'] = work_db.work_site_id
     if work_id in [w.work_id for w in Applications2Tour.query.all()]:
         appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()

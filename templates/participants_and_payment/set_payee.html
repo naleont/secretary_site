@@ -47,7 +47,12 @@
             <tr>
                 <td width="70%">
                     <input type="checkbox" name="{{ participant['participant']['work_id'] }}" checked>
-                    <b>Работа {{ participant['participant']['work_id'] }}</b><br>
+                    <b>Работа {{ participant['participant']['work_id'] }}
+                    {% if participant['participant']['part_offline'] == True %}
+                        <span class="alarm">Участвовала очно</span>
+                    {% else %}
+                        <span class="green-text">Д</span>
+                    {% endif %}</b><br>
                         {{ participant['participant']['work_name'] }}
                         {% if participant['participant']['reg_tour'] %}
                         <span class="alarm">{{ participant['participant']['reg_tour'] }} тур</span>

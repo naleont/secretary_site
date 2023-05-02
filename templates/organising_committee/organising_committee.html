@@ -10,6 +10,7 @@
         <td align="center"><b>
             ФИО
         </b></td>
+        {% if access >= 3 %}
         <td align="center"><b>
             Телефон
         </b></td>
@@ -19,6 +20,7 @@
         <td align="center"><b>
             Задачи
         </b></td>
+        {% endif %}
     </tr>
 {% for org in members %}
     <tr bgcolor="#C5E3F3">
