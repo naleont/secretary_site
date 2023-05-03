@@ -3,43 +3,46 @@
 {% block title %} Нет доступа {% endblock %}
 
 {% block content %}
-{% if message == 'register_first' %}
+
+{% if not session['access'] or session['access'] == 0 %}
+
+{% if message == 'login_first' %}
     <h3>Для подачи заявки в команду <a href="/login">авторизуйтесь</a></h3>
-{% else %}
-    <h3>У вас нет доступа к этой странице.</h3>
+    <h4>Авторизуйтесь</h4>
+        {% if wrong == 'user' %}
+        <div class="alarm">
+          <br>Неверный e-mail или номер телефона
+        </div>
+        {% elif wrong == 'password' %}
+        <div class="alarm">
+          <br>Неверный пароль
+        </div>
+        {% endif %}
+
+          <form action="/logging/{{ url }}" method = 'GET' id="login">
+            <fieldset>
+            e-mail или номер телефона<br>
+                <input size="30" name="user" type="text" required><br><br>
+            <span class="required">Пароль</span><br>
+                <input size="30" name="password" type="password" placeholder="*********"
+                       pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+            </fieldset>
+          </form>
+
+            <button type="submit" value="submit" form="login">Поехали!</button><br><br>
+        <!--    <a href="/reset_password"><button type="button">Все забыл спасите</button></a><br><br>-->
+            <a href="/register"><button type="button">Регистрация</button></a><br><br>
+          <p>Если вы забыли пароль, обратитесь к администратору сайта</p>
+    {% else %}
+    <h3>У вас нет доступа к этой странице</h3>
 {% endif %}
 
-{% if not session['access'] or session['access'] == 0 and message != 'register_first' %}
-<h4>Авторизуйтесь</h4>
-    {% if wrong == 'user' %}
-    <div class="alarm">
-      <br>Неверный e-mail или номер телефона
-    </div>
-    {% elif wrong == 'password' %}
-    <div class="alarm">
-      <br>Неверный пароль
-    </div>
-    {% endif %}
-
-      <form action="/logging" method = 'GET' id="login">
-        <fieldset>
-        e-mail или номер телефона<br>
-            <input size="30" name="user" type="text" required><br><br>
-        <span class="required">Пароль</span><br>
-            <input size="30" name="password" type="password" placeholder="*********"
-                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
-        </fieldset>
-      </form>
-
-        <button type="submit" value="submit" form="login">Поехали!</button><br><br>
-    <!--    <a href="/reset_password"><button type="button">Все забыл спасите</button></a><br><br>-->
-        <a href="/register"><button type="button">Регистрация</button></a><br><br>
-      <p>Если вы забыли пароль, обратитесь к администратору сайта.</p>
 {% elif session['access'] == 1 %}
-    <h4>Подтвердите учетную запись по ссылке, отправленной вам на e-mail.</h4>
+    <h4>Подтвердите учетную запись по ссылке, отправленной вам на e-mail</h4>
 {% elif session['access'] == 2 %}
-    <h4>Дождитесь подтверждения заявки в команду.</h4>
+    <h4>Дождитесь подтверждения заявки в команду</h4>
 {% elif session['access'] >= 3 %}
-    <h4>Обратитесь к администратору сайта.</h4>
+    <h4>Обратитесь к администратору сайта</h4>
 {% endif %}
+
 {% endblock %}

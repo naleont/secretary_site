@@ -98,9 +98,11 @@ def renew_session():
             session['approved'] = user_db.approved
             if user in [u.secretary_id for u in CatSecretaries.query.all()]:
                 session['secretary'] = True
+                session['access'] = 5
                 session['cat_id'] = [c.cat_id for c in cat_sec]
             if user in [u.user_id for u in SupervisorUser.query.all()]:
                 session['supervisor'] = True
+                session['access'] = 6
                 supervisor = SupervisorUser.query.filter(SupervisorUser.user_id == user).first()
                 if supervisor.supervisor_id in [s.supervisor_id for s in CatSupervisors.query.all()]:
                     cat_sup = CatSupervisors.query.filter(CatSupervisors.supervisor_id == supervisor.supervisor_id
@@ -114,40 +116,26 @@ def renew_session():
                 session['application'] = True
             else:
                 session['application'] = False
+            for a, t in access_types.items():
+                if a == session['type']:
+                    if 'access' in session.keys():
+                        if session['access'] < t:
+                            session['access'] = t
+                    else:
+                        session['access'] = t
     return session
 
 
-def check_access(url):
+def check_access(access, url):
     renew_session()
-    if 'type' in session.keys():
-        if session['type'] == 'admin':
-            session['access'] = 10
-            return 10
-        elif session['type'] == 'manager':
-            session['access'] = 9
-            return 9
-        elif session['type'] == 'org':
-            session['access'] = 8
-            return 8
-        elif 'supervisor' in session.keys() and session['supervisor'] is True:
-            session['access'] = 6
-            return 6
-        elif 'secretary' in session.keys() and session['secretary'] is True:
-            session['access'] = 5
-            return 5
-        elif session['type'] == 'team':
-            session['access'] = 3
-            return 3
-        elif session['approved'] is True:
-            session['access'] = 2
-            return 2
-        elif 'user_id' in session.keys():
-            session['access'] = 1
-            return 1
+    url = url.split('/')
+    if 'access' in session.keys():
+        if session['access'] < access:
+            return redirect(url_for('.no_access', url=url, message='ok'))
+        else:
+            return True
     else:
-        session['url'] = url
-        session['access'] = 0
-        return 0
+        return redirect(url_for('.no_access', url=url, message='login_first'))
 
 
 def create_key():
@@ -185,7 +173,7 @@ def decrypt(encrypted_message):
 # Отправка письма для подтверждения регистрации на адрес email
 def send_email(email):
     user_id = db.session.query(Users).filter(Users.email == email).first().user_id
-    link = 'http://org.vernadsky.info/approve/' + str(user_id)
+    link = request.url_root + 'approve/' + str(user_id)
     msg = Message(subject='Подтверждение e-mail',
                   body='Это подтверждение вашей регистрации на сайте для секретарей Конкурса им. В. И.'
                        'Вернадского. Перейдите по ссылке для подтверждения email: ' + link,
@@ -1057,22 +1045,29 @@ def get_responsibility(responsibility_id):
 def main_page():
     renew_session()
     news = all_news()
-    access = check_access('/')
+    if 'access' in session.keys():
+        access = session['access']
+    else:
+        access = 0
     access_list = [i for i in access_types.keys() if access_types[i] <= access]
     return render_template('main.html', news=news, access_list=access_list)
 
 
-@app.route('/no_access', defaults={'message': None})
-@app.route('/no_access/<message>')
-def no_access(message):
-    return render_template('no_access.html', message=message)
+@app.route('/no_access', defaults={'url': '', 'message': None})
+@app.route('/no_access/<url>/<message>')
+def no_access(url, message):
+    if type(url) == list:
+        u = '/'.join(url)
+    else:
+        u = url
+    return render_template('no_access.html', message=message, url=u)
 
 
 @app.route('/secretary_reminder')
 def secretary_reminder():
-    if check_access(url='/secretary_reminder') < 5:
-        return redirect(url_for('.no_access'))
-    renew_session()
+    access = check_access(5, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('info_pages/secretaries_info/secretary_reminder.html')
 
 
@@ -1085,8 +1080,8 @@ def secretary_job():
 @app.route('/login', defaults={'wrong': None})
 @app.route('/login/<wrong>')
 def login(wrong):
-    renew_session()
-    return render_template('registration, logging and applications/login.html', wrong=wrong)
+    url = request.referrer.lstrip(request.url_root).split('/')
+    return render_template('registration, logging and applications/login.html', wrong=wrong, url=url)
 
 
 # Страница регистрации на сайте
@@ -1122,8 +1117,15 @@ def registration_res():
 
 
 # Обработка данных формы авторизации
-@app.route('/logging')
-def logging():
+@app.route('/logging', defaults={'url': ''})
+@app.route('/logging/<url>')
+def logging(url):
+    if '[' in url:
+        url = json.loads(url.replace("'", "\""))
+    if type(url) == list:
+        u = '/'.join(url)
+    else:
+        u = url
     # Извлечение данных формы
     user_got = request.values.get('user', str)
     pwd = request.values.get('password', str)
@@ -1144,10 +1146,7 @@ def logging():
         user.last_login = datetime.datetime.now()
         db.session.commit()
         renew_session()
-        if 'url' in session.keys():
-            return redirect(session['url'])
-        else:
-            return redirect(url_for('.main_page'))
+        return redirect(request.url_root + u)
 
 
 # Выход из учетной записи
@@ -1162,7 +1161,7 @@ def logout():
     session.pop('cat_id', None)
     session.pop('approved', None)
     session.pop('application', None)
-    session.pop('url', None)
+    session.pop('access', None)
     # Перенаправление на главную страницу
     return redirect(url_for('main_page'))
 
@@ -1216,10 +1215,9 @@ def approve(user_id, page):
 @app.route('/profile_info', defaults={'message': None})
 @app.route('/profile_info/<message>')
 def profile_info(message):
-    renew_session()
-    access = check_access(url='/profile_info')
-    if access < 1:
-        return redirect(url_for('.no_access'))
+    access = check_access(1, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     user = get_user_info(session['user_id'])
     profile = get_profile_info(session['user_id'])
     if profile['born'] is not None:
@@ -1232,8 +1230,9 @@ def profile_info(message):
 @app.route('/edit_user', defaults={'message': None})
 @app.route('/edit_user/<message>')
 def edit_user(message):
-    if check_access(url='/edit_user') < 2:
-        return redirect(url_for('.no_access'))
+    access = check_access(2, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     # Получение информации текущего пользователя из БД
     user = get_user_info(session['user_id'])
     renew_session()
@@ -1255,8 +1254,9 @@ def edited_user():
 # Форма редактирования информации профиля
 @app.route('/edit_profile')
 def edit_profile():
-    if check_access(url='/edit_profile') < 2:
-        return redirect(url_for('.no_access'))
+    access = check_access(2, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     # Извлечение информации профиля из БД (если она заполнен)
     profile = get_profile_info(session['user_id'])
     if profile['born'] is not None:
@@ -1330,8 +1330,9 @@ def write_profile():
 @app.route('/change_pwd', defaults={'success': None})
 @app.route('/change_pwd/<success>')
 def change_pwd(success):
-    if check_access(url='/change_pwd') < 2:
-        return redirect(url_for('.no_access'))
+    access = check_access(2, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     renew_session()
     return render_template('registration, logging and applications/change_pwd.html', success=success)
 
@@ -1359,15 +1360,17 @@ def new_pwd():
 @app.route('/change_user_password/<user_id>', defaults={'message': None})
 @app.route('/change_user_password/<user_id>/<message>')
 def change_user_password(user_id, message):
-    if check_access(url='/change_user_password/' + user_id) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('user_management/change_user_password.html', user=user_id, message=message)
 
 
 @app.route('/new_user_password')
 def new_user_password():
-    if check_access(url='/new_user_password') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     new = request.values.get('new_password', str)
     confirm = request.values.get('confirm_password', str)
     user_id = int(request.values.get('user_id', str))
@@ -1384,8 +1387,9 @@ def new_user_password():
 
 @app.route('/admin')
 def admin():
-    if check_access(url='/admin') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     renew_session()
     return render_template('admin.html')
 
@@ -1408,8 +1412,9 @@ def categories_list():
 def edit_category(cat_id):
     if cat_id is None:
         cat_id = ''
-    if check_access(url='/edit_category/' + cat_id) < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     sups = get_supervisors()
     dirs = dict()
     conts = dict()
@@ -1468,8 +1473,9 @@ def edited_category():
 
 @app.route('/add_categories')
 def add_categories():
-    if check_access(url='/add_categories') < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     renew_session()
     return render_template('categories/add_categories.html')
 
@@ -1509,8 +1515,11 @@ def supervisors():
     relevant.append(21)  # Добавление Свешниковой
     relevant.append(44)  # Добавление Марусяк
     renew_session()
-    return render_template('supervisors/supervisors.html', supervisors=sups, access=check_access(url='/supervisors'),
-                           relevant=relevant)
+    if 'access' in session.keys():
+        access = session['access']
+    else:
+        access = 0
+    return render_template('supervisors/supervisors.html', supervisors=sups, access=access, relevant=relevant)
 
 
 @app.route('/download_supervisors')
@@ -1532,8 +1541,9 @@ def download_supervisors():
 @app.route('/edit_supervisor', defaults={'sup_id': ''})
 @app.route('/edit_supervisor/<sup_id>')
 def edit_supervisor(sup_id):
-    if check_access(url=('/edit_supervisor/' + sup_id)) < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     if sup_id != '':
         supervisor = supervisor_info(sup_id)
     else:
@@ -1565,9 +1575,9 @@ def edited_supervisor():
 
 @app.route('/confirm_sup_deletion/<sup_id>')
 def confirm_sup_deletion(sup_id):
-    access = check_access(url='/supervisor_profile/' + sup_id)
-    if access < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     sup_info = supervisor_info(sup_id)
     return render_template('supervisors/confirm_supervisor_deletion.html', supervisor=sup_info)
 
@@ -1583,8 +1593,9 @@ def delete_supervisor(sup_id):
 
 @app.route('/add_supervisors')
 def add_supervisors():
-    if check_access(url='/add_supervisors') < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     renew_session()
     return render_template('supervisors/add_supervisors.html')
 
@@ -1625,11 +1636,9 @@ def many_sups():
 
 @app.route('/supervisor_profile/<supervisor_id>')
 def supervisor_profile(supervisor_id):
-    access = check_access(url='/supervisor_profile/' + supervisor_id)
-    if access < 2:
-        return redirect(url_for('.no_access'))
-    elif access < 3:
-        access = 'partial'
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     sup_info = supervisor_info(supervisor_id)
     renew_session()
     return render_template('supervisors/supervisor_profile.html', supervisor=sup_info, access=access)
@@ -1637,10 +1646,11 @@ def supervisor_profile(supervisor_id):
 
 @app.route('/team_application')
 def team_application():
-    if check_access(url='/team_application') == 2 and 'profile' not in session.keys():
+    access = check_access(2, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
+    if 'profile' not in session.keys():
         return redirect(url_for('.edit_profile'))
-    elif check_access(url='/team_application') < 2:
-        return redirect(url_for('.no_access', message='register_first'))
     cats_count, categs = categories_info()
     if session['user_id'] in [a.user_id for a in Application.query.filter(Application.year == curr_year).all()]:
         application = application_info('user-year', user=session['user_id'])
@@ -1687,8 +1697,9 @@ def application_process():
 
 @app.route('/my_applications')
 def application_page():
-    if check_access(url='/my_applications') < 2:
-        return redirect(url_for('.no_access'))
+    access = check_access(2, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     appl_info = application_info('user', user=session['user_id'])
     renew_session()
     return render_template('registration, logging and applications/my_applications.html', application=appl_info)
@@ -1696,8 +1707,9 @@ def application_page():
 
 @app.route('/view_applications')
 def view_applications():
-    if check_access(url='/view_applications') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     appl = application_info('year', user=session['user_id'])
     users = all_users()
     renew_session()
@@ -1707,8 +1719,9 @@ def view_applications():
 
 @app.route('/one_application/<year>/<user>')
 def see_one_application(year, user):
-    if check_access(url='/one_application/' + year + '/' + user) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     application = application_info('user-year', user=user, year=year)
     user_info = get_user_info(user)
     profile = get_profile_info(user)
@@ -1732,8 +1745,9 @@ def confirm_application_deletion(year, user):
 @app.route('/manage_application/<year>/<user>/<action>', defaults={'page': 'all'})
 @app.route('/manage_application/<year>/<user>/<action>/<page>')
 def manage_application(year, user, action, page):
-    if check_access(url='/manage_application/' + year + '/' + user + '/' + action + '/' + page) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     appl_db = db.session.query(Application).filter(Application.user_id == user).filter(Application.year == year).first()
     user_db = db.session.query(Users).filter(Users.user_id == user).first()
     if action == 'accept':
@@ -1756,8 +1770,9 @@ def manage_application(year, user, action, page):
 
 @app.route('/assign_category/<user>/<category>')
 def assign_category(user, category):
-    if check_access(url='/assign_category/' + user + '/' + category) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     user_info = get_user_info(user)
     cats_count, cats = categories_info(category)
     renew_session()
@@ -1766,8 +1781,9 @@ def assign_category(user, category):
 
 @app.route('/confirm_assignment/<user>/<category>')
 def confirm_assignment(user, category):
-    if check_access(url='/confirm_assignment/' + user + '/' + category) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     user = int(user)
     category = int(category)
     if category in [cat.cat_id for cat in CatSecretaries.query.all()]:
@@ -1784,9 +1800,9 @@ def confirm_assignment(user, category):
 @app.route('/users_list', defaults={'query': 'all'})
 @app.route('/users_list/<query>')
 def users_list(query):
-    if check_access(url='/users_list/' + query) < 8:
-        return redirect(url_for('.no_access'))
-    renew_session()
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     users = dict()
     if query == 'all':
         users = all_users()
@@ -1837,9 +1853,9 @@ def search_user():
 @app.route('/user_page/<user>', defaults={'message': None})
 @app.route('/user_page/<user>/<message>')
 def user_page(user, message):
-    renew_session()
-    if check_access(url='/user_page/' + user) < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     user_info = get_user_info(user)
     profile = get_profile_info(user)
     if profile['born'] is not None:
@@ -1862,9 +1878,9 @@ def assign_user_type(user):
 
 @app.route('/remove_secretary/<user_id>/<cat_id>')
 def remove_secretary(user_id, cat_id):
-    renew_session()
-    if check_access(url='/remove_secretary/' + user_id + '/' + cat_id) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
                                           ).filter(CatSecretaries.cat_id == cat_id).first()
     db.session.delete(cat_sec)
@@ -1886,9 +1902,9 @@ def category_page(cat_id, errors):
 
 @app.route('/news_list')
 def news_list():
-    renew_session()
-    if check_access(url='/news_list') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     news = all_news()
     return render_template('news/news_list.html', news=news)
 
@@ -1896,13 +1912,9 @@ def news_list():
 @app.route('/edit_news', defaults={'news_id': None})
 @app.route('/edit_news/<news_id>')
 def edit_news(news_id):
-    renew_session()
-    if news_id:
-        if check_access(url='/edit_news/' + news_id) < 8:
-            return redirect(url_for('.no_access'))
-    else:
-        if check_access(url='/edit_news/') < 8:
-            return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     if news_id == 'None' or not news_id:
         news = {'news_id': None}
     else:
@@ -1934,9 +1946,9 @@ def editing_news():
 
 @app.route('/publish_news/<news_id>')
 def publish_news(news_id):
-    renew_session()
-    if check_access(url='/publish_news/' + news_id) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     news = db.session.query(News).filter(News.news_id == news_id).first()
     if news.publish is True:
         news.publish = False
@@ -1979,8 +1991,12 @@ def organising_committee():
              in OrganisingCommittee.query.filter(OrganisingCommittee.year == curr_year).all()]
     m = sorted(membs, key=lambda u: u['first_name'])
     members = sorted(m, key=lambda u: u['last_name'])
+    if 'access' in session.keys():
+        access = session['access']
+    else:
+        access = 0
     return render_template('organising_committee/organising_committee.html', members=members,
-                           access=check_access(url='/organising_committee'), curr_year=curr_year)
+                           access=access, curr_year=curr_year)
 
 
 @app.route('/set_orgcom')
@@ -2099,9 +2115,9 @@ def delete_responsibility(resp_id):
 
 @app.route('/rev_analysis')
 def rev_analysis_management():
-    renew_session()
-    if check_access(url='/rev_analysis') < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('rev_analysis/analysis_menu.html')
 
 
@@ -2120,8 +2136,9 @@ def rev_analysis_results():
 @app.route('/analysis_state')
 def analysis_state():
     renew_session()
-    if check_access(url='/analysis_state') < 5:
-        return redirect(url_for('.no_access'))
+    access = check_access(5, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     ana_nums, all_stats = analysis_nums()
     return render_template('rev_analysis/analysis_state.html', ana_nums=ana_nums, all_stats=all_stats)
 
@@ -2129,8 +2146,9 @@ def analysis_state():
 @app.route('/analysis_criteria')
 def analysis_criteria():
     renew_session()
-    if check_access(url='/analysis_criteria') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     criteria = get_criteria(curr_year)
     return render_template('rev_analysis/analysis_criteria.html', criteria=criteria)
 
@@ -2138,16 +2156,17 @@ def analysis_criteria():
 @app.route('/add_criteria')
 def add_criteria():
     renew_session()
-    if check_access(url='/add_criteria') < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('rev_analysis/add_criteria.html')
 
 
 @app.route('/download_criteria')
 def download_criteria():
-    renew_session()
-    if check_access(url='/download_criteria') < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     prev_year = curr_year - 1
     criteria = get_criteria(prev_year)
     crit = [v for v in criteria.values()]
@@ -2182,9 +2201,9 @@ def adding_criteria():
 
 @app.route('/edit_criterion/<crit_id>')
 def edit_criterion(crit_id):
-    renew_session()
-    if check_access(url='/edit_criterion' + crit_id) < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     criterion = get_criteria(curr_year)[int(crit_id)]
     return render_template('rev_analysis/edit_criterion.html', criterion=criterion)
 
@@ -2210,9 +2229,9 @@ def write_criterion():
 
 @app.route('/edit_value/<val_id>')
 def edit_value(val_id):
-    renew_session()
-    if check_access(url='/edit_value' + val_id) < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     val = db.session.query(RevCritValues).filter(RevCritValues.value_id == int(val_id)).first()
     value = dict()
     value['id'] = val.value_id
@@ -2244,8 +2263,9 @@ def write_value():
 @app.route('/add_values')
 def add_values():
     renew_session()
-    if check_access(url='/add_values') < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('rev_analysis/add_values.html')
 
 
@@ -2279,9 +2299,9 @@ def adding_values():
 
 @app.route('/download_values')
 def download_values():
-    renew_session()
-    if check_access(url='/download_values') < 10:
-        return redirect(url_for('.no_access'))
+    access = check_access(10, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     prev_year = curr_year - 1
     criteria = get_criteria(prev_year)
     crit = [v for v in criteria.values()]
@@ -2306,8 +2326,9 @@ def download_values():
 @app.route('/analysis_works/<cat_id>')
 def analysis_works(cat_id):
     renew_session()
-    if check_access(url='/analysis_works/' + cat_id) < 5:
-        return redirect(url_for('.no_access'))
+    access = check_access(6, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     works = get_works(cat_id, 2)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
@@ -2318,9 +2339,9 @@ def analysis_works(cat_id):
 
 @app.route('/review_analysis/<work_id>')
 def review_analysis(work_id):
-    renew_session()
-    if check_access(url='/review_analysis' + work_id) < 5:
-        return redirect(url_for('.no_access'))
+    access = check_access(5, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     work = work_info(work_id)
     rk, analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
@@ -2341,9 +2362,9 @@ def review_analysis(work_id):
 
 @app.route('/pre_analysis/<work_id>')
 def pre_analysis(work_id):
-    renew_session()
-    if check_access(url='/pre_analysis' + work_id) < 6:
-        return redirect(url_for('.no_access'))
+    access = check_access(6, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     work = work_info(work_id)
     work_id = int(work_id)
     pre = get_pre_analysis(work_id)
@@ -2430,8 +2451,9 @@ def write_pre_analysis():
 @app.route('/analysis_form/<work_id>/<internal>')
 def analysis_form(work_id, internal):
     renew_session()
-    if check_access(url='/analysis_form' + work_id) < 6:
-        return redirect(url_for('.no_access'))
+    access = check_access(6, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     criteria = get_criteria(curr_year)
     if not internal:
         work_id = int(work_id)
@@ -2591,15 +2613,17 @@ def save_reviews():
 
 @app.route('/int_analysis')
 def int_analysis():
-    if check_access(url='/int_analysis') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('internal_reviews/int_analysis.html')
 
 
 @app.route('/reviewers_to_review')
 def reviewers_to_review():
-    if check_access(url='/reviewers_to_review') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     c, cats = categories_info()
     for cat in cats:
         cat_works = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])]
@@ -2615,8 +2639,9 @@ def reviewers_to_review():
 
 @app.route('/internal_reviews')
 def internal_reviews():
-    if check_access(url='/internal_reviews') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     reviewers = [{'id': r.reviewer_id, 'name': r.reviewer} for r in InternalReviewers.query.all()]
     for reviewer in reviewers:
         if reviewer['id'] in [r.reviewer_id for r in ReadingReviews.query.all()]:
@@ -2629,8 +2654,9 @@ def internal_reviews():
 
 @app.route('/see_reviews/<reviewer_id>')
 def see_reviews(reviewer_id):
-    if check_access(url='/see_reviews/' + str(reviewer_id)) < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     reviews = []
     for r in InternalReviews.query.filter(InternalReviews.reviewer_id == int(reviewer_id)).all():
         if r.review_id in [a.review_id for a in InternalAnalysis.query.all()]:
@@ -2683,16 +2709,18 @@ def assign_reviewer(do, reviewer_id, user_id):
 @app.route('/add_works/<works_added>/<works_edited>')
 def add_works(works_added, works_edited):
     renew_session()
-    if check_access(url='/add_works') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('works/add_works.html', works_added=works_added, works_edited=works_edited)
 
 
 @app.route('/applications_2_tour')
 def applications_2_tour():
     renew_session()
-    if check_access(url='/add_works') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('works/applications_2_tour.html', year=curr_year)
 
 
@@ -2879,8 +2907,9 @@ def many_applications():
 
 @app.route('/top_100')
 def top_100():
-    if check_access(url='/top_100') < 5:
-        return redirect(url_for('.no_access'))
+    access = check_access(5, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     total, no_fee = no_fee_nums()
     return render_template('works/top_100.html', no_fee=no_fee, total=total)
 
@@ -3523,9 +3552,9 @@ def reported(cat_id, work_id, action):
 @app.route('/search_participant', defaults={'query': 'sear'})
 @app.route('/search_participant/<query>')
 def search_participant(query):
-    renew_session()
-    if check_access(url='/search_participant') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     response = {'type': None, 'value': query}
     if query:
         try:
@@ -3791,9 +3820,15 @@ def set_payment(payment_id, payee):
     return redirect(url_for('.id_payments'))
 
 
-@app.route('/delete_payment/<payment_id>')
-def delete_payment(payment_id):
-    BankStatement.query.filter(BankStatement.payment_id == payment_id).delete()
+@app.route('/confirm_delete/<specify>/<del_id>/<url>')
+def confirm_delete(specify, del_id, url):
+    back = request.referrer
+    return render_template('confirm_delete.html', specify=specify, del_id=del_id, url=url, back=back)
+
+
+@app.route('/delete_payment/<del_id>')
+def delete_payment(del_id):
+    BankStatement.query.filter(BankStatement.payment_id == del_id).delete()
     db.session.commit()
     return redirect(url_for('.manage_payments'))
 
@@ -3802,8 +3837,9 @@ def delete_payment(payment_id):
 
 @app.route('/knowledge_main')
 def knowledge_main():
-    if check_access(url='/knowledge_main') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     now = datetime.datetime.now().date()
     date = days_full[now.strftime('%w')] + ', ' + now.strftime('%d') + ' ' + months_full[
         now.strftime('%m')] + ' ' + now.strftime('%Y')
@@ -3812,106 +3848,121 @@ def knowledge_main():
 
 @app.route('/invoice')
 def invoice():
-    if check_access(url='/invoice') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/invoice.html')
 
 
 @app.route('/contact')
 def contact():
-    if check_access(url='/contact') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/contact.html')
 
 
 @app.route('/email')
 def email():
-    if check_access(url='/email') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/email.html')
 
 
 @app.route('/email_schedule')
 def email_schedule():
-    if check_access(url='/email_schedule') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/email_schedule.html')
 
 
 @app.route('/phone_schedule')
 def phone_schedule():
-    if check_access(url='/phone_schedule') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/phone_schedule.html')
 
 
 @app.route('/working_programme')
 def working_programme():
-    if check_access(url='/working_programme') < 5:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/working_programme.html')
 
 
 @app.route('/online_additional_contest')
 def online_additional_contest():
-    if check_access(url='/online_additional_contest') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/online_additional_contest.html')
 
 
 @app.route('/consult_works')
 def consult_works():
-    if check_access(url='/consult_works') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/consult_works.html')
 
 
 @app.route('/vernadsky_olympiade')
 def vernadsky_olympiade():
-    if check_access(url='/vernadsky_olympiade') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/vernadsky_olympiade.html')
 
 
 @app.route('/general_info')
 def general_info():
-    if check_access(url='/general_info') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/general_info.html')
 
 
 @app.route('/frequent_actions')
 def frequent_actions():
-    if check_access(url='/frequent_actions') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/frequent_actions.html')
 
 
 @app.route('/registration_on_site')
 def registration_on_site():
-    if check_access(url='/registration_on_site') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/registration_on_site.html')
 
 
 @app.route('/attach_work')
 def attach_work():
-    if check_access(url='/attach_work') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/attach_work.html')
 
 
 @app.route('/approve_for_2_tour')
 def approve_for_2_tour():
-    if check_access(url='/approve_for_2_tour') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/approve_for_2_tour.html')
 
 
 @app.route('/approve_for_1_tour')
 def approve_for_1_tour():
-    if check_access(url='/approve_for_1_tour') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/approve_for_1_tour.html')
 
 
@@ -3926,113 +3977,129 @@ def approve_for_1_tour():
 # s
 @app.route('/bank_details')
 def bank_details():
-    if check_access(url='/bank_details') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/bank_details.html')
 
 
 @app.route('/banks_and_payments')
 def banks_and_payments():
-    if check_access(url='/banks_and_payments') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/banks_and_payments.html')
 
 
 @app.route('/guarantee_letters')
 def guarantee_letters():
-    if check_access(url='/guarantee_letters') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/guarantee_letters.html')
 
 
 @app.route('/creativity_contest')
 def creativity_contest():
-    if check_access(url='/creativity_contest') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/creativity_contest.html')
 
 
 @app.route('/session_shedule')
 def session_shedule():
-    if check_access(url='/session_shedule') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/session_shedule.html')
 
 
 @app.route('/apply_2_tour')
 def apply_2_tour():
-    if check_access(url='/apply_2_tour') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/apply_2_tour.html')
 
 
 @app.route('/programme_grid')
 def programme_grid():
-    if check_access(url='/programme_grid') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/programme_grid.html')
 
 
 @app.route('/feedback')
 def feedback():
-    if check_access(url='/feedback') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/feedback.html')
 
 
 @app.route('/movement_projects')
 def movement_projects():
-    if check_access(url='/movement_projects') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/movement_projects.html')
 
 
 @app.route('/working_resources')
 def working_resources():
-    if check_access(url='/working_resources') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/working_resources.html')
 
 
 @app.route('/apply_for_participant')
 def apply_for_participant():
-    if check_access(url='/apply_for_participant') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/apply_for_participant.html')
 
 
 @app.route('/contest_calendar')
 def contest_calendar():
-    if check_access(url='/contest_calendar') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/contest_calendar.html')
 
 
 @app.route('/apply_1_tour')
 def apply_1_tour():
-    if check_access(url='/apply_1_tour') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/apply_1_tour.html')
 
 
 @app.route('/faq')
 def faq():
-    if check_access(url='/faq') < 3:
-        return redirect(url_for('.no_access'))
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/FAQ.html')
 
 
 @app.route('/tour_2')
 def tour_2():
-    if check_access(url='/tour_2') < 8:
-        return redirect(url_for('.no_access'))
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('knowledge/org/tour_2.html')
 
 
 @app.route('/secretary_knowledge')
 def secretary_knowledge():
-    if check_access(url='/secretary_knowledge') < 5:
-        return redirect(url_for('.no_access'))
+    access = check_access(5, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     return render_template('secretary_knowledge.html')
 
 

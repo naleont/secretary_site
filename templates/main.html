@@ -5,17 +5,14 @@
 {% block content %}
 <h2>Сайт команды Конкурса им. В. И. Вернадского</h2><br>
 {% if session['application'] == True or session['type'] == 'supervisor' %}
-{% else %}
-      <div align="center">
-            <a href="/team_application"><button class="big-button"><h4>Стать секретарем секции или волонтером</h4></button></a>
-      </div><br>
-      <div align="center">
-            <a href="/login"><button class="big-button"><h4>Я руководитель секции</h4></button></a>
-      </div><br>
 {% endif %}
 {% if session['supervisor'] == True %}
       <div align="center">
             <a href="/analysis_works/{{ session['cat_id'][0] }}"><button class="big-button"><h4>Заполнить анализ рецензий</h4></button></a>
+      </div><br>
+{% else %}
+      <div align="center">
+            <a href="/team_application"><button class="big-button"><h4>Стать секретарем секции или волонтером</h4></button></a>
       </div><br>
 {% endif %}
 <br>

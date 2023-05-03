@@ -17,10 +17,9 @@ password (неверный пароль) или False (ошибка не выв�
   <br>Неверный пароль
 </div>
 {% endif %}
-
-  <form action="/logging" method = 'GET' id="login">
+<legend><h2><b>Вход на сайт</b></h2></legend>
+  <form action="/logging{% if url != '' %}/{{ url }}{% endif %}" method = 'GET' id="login">
     <fieldset>
-      <legend><h2><b>Вход на сайт</b></h2></legend>
     e-mail или номер телефона<br>
         <input size="30" name="user" type="text" required><br><br>
     <span class="required">Пароль</span><br>
