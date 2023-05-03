@@ -61,12 +61,18 @@
         border-radius: 7px;
         border: inset #67AB60;
       }
+      button:hover {
+          background-color: #89C57A;
+      }
       .red-button{
         background-color: #B80000;
         color: white;
         padding: 3px 7px;
         border-radius: 7px;
         border: inset #B80000;
+      }
+      .red-button:hover {
+          background-color: #F00207;
       }
       .dark-blue {
         background-color: #363F5C;
@@ -106,6 +112,9 @@
         background-color: white;
         border: solid white;
         color: #363F5C;
+      }
+      .blue:hover {
+          background-color: #B7D5FF;
       }
       .comment{
         font-size: 90%;
@@ -194,7 +203,7 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
-        <li><a href="/categories">Секции</a></li>
+        <li class="menu"><a href="/categories">Секции</a></li>
         <li><a href="/supervisors">Руководители секций</a></li>
         <li><a href="/organising_committee">Оргкомитет</a></li>
         {% if session['type'] in ['manager', 'org', 'admin'] %}
