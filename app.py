@@ -3580,6 +3580,21 @@ def searching_participant():
     return redirect(url_for('.search_participant', query=query))
 
 
+@app.route('/works_participated')
+def works_participated():
+    wks = [w.work_id for w in ParticipatedWorks.query.all()]
+    works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    return render_template('works/works_participated.html', works=works)
+
+
+@app.route('/delete_participated_work/<work_id>')
+def delete_participated_work(work_id):
+    to_del = db.session.query(ParticipatedWorks).filter(ParticipatedWorks.work_id == int(work_id)).first()
+    db.session.delete(to_del)
+    db.session.commit()
+    return redirect(url_for('.works_participated'))
+
+
 @app.route('/discount_and_participation_mode/<part_id>')
 def discount_and_participation_mode(part_id):
     if len(part_id) == 5:
