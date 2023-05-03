@@ -3051,7 +3051,7 @@ def online_applicants():
                 to_add = work['authors'] + '''</td><td align="сenter">'''
                 table += to_add
                 if work['payed'] is True:
-                    to_add = '''Оплачен</td><td>'''
+                    to_add = '''Оплачен</td></tr>'''
                 else:
                     to_add = '''Не оплачен</td></tr>'''
                 table += to_add
