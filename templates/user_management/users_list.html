@@ -32,7 +32,13 @@
     </fieldset>
 </form></div><br>
 
-<table frame="void" border="2px" bordercolor="#4962A4">
+{% if found == None %}
+<p class="bigger">Ничего не найдено</p>
+{% endif %}
+
+{% include 'include/iterate_pages.html' %}
+
+<table frame="void" border="2px" bordercolor="#4962A4" width="100%">
     <tr>
         <td align="center"><b>ID</b></td>
         <td align="center"><b>Фамилия, имя</b></td>
@@ -41,26 +47,26 @@
         <td align="center"><b>Создан</b></td>
         <td align="center"><b>Последний вход</b></td>
     </tr>
-{% for key in users %}
+{% for user in users %}
     <tr>
         <td align="center">
-            {{ users[key]['user_id'] }}
+            {{ user['user_id'] }}
         </td>
         <td>
-            <a href="/user_page/{{ users[key]['user_id'] }}">{{ users[key]['last_name'] }} {{ users[key]['first_name']
+            <a href="/user_page/{{ user['user_id'] }}">{{ user['last_name'] }} {{ user['first_name']
                 }}</a>
         </td>
         <td>
-            <a href="mailto:{{ users[key]['email'] }}">{{ users[key]['email'] }}</a>
+            <a href="mailto:{{ user['email'] }}">{{ user['email'] }}</a>
         </td>
         <td>
-            <a href="tel:{{ users[key]['tel'] }}">{{ users[key]['tel'] }}</a>
+            <a href="tel:{{ user['tel'] }}">{{ user['tel'] }}</a>
         </td>
         <td>
-            <span class="comment">{{ users[key]['created_on'] }}</span>
+            <span class="comment">{{ user['created_on'] }}</span>
         </td>
         <td>
-            <span class="comment">{{ users[key]['last_login'] }}</span>
+            <span class="comment">{{ user['last_login'] }}</span>
         </td>
     </tr>
 {% endfor %}

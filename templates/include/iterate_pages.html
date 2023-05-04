@@ -25,7 +25,11 @@
       <div class="nice-links">
         {% if pages > 1 %}
         {% for i in range(pages) %}
-        <a href="/{{ link }}/{{ length }}/{{ i + 1 }}" {% if i + 1 == page %} class="blue-border" {% endif %}>{{ i + 1 }}</a>
+        {% if i + 1 == page %}
+        <a class="chosen-link" href="/{{ link }}/{{ length }}/{{ i + 1 }}" >{{ i + 1 }}</a>
+        {% else %}
+        <a href="/{{ link }}/{{ length }}/{{ i + 1 }}" >{{ i + 1 }}</a>
+        {% endif %}
         {% if i + 1 != pages %}<span class="delimiter">・</span>{% endif %}
         {% endfor %}
         {% endif %}

@@ -2,16 +2,19 @@
 
 {% block content %}
 
+<legend>
+  <h2>Назначить даты заседаний секций</h2>
+    {% if message != None %}
+    {{ message }}
+    {% endif %}
+</legend>
 
+{% if session['type'] in ['org', 'manager', 'admin'] %}
+<a href="/download_report_dates"><button>Скачать html</button></a>
+{% endif %}
 
 <form action="/save_report_dates", method = "POST">
   <fieldset>
-    <legend>
-      <h2>Назначить даты заседаний секций</h2>
-        {% if message != None %}
-        {{ message }}
-        {% endif %}
-    </legend>
     <span><b>Выберите даты и не забудьте нажать: </b></span><input class="button" type="submit" value="Сохранить"><br><br>
       <table frame="void" border="2px" bordercolor="#4962A4">
         <tr>

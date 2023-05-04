@@ -1043,14 +1043,17 @@ def make_pages(length, data, page):
         return 1, data
     length = int(length)
     page = int(page)
-    n = len(data) // length
+    k = len(data) // length
     a = len(data) % length
-    if page > n:
-        chunk = data[length * n:length * n + (a - 1)]
-        n += 1
+    if page > k:
+        chunk = data[length * k:length * k + (a - 1)]
     else:
         page -= 1
-        chunk = [data[length * i:length * (i + 1) - 1] for i in range(n)][page]
+        chunk = [data[length * i:length * (i + 1) - 1] for i in range(k)][page]
+    if a > 0:
+        n = k + 1
+    else:
+        n = k
     return n, chunk
 
 
@@ -1812,57 +1815,67 @@ def confirm_assignment(user, category):
     return redirect(url_for('.view_applications'))
 
 
-@app.route('/users_list', defaults={'query': 'all'})
-@app.route('/users_list/<query>')
-def users_list(query):
+@app.route('/users_list', defaults={'query': 'all', 'length': 50, 'page': 1})
+@app.route('/users_list/<query>/<length>/<page>')
+def users_list(query, length, page):
     access = check_access(8, request.url.lstrip(request.url_root))
     if access is not True:
         return access
-    users = dict()
-    if query == 'all':
-        users = all_users()
+    if query == 'all' or query is None or query == []:
+        pages, us = make_pages(length, [u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()], page)
+        users = [get_user_info(u) for u in us]
     else:
-        tel = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in query if n not in tel_unneeded]))
-        try:
-            if int(query) in [u.user_id for u in Users.query.all()]:
-                for u in Users.query.filter(Users.user_id == query).order_by(Users.user_id.desc()).all():
-                    users[u.user_id] = get_user_info(u.user_id)
-        except BaseException:
-            pass
-        if query in [u.email for u in Users.query.all()]:
-            for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all():
-                users[u.user_id] = get_user_info(u.user_id)
-        elif tel in [u.tel for u in Users.query.all()]:
-            for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all():
-                users[u.user_id] = get_user_info(u.user_id)
-        elif query.lower() in [u.last_name.lower() for u in Users.query.all()]:
-            q = ''.join([query[0].upper(), query[1:].lower()])
-            for u in Users.query.filter(Users.last_name == q).order_by(Users.user_id.desc()).all():
-                users[u.user_id] = get_user_info(u.user_id)
-        elif query == 'secretary':
-            for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all():
-                users[u.secretary_id] = get_user_info(u.secretary_id)
-        elif query == 'supervisor':
-            for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all():
-                users[u.user_id] = get_user_info(u.user_id)
-        elif query in access_types.keys():
-            us = []
-            for val in [val for val in access_types.values() if val >= access_types[query]]:
-                for u in Users.query.filter(Users.user_type == list(access_types.keys()
-                                                                    )[list(access_types.values()).index(val)
-                ]).order_by(Users.user_id.desc()).all():
-                    us.append(u.user_id)
-            us.sort(reverse=True)
-            for u in us:
-                users[u] = get_user_info(u)
-    return render_template('user_management/users_list.html', users=users)
+        if type(query) == str:
+            query = json.loads(query)
+        users = [get_user_info(u) for u in query]
+        pages = 1
+    if query is None or query == []:
+        found = None
+    else:
+        found = 'ugu'
+    return render_template('user_management/users_list.html', users=users, length=length, page=page, pages=pages,
+                           found=found, link='users_list/all')
 
 
 @app.route('/search_user', methods=['GET'])
 def search_user():
-    renew_session()
     query = request.values.get('query', str)
-    return redirect(url_for('.users_list', query=query))
+    # tel = re.sub(
+    #     r'(^\+7|^8|^7|^9)(-|\(|\)|\s)*(?P<a>\d+)(-|\(|\)|\s)*(?P<b>\d+)(-|\(|\)|\s)*(?P<c>\d+)(-|\(|\)|\s)*(?P<d>\d+)',
+    #     '+7\g<a>\g<b>\g<c>\g<d>', query)
+    try:
+        query = int(query)
+        users = [u.user_id for u in Users.query.filter(Users.user_id == query).order_by(Users.user_id.desc()).all()]
+    except ValueError:
+        users = []
+        if query in [u.email for u in Users.query.all()]:
+            users.extend([u.user_id for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all()])
+        # if tel in [u.tel for u in Users.query.all()]:
+        #     users.extend([u.user_id for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all()])
+        if query.lower() in [u.last_name.lower() for u in Users.query.all()]:
+            users.extend([u.user_id for u in Users.query.filter(Users.last_name == ''.join([query[0].upper(),
+                                                                                           query[1:].lower()])).all()])
+        if query.lower() in [u.first_name.lower() for u in Users.query.all()]:
+            users.extend([u.user_id for u in Users.query.filter(Users.first_name == ''.join([query[0].upper(),
+                                                                                             query[1:].lower()])).all()])
+        if query.lower() in [u.patronymic.lower() for u in Users.query.all()]:
+            users.extend([u.user_id for u in Users.query.filter(Users.patronymic == ''.join([query[0].upper(),
+                                                                                             query[1:].lower()])).all()])
+        if not users:
+            if query == 'secretary':
+                users = [u.secretary_id for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()]
+            elif query == 'supervisor':
+                users = [u.user_id for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all()]
+            elif query in access_types.keys():
+                us = []
+                for val in [val for val in access_types.values() if val >= access_types[query]]:
+                    for u in Users.query.filter(Users.user_type == list(access_types.keys())[list(access_types.values()).index(val)]).order_by(Users.user_id.desc()).all():
+                        us.append(u.user_id)
+                us.sort(reverse=True)
+                users = us
+            else:
+                users = None
+    return redirect(url_for('.users_list', query=users, length='all', page=1))
 
 
 @app.route('/user_page/<user>', defaults={'message': None})
@@ -3078,9 +3091,58 @@ def online_applicants():
     return render_template('online_reports/online_applicants.html', cats=cats)
 
 
+def create_report_dates_html(cat_dates):
+    text = '<h2>Даты заседаний секций</h2>\n'
+    text += '''<p>Для получения важной информации о работе вашей секции подпишитесь на Telegram-канал секции и 
+    включите уведомления.<br>
+    Обратите внимание, что секции с небольшим количеством работ могут проводить совместные заседания.</p>\n '''
+    table = '''<table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
+            <tr>
+                <td width="70%" align="сenter"><b>
+                    Название секции
+                </b></td>
+                <td width="15%" align="сenter"><b>
+                    Даты заседаний
+                </b></td>
+                <td width="15%" align="сenter"><b>
+                    Telegram-канал
+                </b></td>
+            </tr>'''
+    for cat in cat_dates:
+        table += '''<tr><td>'''
+        table += cat['cat_name'] + '''</td><td align="center">'''
+        da = []
+        if cat['d_1'] is not None:
+            da.append(cat['d_1'])
+            if cat['d_2'] is not None:
+                da.append(cat['d_2'])
+                if cat['d_3'] is not None:
+                    da.append(cat['d_3'])
+        if da and type(da) == list:
+            d = '; '.join(da)
+        else:
+            d = 'Не назначены'
+        table += d + '''</td><td>'''
+        if cat['tg_channel'] != '':
+            table += '''<a target="_blank" href="https://t.me/''' + cat['tg_channel'] + '''">@''' + cat['tg_channel'] \
+                     + '''</a></td></tr>'''
+        else:
+            table += '''</td></tr>'''
+    table += '''\n</table>'''
+    text += table
+    with open('static/files/generated_files/report_dates.html', 'w', encoding='utf-8') as f:
+        f.write(text)
+    return 'ok'
+
+
 @app.route('/download_applicants')
 def download_applicants():
     return send_file('static/files/generated_files/online_applicants.html', as_attachment=True)
+
+
+@app.route('/download_report_dates')
+def download_report_dates():
+    return send_file('static/files/generated_files/report_dates.html', as_attachment=True)
 
 
 @app.route('/works_for_free/<cat_id>', methods=['POST'])
@@ -3164,7 +3226,7 @@ def set_report_dates(message):
     c, cats = categories_info()
     cat_dates = []
     for cat in cats:
-        c_dates = {'cat_id': cat['id'], 'cat_name': cat['name']}
+        c_dates = {'cat_id': cat['id'], 'cat_name': cat['name'], 'tg_channel': cat['tg_channel']}
         if cat['id'] in [c.cat_id for c in ReportDates.query.all()]:
             dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
             if dates_db.day_1:
@@ -3190,6 +3252,7 @@ def set_report_dates(message):
             c_dates['day_2'] = None
             c_dates['day_3'] = None
         cat_dates.append(c_dates)
+        create_report_dates_html(cat_dates)
     return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=message)
 
 
