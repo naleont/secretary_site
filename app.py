@@ -3720,7 +3720,7 @@ def manage_payments(length, page):
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
     return render_template('participants_and_payment/manage_payments.html', statement=statement, pages=n, page=page,
-                           length=length)
+                           length=length, link='manage_payments')
 
 
 @app.route('/id_payments', defaults={'length': 30, 'page': 1})
