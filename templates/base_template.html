@@ -175,6 +175,78 @@
         border-radius: 7px;
         border: inset #67AB60;
       }
+      .drop {
+        padding: 0px;
+        overflow: hidden;
+        border: none;
+        border-radius: 7px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .dropping {
+        background-color: white;
+        color: #363F5C;
+        padding: 1px 5px;
+        margin: 0px;
+        border: none;
+        width: 100%;
+        vertical-align: middle;
+      }
+      .dropping:hover {
+        background-color: #B7D5FF;
+      }
+      .dropped {
+        display: none;
+        background-color: white;
+        color: #363F5C;
+        padding: 1px 0px;
+        border: none;
+        border-radius: 7px;
+        z-index: 10;
+        position:absolute;
+        margin: 0px;
+        vertical-align: middle;
+      }
+      .drop:hover .dropped {
+          display: block;
+      }
+      .dropped a {
+        background-color: white;
+        color: #363F5C;
+        padding: 1px 5px;
+        margin: 0px;
+        border: none;
+        border-radius: 7px;
+        display: block;
+        vertical-align: middle;
+      }
+      .dropped a:hover {
+        background-color: #B7D5FF;
+        text-decoration: none;
+        vertical-align: middle;
+      }
+      .nice-links a {
+        background-color: white;
+        color: #363F5C;
+        padding: 1px 5px;
+        margin: 0px;
+        border: none;
+        border-radius: 7px;
+        vertical-align: middle;
+      }
+      .nice-links a:hover {
+        background-color: #B7D5FF;
+        text-decoration: none;
+        vertical-align: middle;
+      }
+      .delimiter {
+        padding: 0px 0px;
+        margin: -8px;
+      }
+      .bigger {
+          font-size: 110%;
+      }
+
 
     /* On small screens, set height to 'auto' for sidenav and grid */
     @media screen and (max-width: 767px) {

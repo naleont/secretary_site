@@ -944,12 +944,11 @@ def payment_info(payment_id):
     return pay
 
 
-def statement_info():
+def statement_info(payment_list):
     statement = []
-    stat_db = db.session.query(BankStatement).order_by(
-        BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
     payment_reg = db.session.query(PaymentRegistration)
-    for payment in stat_db:
+    for p in payment_list:
+        payment = db.session.query(BankStatement).filter(BankStatement.payment_id == p).first()
         remainder = payment.debit
         if payment.payment_id in [p.payment_id for p in payment_reg.all()]:
             for participant in [p.participant for p
@@ -1037,6 +1036,22 @@ def get_responsibility(responsibility_id):
     responsibility = {'id': resp_db.responsibility_id, 'name': resp_db.name, 'description': resp_db.description,
                       'assignees': assignees, 'assignees_ids': assignees_ids}
     return responsibility
+
+
+def make_pages(length, data, page):
+    if length == 'all':
+        return 1, data
+    length = int(length)
+    page = int(page)
+    n = len(data) // length
+    a = len(data) % length
+    if page > n:
+        chunk = data[length * n:length * n + (a - 1)]
+        n += 1
+    else:
+        page -= 1
+        chunk = [data[length * i:length * (i + 1) - 1] for i in range(n)][page]
+    return n, chunk
 
 
 # САЙТ
@@ -2086,8 +2101,8 @@ def save_responsibilities():
                                                               == responsibility_id).all()]
         for user in org_users:
             if user not in assignees:
-                to_del = db.session.query(ResponsibilityAssignment)\
-                    .filter(ResponsibilityAssignment.responsibility_id == responsibility_id)\
+                to_del = db.session.query(ResponsibilityAssignment) \
+                    .filter(ResponsibilityAssignment.responsibility_id == responsibility_id) \
                     .filter(ResponsibilityAssignment.user_id == user).first()
                 db.session.delete(to_del)
             db.session.commit()
@@ -2105,8 +2120,8 @@ def delete_responsibility(resp_id):
         for user in [u.user_id for u
                      in ResponsibilityAssignment.query
                              .filter(ResponsibilityAssignment.responsibility_id == resp_id).all()]:
-            to_del = db.session.query(ResponsibilityAssignment)\
-                .filter(ResponsibilityAssignment.responsibility_id == resp_id)\
+            to_del = db.session.query(ResponsibilityAssignment) \
+                .filter(ResponsibilityAssignment.responsibility_id == resp_id) \
                 .filter(ResponsibilityAssignment.user_id == user).first()
             db.session.delete(to_del)
             db.session.commit()
@@ -3697,16 +3712,28 @@ def add_bank_statement():
     return redirect(url_for('.load_statement', success=True))
 
 
-@app.route('/manage_payments')
-def manage_payments():
-    statement = statement_info()
-    return render_template('participants_and_payment/manage_payments.html', statement=statement)
+@app.route('/manage_payments', defaults={'length': 30, 'page': 1})
+@app.route('/manage_payments/<length>/<page>')
+def manage_payments(length, page):
+    payments = [p.payment_id for p in BankStatement.query
+    .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+    n, data = make_pages(length, payments, page)
+    statement = statement_info(data)
+    return render_template('participants_and_payment/manage_payments.html', statement=statement, pages=n, page=page,
+                           length=length)
 
 
-@app.route('/id_payments')
-def id_payments():
-    statement = statement_info()
-    return render_template('participants_and_payment/id_payments.html', statement=statement)
+@app.route('/id_payments', defaults={'length': 30, 'page': 1})
+@app.route('/id_payments/<length>/<page>')
+def id_payments(length, page):
+    payments = [p.payment_id for p in BankStatement.query
+    .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+    n, data = make_pages(length, payments, page)
+    statement = statement_info(data)
+    # link = request.url.lstrip(request.url_root)
+    # re.sub(r'[\/\d*]*', '', link)
+    return render_template('participants_and_payment/id_payments.html', statement=statement, pages=n, page=page,
+                           length=length, link='id_payments')
 
 
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})
@@ -3729,10 +3756,12 @@ def set_payee(payment_id, payee):
                 parts = [p.participant_id for p
                          in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
                 parts.extend([p.participant_id for p
-                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
+                              in
+                              ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
                 parts.extend([p.participant_id for p
                               in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
-                                                                  ''.join([payee[0].upper(), payee[1:].lower()])).all()])
+                                                                  ''.join(
+                                                                      [payee[0].upper(), payee[1:].lower()])).all()])
                 p = []
                 for part in parts:
                     appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
