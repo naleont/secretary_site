@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+  <style>
+      html {
+          -ms-text-size-adjust:100%;
+          -webkit-text-size-adjust:100%
+          font-family: Libre Franklin,sans-serif;
+          background-color: white;
+          font-size: 14px;
+      }
+      body{
+          bgcolor: white;
+          text: black;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            height: 100% !important;
+            width: 100%
+      }
+        table,
+        td {
+            mso-table-lspace: 0pt !important;
+            mso-table-rspace: 0pt !important;
+        }
+        table {
+            border-spacing: 0 !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+            margin: 0 auto !important;
+        }
+      *[x-apple-data-detectors],  /* iOS */
+        .unstyle-auto-detected-links *,
+        .aBn {
+            border-bottom: 0 !important;
+            cursor: default !important;
+            color: inherit !important;
+            text-decoration: none !important;
+            font-size: inherit !important;
+            font-family: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+        }
+      .a6S {
+            display: none !important;
+            opacity: 0.01 !important;
+        }
+      .im {
+            color: inherit !important;
+        }
+      img.g-img + div {
+            display: none !important;
+        }
+      button {
+        background-color: white;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #363F5C;
+        font-size: 18px;
+        height: 8px;
+        display: inline;
+          margin: auto;
+          box-sizing: content-box;
+          height: auto;
+          position: absolute;
+          block-size: fit-content;
+      }
+      .btn {
+        background-color: white;
+        color: #363F5C;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #363F5C;
+        font-size: 18px;
+        height: 8px;
+        display: inline;
+        }
+        .btn.btn-primary{
+            border-radius: 7px;
+            background: white;
+            color: #363F5C;
+        }
+        .btn.btn-white{
+            border-radius: 7px;
+            background: white;
+            color: #363F5C;
+        }
+        .btn.btn-white-outline{
+            border-radius: 7px;
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+        }
+        .btn.btn-black-outline{
+            border-radius: 0px;
+            background: transparent;
+            border: 2px solid #363F5C;
+            color: #363F5C;
+            font-weight: 700;
+        }
+      .logo {
+          height: 5%;
+          float: right;
+          z-index: 3;
+        -ms-interpolation-mode:bicubic;
+      }
+      a {
+          text-decoration: none;
+      }
+
+  </style>
+</head>
+<body width="100%" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: white">
+<center style="width: 100%; background-color: white;">
+<!--<img src="static/images/favicon.ico" alt="Не удалось загрузить изображение" align="right" class="logo">-->
+<div>
+    {% block content %} {% endblock %}
+</div>
+
+</body>
+</html>

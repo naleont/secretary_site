@@ -1159,8 +1159,7 @@ def reset_password():
         db.session.commit()
         link = request.url_root + 'new_password/' + str(user.user_id) + '/' + reset_key
         msg = Message(subject='Сброс пароля',
-                      body='Для сброса пароля перейдите по ссылке:\n' + link + '\nЕсли вы не собирались сбрасывать '
-                                                                               'пароль, игнорируйте это письмо.',
+                    html=render_template('mails/user_management/mail_reset_password.html', link=link),
                       sender=('Конкурс им. В. И. Вернадского', 'info@vernadsky.info'),
                       recipients=[user.email])
         mail.send(msg)
@@ -1356,7 +1355,7 @@ def write_profile():
 def new_password(user_id, key):
     user_id = int(user_id)
     now = datetime.datetime.now()
-    delta = datetime.timedelta(minutes=60, seconds=0)
+    delta = datetime.timedelta(minutes=15, seconds=0)
     if user_id in [u.user_id for u in PassworsResets.query.all()]:
         if key in [u.reset_key for u in PassworsResets.query.filter(PassworsResets.user_id == user_id).all()]:
             t = PassworsResets.query.filter(PassworsResets.user_id == user_id).filter(
