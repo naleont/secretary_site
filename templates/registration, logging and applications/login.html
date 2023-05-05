@@ -8,6 +8,7 @@
 password (неверный пароль) или False (ошибка не выводится).
 Отправка формы вызывает функцию logging.
 -->
+<legend><h2><b>Вход на сайт</b></h2></legend>
 {% if wrong == 'user' %}
 <div class="alarm">
   <br>Неверный e-mail или номер телефона
@@ -16,21 +17,36 @@ password (неверный пароль) или False (ошибка не выв�
 <div class="alarm">
   <br>Неверный пароль
 </div>
+{% elif wrong == 'sent' %}
+<div class="green-text">Письмо для сброса пароля отправлено на e-mail, c которым вы зарегистрированы на сайте.<br>
+Ссылка для сброса пароля действительна в течение 5 минут.</div>
+{% elif wrong == 'invalid_key' %}
+<div class="alarm">Неверная или устаревшая ссылка для сброса пароля.</div>
+{% elif wrong == 'password_changed' %}
+<div class="green-text">Пароль успешно изменен.</div>
 {% endif %}
-<legend><h2><b>Вход на сайт</b></h2></legend>
-  <form action="/logging{% if url != '' %}/{{ url }}{% endif %}" method = 'GET' id="login">
-    <fieldset>
-    e-mail или номер телефона<br>
-        <input size="30" name="user" type="text" required><br><br>
-    <span class="required">Пароль</span><br>
-        <input size="30" name="password" type="password" placeholder="*********"
-               pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
-    </fieldset>
-  </form>
 
-    <button type="submit" value="submit" form="login">Войти</button><br><br>
-<!--    <a href="/reset_password"><button type="button">Все забыл спасите</button></a><br><br>-->
-    <a href="/register"><button type="button">Регистрация</button></a><br><br>
-  <p>Если вы забыли пароль, обратитесь к администратору сайта.</p>
+<table>
+  <tr>
+    <td>
+      <form action="/logging{% if url != '' %}/{{ url }}{% endif %}" method = 'GET' id="login">
+        <fieldset>
+        e-mail или номер телефона<br>
+            <input size="30" name="user" type="text" required><br><br>
+        <span class="required">Пароль</span><br>
+            <input size="30" name="password" type="password" placeholder="*********"
+                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,14}" required><br><br>
+          <input class="button" type="submit" value="Войти"><br><br>
+        </fieldset>
+      </form>
+      <a href="/password_reset_page"><button>Восстановить пароль</button></a><br><br>
+    </td>
+    <td>
+      <a href="/register"><button>Регистрация</button></a><br><br>
+    </td>
+  </tr>
+</table>
+
+
 
 {% endblock %}

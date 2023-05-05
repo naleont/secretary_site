@@ -34,6 +34,20 @@ class Users(db.Model):
         self.last_login = last_login
 
 
+class PassworsResets(db.Model):
+    __tablename__ = 'password_resets'
+
+    reset_id = db.Column('reset_id', db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.Integer)
+    request_time = db.Column('request_time', db.DateTime, default=datetime.datetime.now)
+    reset_key = db.Column('reset_key', db.Text)
+
+    def __init__(self, user_id, request_time, reset_key):
+        self.user_id = user_id
+        self.request_time = request_time
+        self.reset_key = reset_key
+
+
 class Profile(db.Model):
     __tablename__ = 'profile'
     __table_args__ = (PrimaryKeyConstraint('user_id'),)

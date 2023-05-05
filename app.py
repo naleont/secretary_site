@@ -19,6 +19,8 @@ from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 import pandas as pd
+import random
+import string
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -1098,7 +1100,10 @@ def secretary_job():
 @app.route('/login', defaults={'wrong': None})
 @app.route('/login/<wrong>')
 def login(wrong):
-    url = request.referrer.lstrip(request.url_root).split('/')
+    if request.referrer is not None:
+        url = request.referrer.lstrip(request.url_root).split('/')
+    else:
+        url = ''
     return render_template('registration, logging and applications/login.html', wrong=wrong, url=url)
 
 
@@ -1134,6 +1139,34 @@ def registration_res():
     return redirect(url_for('.profile_info', message='first_time'))
 
 
+@app.route('/password_reset_page')
+def password_reset_page():
+    query = request.values.get('query', str)
+    message = request.values.get('message', str)
+    return render_template('registration, logging and applications/reset_password.html', query=query, message=message)
+
+
+@app.route('/reset_password', methods=['POST'])
+def reset_password():
+    user_got = request.form['user']
+    user = find_user(user_got)
+    if user is None:
+        return redirect(url_for('.password_reset_page', message='wrong_user', query=user_got))
+    else:
+        reset_key = ''.join([random.choice(string.ascii_lowercase + string.digits) for _ in range(50)])
+        r = PassworsResets(user.user_id, datetime.datetime.now(), reset_key)
+        db.session.add(r)
+        db.session.commit()
+        link = request.url_root + 'new_password/' + str(user.user_id) + '/' + reset_key
+        msg = Message(subject='Сброс пароля',
+                      body='Для сброса пароля перейдите по ссылке:\n' + link + '\nЕсли вы не собирались сбрасывать '
+                                                                               'пароль, игнорируйте это письмо.',
+                      sender=('Конкурс им. В. И. Вернадского', 'info@vernadsky.info'),
+                      recipients=[user.email])
+        mail.send(msg)
+    return redirect(url_for('.login', wrong='sent'))
+
+
 # Обработка данных формы авторизации
 @app.route('/logging', defaults={'url': ''})
 @app.route('/logging/<url>')
@@ -1141,7 +1174,10 @@ def logging(url):
     if '[' in url:
         url = json.loads(url.replace("'", "\""))
     if type(url) == list:
-        u = '/'.join(url)
+        if 'change_pwd' in url:
+            u = ''
+        else:
+            u = '/'.join(url)
     else:
         u = url
     # Извлечение данных формы
@@ -1182,35 +1218,6 @@ def logout():
     session.pop('access', None)
     # Перенаправление на главную страницу
     return redirect(url_for('main_page'))
-
-
-# @app.route('/reset_password')
-# def reset_password():
-#     return render_template('user_reminder.html')
-#
-#
-# @app.route('/reset_pwd', methods=['GET'])
-# def reset_pwd():
-#     user_got = request.values.get('user', str)
-#     user = find_user(user_got)
-#     if user is None:
-#         return render_template('user_reminder.html', wrong='user')
-#     else:
-#         link = '/new_password/' + str(user.user_id) + '/' + user.password
-#         msg = Message(subject='Сброс пароля',
-#                       body='Для сброса пароля перейдите по ссылке: ' + link + '\nЕсли вы не собирались сбрасывать '
-#                                                                               'пароль, игрорируйте это письмо.',
-#                       sender=('Конкурс им. В. И. Вернадского', 'info@vernadsky.info'),
-#                       recipients=[user.email])
-#         mail.send(msg)
-#     return redirect()
-#
-#
-# @app.route('/new_password/<user_id>/<password>')
-# def new_password(user_id, password):
-#     user = db.session.query(Users).filter(Users.user_id == user_id).first()
-#     if user.password == password:
-#         return render_template()
 
 
 # Страница подтверждения регистрации (из email)
@@ -1345,24 +1352,55 @@ def write_profile():
         return redirect(url_for('.profile_info'))
 
 
-@app.route('/change_pwd', defaults={'success': None})
-@app.route('/change_pwd/<success>')
-def change_pwd(success):
-    access = check_access(2, request.url.lstrip(request.url_root))
-    if access is not True:
-        return access
-    renew_session()
-    return render_template('registration, logging and applications/change_pwd.html', success=success)
+@app.route('/new_password/<user_id>/<key>')
+def new_password(user_id, key):
+    user_id = int(user_id)
+    now = datetime.datetime.now()
+    delta = datetime.timedelta(minutes=60, seconds=0)
+    if user_id in [u.user_id for u in PassworsResets.query.all()]:
+        if key in [u.reset_key for u in PassworsResets.query.filter(PassworsResets.user_id == user_id).all()]:
+            t = PassworsResets.query.filter(PassworsResets.user_id == user_id).filter(
+                PassworsResets.reset_key == key).first().request_time
+            if t + delta >= now:
+                for to_del in PassworsResets.query.filter(PassworsResets.user_id == user_id).all():
+                    db.session.delete(to_del)
+                    db.session.commit()
+                return redirect(url_for('.change_pwd', user_id=user_id, mode='reset', success=None))
+    return redirect(url_for('.login', wrong='invalid_key'))
+
+
+@app.route('/change_pwd/<mode>/<user_id>', defaults={'success': None})
+@app.route('/change_pwd/<mode>/<user_id>/<success>')
+def change_pwd(mode, user_id, success):
+    if mode == 'change':
+        access = check_access(2, request.url.lstrip(request.url_root))
+        if access is not True:
+            return access
+    return render_template('registration, logging and applications/change_pwd.html', mode=mode, success=success,
+                           user_id=user_id)
 
 
 @app.route('/new_pwd', methods=['GET'])
 def new_pwd():
-    old = request.values.get('old_password', str)
     new = request.values.get('new_password', str)
     confirm = request.values.get('confirm_password', str)
-    user = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
-    old_check = decrypt(user.password)
-    if old == old_check:
+    user_id = request.values.get('user_id', int)
+    user = db.session.query(Users).filter(Users.user_id == user_id).first()
+    if 'old_password' in request.values.keys():
+        mode = 'change'
+        old = request.values.get('old_password', str)
+        old_check = decrypt(user.password)
+        if old == old_check:
+            validate = True
+        else:
+            validate = False
+    elif 'valid_key' in request.values.keys():
+        validate = True
+        mode = 'reset'
+    else:
+        mode = 'reset'
+        validate = False
+    if validate is True:
         if new == confirm:
             user.password = encrypt(new)
             db.session.commit()
@@ -1371,8 +1409,10 @@ def new_pwd():
             success = 'unmatched'
     else:
         success = 'wrong_old'
-    renew_session()
-    return redirect(url_for('.change_pwd', success=success))
+    if mode == 'change':
+        return redirect(url_for('.change_pwd', success=success, mode=mode, user_id=user_id))
+    else:
+        return redirect(url_for('.login', wrong='password_changed'))
 
 
 @app.route('/change_user_password/<user_id>', defaults={'message': None})
