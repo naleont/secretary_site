@@ -3354,7 +3354,7 @@ def save_report_dates():
 @app.route('/reports_order/<cat_id>')
 def reports_order(cat_id):
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    works = get_works(cat_id, 2, 'online')
+    works = get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True)
     participating = 0
     works_unordered = []
     approved_for_2 = len(works)
@@ -3409,7 +3409,7 @@ def reports_order(cat_id):
 @app.route('/works_list_schedule/<cat_id>')
 def works_list_schedule(cat_id):
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    works = get_works(cat_id, 2, 'online')
+    works = get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True)
     participating = 0
     works_unordered = []
     approved_for_2 = len(works)
