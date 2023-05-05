@@ -3308,7 +3308,7 @@ def set_report_dates(message):
             c_dates['day_2'] = None
             c_dates['day_3'] = None
         cat_dates.append(c_dates)
-        create_report_dates_html(cat_dates)
+    create_report_dates_html(cat_dates)
     return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=message)
 
 
@@ -3316,21 +3316,30 @@ def set_report_dates(message):
 def save_report_dates():
     dates = []
     for cat_id in [c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()]:
-        if str(cat_id) + '_day_1' in request.form.keys() and request.form[str(cat_id) + '_day_1'] != '':
-            day_1 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_1'], '%Y-%m-%d').date()
-        elif cat_id in [c.cat_id for c in ReportDates.query.all()]:
+        if str(cat_id) + '_day_1' in request.form.keys():
+            if request.form[str(cat_id) + '_day_1'] != '':
+                day_1 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_1'], '%Y-%m-%d').date()
+            else:
+                day_1 = None
+        elif cat_id in [c.cat_id for c in ReportDates.query.all()] and not day_1:
             day_1 = ReportDates.query.filter(ReportDates.cat_id == cat_id).first().day_1
         else:
             day_1 = None
-        if str(cat_id) + '_day_2' in request.form.keys() and request.form[str(cat_id) + '_day_2'] != '':
-            day_2 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_2'], '%Y-%m-%d').date()
-        elif cat_id in [c.cat_id for c in ReportDates.query.all()]:
+        if str(cat_id) + '_day_2' in request.form.keys():
+            if request.form[str(cat_id) + '_day_2'] != '':
+                day_2 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_2'], '%Y-%m-%d').date()
+            else:
+                day_2 = None
+        elif cat_id in [c.cat_id for c in ReportDates.query.all()] and not day_2:
             day_2 = ReportDates.query.filter(ReportDates.cat_id == cat_id).first().day_2
         else:
             day_2 = None
-        if str(cat_id) + '_day_3' in request.form.keys() and request.form[str(cat_id) + '_day_3'] != '':
-            day_3 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_3'], '%Y-%m-%d').date()
-        elif cat_id in [c.cat_id for c in ReportDates.query.all()]:
+        if str(cat_id) + '_day_3' in request.form.keys():
+            if request.form[str(cat_id) + '_day_3'] != '':
+                day_3 = datetime.datetime.strptime(request.form[str(cat_id) + '_day_3'], '%Y-%m-%d').date()
+            else:
+                day_3 = None
+        elif cat_id in [c.cat_id for c in ReportDates.query.all()] and not day_3:
             day_3 = ReportDates.query.filter(ReportDates.cat_id == cat_id).first().day_3
         else:
             day_3 = None
