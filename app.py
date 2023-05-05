@@ -563,16 +563,13 @@ def all_news():
     return all_n
 
 
-def work_info(work_id):
+def work_info(work_id, additional_info=False, reports_info=False, analysis_info=False, w_payment_info=False,
+              appl_info=False):
     work_id = int(work_id)
     work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
     work = dict()
     work['work_id'] = work_id
     work['work_name'] = work_db.work_name
-    work['timeshift'] = work_db.msk_time_shift
-    work['reported'] = work_db.reported
-    work['email'] = work_db.email
-    work['tel'] = work_db.tel
     work['author_1_name'] = work_db.author_1_name
     work['author_1_age'] = work_db.author_1_age
     work['author_1_class'] = work_db.author_1_class
@@ -587,73 +584,94 @@ def work_info(work_id):
         work['authors'] += ', ' + work['author_2_name']
     if work['author_3_name'] is not None:
         work['authors'] += ', ' + work['author_3_name']
-    if work['timeshift']:
-        if work['timeshift'] >= 0:
-            work['timeshift'] = '+' + str(work['timeshift'])
-        else:
-            work['timeshift'] = str(work['timeshift'])
-    if work_id in [w.work_id for w in RevAnalysis.query.all()]:
-        if len(RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()
-               ) == len(
-            RevCriteria.query.filter(RevCriteria.year == datetime.datetime.strptime(str(curr_year), '%Y').date()
-                                     ).all()):
-            work['analysis'] = True
-        else:
-            work['analysis'] = 'part'
-    elif work_id in [w.work_id for w in PreAnalysis.query.all()]:
-        pre = db.session.query(PreAnalysis).filter(PreAnalysis.work_id == work_id).first()
-        if pre.has_review is False:
-            work['analysis'] = True
+    if work_id in [w.work_id for w in WorkCategories.query.all()]:
+        work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+    else:
+        work['cat_id'] = None
+
+    if additional_info is True:
+        work['email'] = work_db.email
+        work['tel'] = work_db.tel
+        work['reg_tour'] = work_db.reg_tour
+        work['site_id'] = work_db.work_site_id
+
+    if reports_info is True:
+        work['reported'] = work_db.reported
+        work['timeshift'] = work_db.msk_time_shift
+        if work['timeshift']:
+            if work['timeshift'] >= 0:
+                work['timeshift'] = '+' + str(work['timeshift'])
+            else:
+                work['timeshift'] = str(work['timeshift'])
+        if work_id in [w.work_id for w in ReportOrder.query.all()]:
+            report = db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).first()
+            work['report_day'] = report.report_day
+            work['report_order'] = report.order
+
+    if analysis_info is True:
+        work['reg_tour'] = work_db.reg_tour
+        if work_id in [w.work_id for w in RevAnalysis.query.all()]:
+            if len(RevAnalysis.query.filter(RevAnalysis.work_id == work_id).all()
+                   ) == len(
+                RevCriteria.query.filter(RevCriteria.year == datetime.datetime.strptime(str(curr_year), '%Y').date()
+                                         ).all()):
+                work['analysis'] = True
+            else:
+                work['analysis'] = 'part'
+        elif work_id in [w.work_id for w in PreAnalysis.query.all()]:
+            pre = db.session.query(PreAnalysis).filter(PreAnalysis.work_id == work_id).first()
+            if pre.has_review is False:
+                work['analysis'] = True
+            else:
+                work['analysis'] = False
         else:
             work['analysis'] = False
-    else:
-        work['analysis'] = False
-    work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
-    work['reg_tour'] = work_db.reg_tour
-    if work['work_id'] in [w.work_id for w in Discounts.query.all()]:
-        disc = db.session.query(Discounts).filter(Discounts.work_id == work['work_id']).first()
-        work['fee'] = disc.payment
-        work['format'] = disc.participation_format
-    elif work['work_id'] in [w.work_id for w in WorksNoFee.query.all()]:
-        work['fee'] = 0
-    elif work['reg_tour'] is not None:
-        work['fee'] = tour_fee
-    elif work['work_id'] in [w.work_id for w in WorksNoFee.query.all()]:
-        work['fee'] = 0
-    else:
-        work['fee'] = fee
-    if work['work_id'] in [w.work_id for w in AppliedForOnline.query.all()]:
-        work['format'] = 'online'
-    if work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
-        work['part_offline'] = True
-        work['format'] = 'face-to-face'
-    else:
-        work['part_offline'] = False
-    work['site_id'] = work_db.work_site_id
-    if work_id in [w.work_id for w in Applications2Tour.query.all()]:
-        appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()
-        work['appl_no'] = appl_db.appl_no
-        work['arrived'] = appl_db.arrived
-    else:
-        work['appl_no'] = False
-        work['arrived'] = False
-    if work_id in [w.work_id for w in ReportOrder.query.all()]:
-        report = db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).first()
-        work['report_day'] = report.report_day
-        work['report_order'] = report.order
-    if work['work_id'] in [p.participant for p in PaymentRegistration.query.all()]:
-        work['payed'] = True
-        work['payment_id'] = PaymentRegistration.query.filter(PaymentRegistration.participant ==
-                                                              work['work_id']).first().payment_id
-    elif work['fee'] == 0:
-        work['payed'] = True
-        work['payment_id'] = 'Работа участвует без оргвзноса'
-    else:
-        work['payed'] = False
+
+    if w_payment_info is True:
+        work['reg_tour'] = work_db.reg_tour
+        if work['work_id'] in [w.work_id for w in Discounts.query.all()]:
+            disc = db.session.query(Discounts).filter(Discounts.work_id == work['work_id']).first()
+            work['fee'] = disc.payment
+            work['format'] = disc.participation_format
+        elif work['work_id'] in [w.work_id for w in WorksNoFee.query.all()]:
+            work['fee'] = 0
+        elif work['reg_tour'] is not None:
+            work['fee'] = tour_fee
+        elif work['work_id'] in [w.work_id for w in WorksNoFee.query.all()]:
+            work['fee'] = 0
+        else:
+            work['fee'] = fee
+        if work['work_id'] in [w.work_id for w in AppliedForOnline.query.all()]:
+            work['format'] = 'online'
+        if work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
+            work['part_offline'] = True
+            work['format'] = 'face-to-face'
+        else:
+            work['part_offline'] = False
+        if work['work_id'] in [p.participant for p in PaymentRegistration.query.all()]:
+            work['payed'] = True
+            work['payment_id'] = PaymentRegistration.query.filter(PaymentRegistration.participant ==
+                                                                  work['work_id']).first().payment_id
+        elif work['fee'] == 0:
+            work['payed'] = True
+            work['payment_id'] = 'Работа участвует без оргвзноса'
+        else:
+            work['payed'] = False
+
+    if appl_info is True:
+        if work_id in [w.work_id for w in Applications2Tour.query.all()]:
+            appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()
+            work['appl_no'] = appl_db.appl_no
+            work['arrived'] = appl_db.arrived
+        else:
+            work['appl_no'] = False
+            work['arrived'] = False
+
     return work
 
 
-def get_works(cat_id, status, mode='all'):
+def get_works(cat_id, status, mode='all', additional_info=False, reports_info=False, analysis_info=False,
+              w_payment_info=False, appl_info=False):
     works = dict()
     works_cat = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
     works_stat = [w.work_id for w in WorkStatuses.query.filter(WorkStatuses.status_id >= status).all() if w.work_id
@@ -663,7 +681,8 @@ def get_works(cat_id, status, mode='all'):
     else:
         works_searched = works_stat
     for w in works_searched:
-        works[w] = work_info(w)
+        works[w] = work_info(w, additional_info=additional_info, reports_info=reports_info, analysis_info=analysis_info,
+                             w_payment_info=w_payment_info, appl_info=appl_info)
     return works
 
 
@@ -740,7 +759,7 @@ def reg_works(cat_id='all', status=1):
                 status_id = WorkStatuses.query.filter(WorkStatuses.work_id == w_no).first().status_id
                 if ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id).first().status_name \
                         in stat:
-                    works[w_no] = work_info(w_no)
+                    works[w_no] = work_info(w_no, analysis_info=True)
                     if works[w_no]['reg_tour'] is not None:
                         works[w_no]['pre_ana'] = get_pre_analysis(w_no)
                         works[w_no]['rk'], works[w_no]['ana_res'] = get_analysis(w_no)
@@ -755,7 +774,7 @@ def reg_works(cat_id='all', status=1):
             status_id = WorkStatuses.query.filter(WorkStatuses.work_id == w_no).first().status_id
             if ParticipationStatuses.query.filter(ParticipationStatuses.status_id == status_id).first().status_name \
                     in stat:
-                works[w_no] = work_info(w_no)
+                works[w_no] = work_info(w_no, analysis_info=True)
                 if works[w_no]['reg_tour'] is not None:
                     works[w_no]['pre_ana'] = get_pre_analysis(w_no)
                     works[w_no]['rk'], works[w_no]['ana_res'] = get_analysis(w_no)
@@ -886,7 +905,7 @@ def no_fee_nums():
 
 
 def application_2_tour(appl):
-    application = {'id': appl, 'works': [work_info(w.work_id) for w
+    application = {'id': appl, 'works': [work_info(w.work_id, w_payment_info=True, appl_info=True) for w
                                          in Applications2Tour.query.filter(Applications2Tour.appl_no == appl).all()],
                    'participants': []}
     for part in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).all():
@@ -2392,13 +2411,11 @@ def download_values():
 
 @app.route('/analysis_works/<cat_id>')
 def analysis_works(cat_id):
-    renew_session()
     access = check_access(6, request.url.lstrip(request.url_root))
     if access is not True:
         return access
-    works = get_works(cat_id, 2)
+    works = get_works(cat_id, 2, analysis_info=True)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
-    renew_session()
     need_analysis = check_analysis(cat_id)
     return render_template('rev_analysis/analysis_works.html', works=works, category=category,
                            need_analysis=need_analysis)
@@ -2409,7 +2426,7 @@ def review_analysis(work_id):
     access = check_access(5, request.url.lstrip(request.url_root))
     if access is not True:
         return access
-    work = work_info(work_id)
+    work = work_info(work_id, analysis_info=True)
     rk, analysis = get_analysis(work_id)
     criteria = get_criteria(curr_year)
     pre_ana = get_pre_analysis(work_id)
@@ -3099,7 +3116,7 @@ def online_applicants():
 
     for cat in [c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()]:
         c, cat_info = categories_info(cat)
-        cat_works = [work_info(w.work_id) for w in
+        cat_works = [work_info(w.work_id, w_payment_info=True) for w in
                      Works.query.join(WorkCategories, Works.work_id == WorkCategories.work_id)
                      .filter(WorkCategories.cat_id == cat).all() if w.work_id in [wo.work_id for wo
                                                                                   in AppliedForOnline.query.all()]]
@@ -3747,7 +3764,7 @@ def discount_and_participation_mode(part_id):
         info = application_2_tour(int(part_id))
         info['type'] = 'application'
     elif len(part_id) == 6:
-        info = work_info(int(part_id))
+        info = work_info(int(part_id), w_payment_info=True)
         info['type'] = 'work'
     else:
         return redirect(url_for('.search_participant'))
@@ -3847,13 +3864,13 @@ def set_payee(payment_id, payee):
         payee = payee.strip()
         try:
             payee = int(payee)
+            if payee in [p.appl_id for p in ParticipantsApplied.query.all()]:
+                participant = {'type': 'appl', 'participant': [application_2_tour(payee)]}
+            elif payee in [w.work_id for w in Works.query.all()]:
+                participant = {'type': 'work', 'works': work_info(payee, w_payment_info=True, appl_info=True)}
+            else:
+                participant = {'type': None, 'participant': payee}
         except ValueError:
-            pass
-        if payee in [p.appl_id for p in ParticipantsApplied.query.all()]:
-            participant = {'type': 'appl', 'participant': [application_2_tour(payee)]}
-        elif payee in [w.work_id for w in Works.query.all()]:
-            participant = {'type': 'work', 'works': work_info(payee)}
-        else:
             if payee.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
                 parts = [p.participant_id for p
                          in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
@@ -3878,13 +3895,14 @@ def set_payee(payment_id, payee):
                 if payee.lower() in [a[:len(payee)].lower() for a in a['authors'] if a is not None]:
                     if str(a['id'])[:2] == str(curr_year)[-2:]:
                         wks.append(a['id'])
-            w = [work_info(wo) for wo in wks]
+            w = [work_info(wo, w_payment_info=True, appl_info=True) for wo in wks]
             if participant['type']:
                 participant['works'] = w
             else:
                 participant = {'type': 'name', 'works': w}
     else:
         participant = {'type': None, 'participant': payee}
+    print(participant)
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
 
 

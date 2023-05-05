@@ -36,11 +36,12 @@
 Счет плательщика: {{ payment['account'] }}<br>
 Номер платежного документа: {{ payment['order_id'] }}<br><br>
 
-{% if participant['type'] == None and participant['participant'] != None%}
+{% if participant['type'] == 'None' and participant['participant'] != None or participant['works'] == [] %}
 
 {{ participant['participant'] }}: Не найдено таких участников
 
 {% elif participant['type'] == 'work' %}
+
 <form action="/set_payment/{{ payment['payment_id'] }}/{{ participant['works']['work_id'] }}" method = 'POST'>
     <fieldset>
         <table>
