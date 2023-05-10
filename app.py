@@ -1487,8 +1487,34 @@ def categories_list():
         if categ.cat_id in cats_ids:
             with_secretary += 1
     no_secr = cats_count - with_secretary
-    renew_session()
     return render_template('categories/categories.html', cats_count=cats_count, categories=cats, no_secr=no_secr)
+
+
+@app.route('/download_categories')
+def download_categories():
+    cats_count, cats = categories_info()
+    categories = []
+    for c in cats:
+        if 'supervisor_id' not in c.keys():
+            c['supervisor'] = ''
+            c['supervisor_email'] = ''
+            c['supervisor_tel'] = ''
+        if 'secretary_id' not in c.keys():
+            c['secretary_full'] = ''
+            c['secretary_email'] = ''
+            c['secretary_tel'] = ''
+        cat = {'Направление': c['direction'], 'Название секции': c['name'], 'Короткое название': c['short_name'],
+               'Telegram-канал': '@' + c['tg_channel'], 'Руководитель': c['supervisor'],
+               'e-mail руководителя': c['supervisor_email'], 'Телефон руководиотеля': c['supervisor_tel'],
+               'Секретарь': c['secretary_full'], 'e-mail секретаря': c['secretary_email'],
+               'Телефон секретаря': c['secretary_tel'], 'Даты заседаний': c['dates']}
+        categories.append(cat)
+    df = pd.DataFrame(data=categories)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/categories.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Секции ' + str(curr_year) + ' года')
+    return send_file('static/files/generated_files/categories.xlsx', as_attachment=True)
 
 
 @app.route('/edit_category', defaults={'cat_id': None})

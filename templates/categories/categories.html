@@ -3,7 +3,17 @@
 {% block title %} Секции {% endblock %}
 
 {% block content %}
-<h2>Секции Конкурса</h2>
+<table>
+    <tr>
+        <td>
+            <h2>Секции Конкурса</h2>
+        </td>
+        <td align="right">
+            <a href="/download_categories"><button>Скачать список этого года</button></a>
+        </td>
+    </tr>
+</table>
+
 {% if session['type'] == 'admin' %}
 <a href="/edit_category"><button>Добавить секцию</button></a><br><br>
 <a href="/add_categories"><button>Добавить много секций</button></a><br><br>
