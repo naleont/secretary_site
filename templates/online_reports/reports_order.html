@@ -82,10 +82,12 @@
             {% endif %}
         </td>
         <td align="center">
-            {{ work['work_id'] }}
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                {{ work['work_id'] }}</a>
         </td>
         <td>
-            {{ work['work_name'] }}
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                {{ work['work_name'] }}</a>
         </td>
         <td align="center">
             {% if work['reported'] in [False, None] %}
