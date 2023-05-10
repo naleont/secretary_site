@@ -3877,7 +3877,7 @@ def search_participant(query):
         try:
             qu = int(query)
             if len(query) == 6 and qu:
-                response = {'type': 'work', 'works': work_info(int(query))}
+                response = {'type': 'work', 'works': work_info(int(query), w_payment_info=True, appl_info=True)}
             elif len(query) == 5:
                 response = {'type': 'appl', 'value': application_2_tour(int(query))}
             else:
@@ -3916,6 +3916,7 @@ def search_participant(query):
                     response = {'type': 'name', 'value': w}
     else:
         response = {'type': None, 'value': query}
+    print(response)
     return render_template('participants_and_payment/search_participant.html', response=response)
 
 
@@ -4087,7 +4088,6 @@ def set_payee(payment_id, payee):
                 participant = {'type': 'name', 'works': w}
     else:
         participant = {'type': None, 'participant': payee}
-    print(participant)
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
 
 

@@ -70,9 +70,13 @@
                             {% elif participant['works']['format'] == 'online'%}
                                 Дистанционное участие
                             {% endif %}
-                    <br>
+                    <br>{% if participant['works']['appl_no'] == False %}
+                        Заявка отсутствует<br>
+                        {% else %}
                             <a href="/application_payment/{{ payment['payment_id'] }}/{{ participant['works']['appl_no'] }}"><div class="blue_no_border" type="submit">
-                    <b>Заявка {{ participant['works']['appl_no'] }}</b></div></a>
+                    <b>
+                        Заявка {{ participant['works']['appl_no'] }}</b></div></a>
+                        {% endif %}
                 </td>
                 <td width="30%">
                     <input class="button" type="submit" value="Назначить платеж работе"><br><br>

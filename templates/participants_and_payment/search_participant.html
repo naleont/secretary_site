@@ -36,7 +36,11 @@
             {% if response['works']['reg_tour'] %}<br>
             <span class="alarm">{{ response['works']['reg_tour'] }} тур</span>
             {% endif %}<br>
+            {% if response['works']['appl_no'] == False %}
+        Заявка отсутствует<br>
+            {% else %}
         Заявка {{ response['works']['appl_no'] }}<br>
+            {% endif %}
         Оргвзнос {{ response['works']['fee'] }} р.,
             {% if not response['works']['format'] or response['works']['format'] == 'face-to-face' %}
                 Очное участие
