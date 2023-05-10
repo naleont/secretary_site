@@ -712,3 +712,17 @@ class ResponsibilityAssignment(db.Model):
     def __init__(self, user_id, responsibility_id):
         self.user_id = user_id
         self.responsibility_id = responsibility_id
+
+
+class CategoryUnions(db.Model):
+    __tablename__ = 'category_unions'
+
+    u_id = db.Column('u_id', db.Integer, primary_key=True)
+    year = db.Column('year', db.Integer)
+    union_id = db.Column('union_id', db.Integer)
+    cat_id = db.Column('cat_id', db.Integer)
+
+    def __init__(self, year, union_id, cat_id):
+        self.year = year
+        self.union_id = union_id
+        self.cat_id = cat_id

@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>{{ cat_name }}</h2>
+{% for cat in categories %}
+<h2>{{ cat['cat_name'] }}</h2>
+{% endfor %}
 
-<form action="/report_order_many/{{ cat_id }}" method = 'POST'>
+<form action="/report_order_many/{{ categories[0]['cat_id'] }}" method = 'POST'>
     <fieldset>
         <input class="button" type="submit" value="Сохранить">
         <h2>Нераспределенные работы</h2>

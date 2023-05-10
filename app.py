@@ -586,8 +586,10 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
         work['authors'] += ', ' + work['author_3_name']
     if work_id in [w.work_id for w in WorkCategories.query.all()]:
         work['cat_id'] = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+        work['cat_short'] = Categories.query.filter(Categories.cat_id == work['cat_id']).first().short_name
     else:
         work['cat_id'] = None
+        work['cat_short'] = None
 
     if site_id is True:
         work['site_id'] = work_db.work_site_id
@@ -1036,20 +1038,33 @@ def document_set():
 
 
 def write_work_date(cat_id, work_id, day):
-    work_id = int(work_id)
-    if int(cat_id) in [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
-        last_order = max([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
-                                                                    ).filter(ReportOrder.report_day == day).all()]) + 1
+    cat_id = int(cat_id)
+    work_cat = cat_id
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+        union = True
     else:
-        last_order = 1
+        cats = [cat_id]
+        union = False
+
+    order = 1
+    for cat_id in cats:
+        if int(cat_id) in [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
+            last_order = max([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
+                                                                        ).filter(ReportOrder.report_day == day)
+                             .all()]) + 1
+            if last_order > order:
+                order = last_order
+
     if work_id in [w.work_id for w in ReportOrder.query.all()]:
         db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id
                                              ).update({ReportOrder.report_day: day,
-                                                       ReportOrder.order: last_order,
-                                                       ReportOrder.cat_id: cat_id})
+                                                       ReportOrder.order: order,
+                                                       ReportOrder.cat_id: work_cat})
         db.session.commit()
     else:
-        o = ReportOrder(work_id, day, last_order, int(cat_id))
+        o = ReportOrder(work_id, day, order, work_cat)
         db.session.add(o)
         db.session.commit()
     return 'done'
@@ -1186,7 +1201,7 @@ def reset_password():
         db.session.commit()
         link = request.url_root + 'new_password/' + str(user.user_id) + '/' + reset_key
         msg = Message(subject='Сброс пароля',
-                    html=render_template('mails/user_management/mail_reset_password.html', link=link),
+                      html=render_template('mails/user_management/mail_reset_password.html', link=link),
                       sender=('Конкурс им. В. И. Вернадского', 'info@vernadsky.info'),
                       recipients=[user.email])
         mail.send(msg)
@@ -1941,27 +1956,32 @@ def search_user():
     except ValueError:
         users = []
         if query in [u.email for u in Users.query.all()]:
-            users.extend([u.user_id for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all()])
+            users.extend(
+                [u.user_id for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all()])
         # if tel in [u.tel for u in Users.query.all()]:
         #     users.extend([u.user_id for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all()])
         if query.lower() in [u.last_name.lower() for u in Users.query.all()]:
             users.extend([u.user_id for u in Users.query.filter(Users.last_name == ''.join([query[0].upper(),
-                                                                                           query[1:].lower()])).all()])
+                                                                                            query[1:].lower()])).all()])
         if query.lower() in [u.first_name.lower() for u in Users.query.all()]:
             users.extend([u.user_id for u in Users.query.filter(Users.first_name == ''.join([query[0].upper(),
-                                                                                             query[1:].lower()])).all()])
+                                                                                             query[
+                                                                                             1:].lower()])).all()])
         if query.lower() in [u.patronymic.lower() for u in Users.query.all()]:
             users.extend([u.user_id for u in Users.query.filter(Users.patronymic == ''.join([query[0].upper(),
-                                                                                             query[1:].lower()])).all()])
+                                                                                             query[
+                                                                                             1:].lower()])).all()])
         if not users:
             if query == 'secretary':
-                users = [u.secretary_id for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()]
+                users = [u.secretary_id for u in
+                         CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()]
             elif query == 'supervisor':
                 users = [u.user_id for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all()]
             elif query in access_types.keys():
                 us = []
                 for val in [val for val in access_types.values() if val >= access_types[query]]:
-                    for u in Users.query.filter(Users.user_type == list(access_types.keys())[list(access_types.values()).index(val)]).order_by(Users.user_id.desc()).all():
+                    for u in Users.query.filter(Users.user_type == list(access_types.keys())[
+                        list(access_types.values()).index(val)]).order_by(Users.user_id.desc()).all():
                         us.append(u.user_id)
                 us.sort(reverse=True)
                 users = us
@@ -3396,115 +3416,128 @@ def save_report_dates():
 
 @app.route('/reports_order/<cat_id>')
 def reports_order(cat_id):
-    cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    works = get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True)
-    participating = 0
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+        union = True
+    else:
+        cats = [cat_id]
+        union = False
+    categories = []
     works_unordered = []
-    approved_for_2 = len(works)
+    approved_for_2 = 0
+    participating = 0
+    c_dates = []
+    works = {}
+
+    for cat_id in cats:
+        dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+        cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
+        categories.append({'cat_id': cat_id, 'cat_name': cat_name})
+        works.update(get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        approved_for_2 += len(works)
+        if dates_db.day_1:
+            d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
+                   'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+                               months_full[dates_db.day_1.strftime('%m')]}
+            if d_1 not in c_dates:
+                c_dates.append(d_1)
+        if dates_db.day_2:
+            d_2 = {'d': 'day_2', 'day': days[dates_db.day_2.strftime('%w')],
+                   'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime(
+                       '%d') + ' ' + \
+                               months_full[dates_db.day_2.strftime('%m')]}
+            if d_2 not in c_dates:
+                c_dates.append(d_2)
+        if dates_db.day_3:
+            d_3 = {'d': 'day_3', 'day': days[dates_db.day_3.strftime('%w')],
+                   'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+                               months_full[dates_db.day_3.strftime('%m')]}
+            if d_3 not in c_dates:
+                c_dates.append(d_3)
+
     for work in works.keys():
         if works[work]['appl_no']:
             participating += 1
         if works[work]['work_id'] not in [w.work_id for w in ReportOrder.query.all()]:
             works_unordered.append(works[work])
-    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
-    c_dates = []
-    if dates_db.day_1:
-        d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
-               'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
-                           months_full[dates_db.day_1.strftime('%m')]}
+
+    for day in c_dates:
         day_works = []
         for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_1':
+            if 'report_day' in work.keys() and work['report_day'] == day['d']:
                 day_works.append(work)
-        d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_1['works']]:
-            d_1['max_order'] = max([w['report_order'] for w in d_1['works']])
-        c_dates.append(d_1)
-    if dates_db.day_2:
-        d_2 = {'d': 'day_2', 'day': days[dates_db.day_2.strftime('%w')],
-               'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
-                           months_full[dates_db.day_2.strftime('%m')]}
-        day_works = []
-        for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_2':
-                day_works.append(work)
-        d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_2['works']]:
-            d_2['max_order'] = max([w['report_order'] for w in d_2['works']])
-        c_dates.append(d_2)
-    if dates_db.day_3:
-        d_3 = {'d': 'day_3', 'day': days[dates_db.day_3.strftime('%w')],
-               'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
-                           months_full[dates_db.day_3.strftime('%m')]}
-        day_works = []
-        for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_3':
-                day_works.append(work)
-        d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_3['works']]:
-            d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
-        c_dates.append(d_3)
+        day['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        if [w['report_order'] for w in day['works']]:
+            day['max_order'] = max([w['report_order'] for w in day['works']])
+
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
                            participating=participating, c_dates=c_dates, approved_for_2=approved_for_2,
-                           cat_id=cat_id, cat_name=cat_name)
+                           categories=categories, union=union)
 
 
 @app.route('/works_list_schedule/<cat_id>')
 def works_list_schedule(cat_id):
-    cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    works = get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True)
-    participating = 0
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+        union = True
+    else:
+        cats = [cat_id]
+        union = False
+    categories = []
     works_unordered = []
-    approved_for_2 = len(works)
+    approved_for_2 = 0
+    participating = 0
+    c_dates = []
+    works = {}
+
+    for cat_id in cats:
+        dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+        cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
+        categories.append({'cat_id': cat_id, 'cat_name': cat_name})
+        works.update(get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        approved_for_2 += len(works)
+        if dates_db.day_1:
+            d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
+                   'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+                               months_full[dates_db.day_1.strftime('%m')]}
+            if d_1 not in c_dates:
+                c_dates.append(d_1)
+        if dates_db.day_2:
+            d_2 = {'d': 'day_2', 'day': days[dates_db.day_2.strftime('%w')],
+                   'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime(
+                       '%d') + ' ' + \
+                               months_full[dates_db.day_2.strftime('%m')]}
+            if d_2 not in c_dates:
+                c_dates.append(d_2)
+        if dates_db.day_3:
+            d_3 = {'d': 'day_3', 'day': days[dates_db.day_3.strftime('%w')],
+                   'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+                               months_full[dates_db.day_3.strftime('%m')]}
+            if d_3 not in c_dates:
+                c_dates.append(d_3)
+
     for work in works.keys():
         if works[work]['appl_no']:
             participating += 1
         if works[work]['work_id'] not in [w.work_id for w in ReportOrder.query.all()]:
             works_unordered.append(works[work])
-    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
-    c_dates = []
-    if dates_db.day_1:
-        d_1 = {'d': 'day_1'}
-        d_1['day'] = days[dates_db.day_1.strftime('%w')]
-        d_1['day_full'] = days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
-                          months_full[dates_db.day_1.strftime('%m')]
+
+    for day in c_dates:
         day_works = []
         for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_1':
+            if 'report_day' in work.keys() and work['report_day'] == day['d']:
                 day_works.append(work)
-        d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_1['works']] != []:
-            d_1['max_order'] = max([w['report_order'] for w in d_1['works']])
-        c_dates.append(d_1)
-    if dates_db.day_2:
-        d_2 = {'d': 'day_2'}
-        d_2['day'] = days[dates_db.day_2.strftime('%w')]
-        d_2['day_full'] = days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
-                          months_full[dates_db.day_2.strftime('%m')]
-        day_works = []
-        for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_2':
-                day_works.append(work)
-        d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_2['works']] != []:
-            d_2['max_order'] = max([w['report_order'] for w in d_2['works']])
-        c_dates.append(d_2)
-    if dates_db.day_3:
-        d_3 = {'d': 'day_3'}
-        d_3['day'] = days[dates_db.day_3.strftime('%w')]
-        d_3['day_full'] = days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
-                          months_full[dates_db.day_3.strftime('%m')]
-        day_works = []
-        for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_3':
-                day_works.append(work)
-        d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        if [w['report_order'] for w in d_3['works']] != []:
-            d_3['max_order'] = max([w['report_order'] for w in d_3['works']])
-        c_dates.append(d_3)
+        day['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        if [w['report_order'] for w in day['works']]:
+            day['max_order'] = max([w['report_order'] for w in day['works']])
+
     return render_template('online_reports/works_list_schedule.html', works_unordered=works_unordered,
                            participating=participating, c_dates=c_dates, approved_for_2=approved_for_2,
-                           cat_id=cat_id, cat_name=cat_name)
+                           categories=categories, union=union)
 
 
 @app.route('/work_date/<cat_id>/<work_id>/<day>/<page>')
@@ -3515,18 +3548,35 @@ def work_date(cat_id, work_id, day, page):
 
 @app.route('/report_order_many/<cat_id>', methods=['POST'])
 def report_order_many(cat_id):
-    works = get_works(cat_id, 2)
-    schedule = {}
-    for work in works.values():
-        if str(work['work_id']) in request.form.keys():
-            schedule[work['work_id']] = request.form[str(work['work_id'])]
-    for w in schedule.keys():
-        write_work_date(cat_id=cat_id, work_id=w, day=schedule[w])
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+    else:
+        cats = [cat_id]
+
+    for cat_id in cats:
+        works = get_works(cat_id, 2)
+        schedule = {}
+        for work in works.values():
+            if str(work['work_id']) in request.form.keys():
+                schedule[work['work_id']] = request.form[str(work['work_id'])]
+        for w in schedule.keys():
+            write_work_date(cat_id=cat_id, work_id=w, day=schedule[w])
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
 @app.route('/unorder/<cat_id>/<work_id>')
 def unorder(cat_id, work_id):
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+        union = True
+    else:
+        cats = [cat_id]
+        union = False
+
     work_id = int(work_id)
     work_db = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
     order_deleted = work_db.order
@@ -3535,14 +3585,17 @@ def unorder(cat_id, work_id):
         db.session.delete(work)
         db.session.query(Works).filter(Works.work_id == work_id).update({Works.reported: False})
         db.session.commit()
-    for work in [w.work_id for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
-                                                             ).filter(ReportOrder.report_day == work_db.report_day
-                                                                      ).all() if w.order > order_deleted]:
+
+    works = []
+    for cat_id in cats:
+        works.extend([w.work_id for w in ReportOrder.query.filter(ReportOrder.cat_id == cat_id)
+                     .filter(ReportOrder.report_day == work_db.report_day).all() if w.order > order_deleted])
+    for work in works:
         new = ReportOrder.query.filter(ReportOrder.work_id == work).first().order - 1
         db.session.query(ReportOrder).filter(ReportOrder.work_id == work
                                              ).update({ReportOrder.order: new})
         db.session.commit()
-    return redirect(url_for('.reports_order', cat_id=cat_id))
+    return redirect(url_for('.reports_order', cat_id=cats[0]))
 
 
 @app.route('/confirm_clear_schedule/<cat_id>')
@@ -3569,22 +3622,41 @@ def confirm_clear_schedule(cat_id):
 
 @app.route('/clear_schedule/<cat_id>/<day>')
 def clear_schedule(cat_id, day):
-    works_db = db.session.query(ReportOrder).filter(ReportOrder.cat_id == int(cat_id))
-    works = [w.work_id for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)).all()]
-    for work in works:
-        db.session.query(Works).filter(Works.work_id == work).update({Works.reported: False})
-        db.session.commit()
-    if day == 'all':
-        to_delete = works_db
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+        union = True
     else:
-        to_delete = works_db.filter(ReportOrder.report_day == day)
-    to_delete.delete()
-    db.session.commit()
+        cats = [cat_id]
+        union = False
+
+    for cat_id in cats:
+        works_db = db.session.query(ReportOrder).filter(ReportOrder.cat_id == int(cat_id))
+        works = [w.work_id for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)).all()]
+        for work in works:
+            db.session.query(Works).filter(Works.work_id == work).update({Works.reported: False})
+            db.session.commit()
+        if day == 'all':
+            to_delete = works_db
+        else:
+            to_delete = works_db.filter(ReportOrder.report_day == day)
+        to_delete.delete()
+        db.session.commit()
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
 @app.route('/reorder/<cat_id>/<work_id>/<direction>')
 def reorder(cat_id, work_id, direction):
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+        union = True
+    else:
+        cats = [cat_id]
+        union = False
+
     order_db = db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).first()
     order_1 = order_db.order
     day = order_db.report_day
@@ -3592,59 +3664,80 @@ def reorder(cat_id, work_id, direction):
         order_2 = order_1 - 1
     else:
         order_2 = order_1 + 1
-    db.session.query(ReportOrder).filter(ReportOrder.cat_id == int(cat_id)
-                                         ).filter(ReportOrder.report_day == day
-                                                  ).filter(ReportOrder.order == order_2
-                                                           ).update({ReportOrder.order: order_1})
-    db.session.commit()
-    db.session.query(ReportOrder).filter(ReportOrder.cat_id == int(cat_id)
-                                         ).filter(ReportOrder.report_day == day
-                                                  ).filter(ReportOrder.work_id == work_id
-                                                           ).update({ReportOrder.order: order_2})
+
+    for cat_id in cats:
+        if order_2 in [o.order for o in ReportOrder.query.filter(ReportOrder.cat_id == cat_id)
+                .filter(ReportOrder.report_day == day).all()]:
+            db.session.query(ReportOrder).filter(ReportOrder.cat_id == cat_id
+                                                 ).filter(ReportOrder.report_day == day
+                                                          ).filter(ReportOrder.order == order_2
+                                                                   ).update({ReportOrder.order: order_1})
+            db.session.commit()
+    db.session.query(ReportOrder).filter(ReportOrder.work_id == work_id).update({ReportOrder.order: order_2})
     db.session.commit()
     return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
 @app.route('/download_schedule/<cat_id>')
 def download_schedule(cat_id):
-    works = get_works(cat_id, 2)
-    dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+        union = True
+    else:
+        cats = [cat_id]
+        union = False
+
+    works = {}
     c_dates = []
-    if dates_db.day_1:
-        d_1 = {'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' +
-                           months_full[dates_db.day_1.strftime('%m')]}
+    categories = []
+    for cat_id in cats:
+        cat = Categories.query.filter(Categories.cat_id == cat_id).first()
+        categories.append({'cat_id': cat_id, 'cat_name': cat.cat_name, 'short_name': cat.short_name})
+        dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
+        works.update(get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        if dates_db.day_1:
+            d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
+                   'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
+                               months_full[dates_db.day_1.strftime('%m')]}
+            if d_1 not in c_dates:
+                c_dates.append(d_1)
+        if dates_db.day_2:
+            d_2 = {'d': 'day_2', 'day': days[dates_db.day_2.strftime('%w')],
+                   'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime(
+                       '%d') + ' ' + \
+                               months_full[dates_db.day_2.strftime('%m')]}
+            if d_2 not in c_dates:
+                c_dates.append(d_2)
+        if dates_db.day_3:
+            d_3 = {'d': 'day_3', 'day': days[dates_db.day_3.strftime('%w')],
+                   'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
+                               months_full[dates_db.day_3.strftime('%m')]}
+            if d_3 not in c_dates:
+                c_dates.append(d_3)
+
+    for day in c_dates:
         day_works = []
         for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_1':
+            if 'report_day' in work.keys() and work['report_day'] == day['d']:
                 day_works.append(work)
-        d_1['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        c_dates.append(d_1)
-    if dates_db.day_2:
-        d_2 = {'day_full': days_full[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' + \
-                           months_full[dates_db.day_2.strftime('%m')]}
-        day_works = []
-        for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_2':
-                day_works.append(work)
-        d_2['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        c_dates.append(d_2)
-    if dates_db.day_3:
-        d_3 = {'day_full': days_full[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' + \
-                           months_full[dates_db.day_3.strftime('%m')]}
-        day_works = []
-        for work in works.values():
-            if 'report_day' in work.keys() and work['report_day'] == 'day_3':
-                day_works.append(work)
-        d_3['works'] = sorted(day_works, key=lambda w: w['report_order'])
-        c_dates.append(d_3)
-    cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
+        day['works'] = sorted(day_works, key=lambda w: w['report_order'])
+        if [w['report_order'] for w in day['works']]:
+            day['max_order'] = max([w['report_order'] for w in day['works']])
+
     if not os.path.exists('static/files/generated_files/schedules/' + str(curr_year)):
         os.makedirs('static/files/generated_files/schedules/' + str(curr_year))
-    path = 'static/files/generated_files/schedules/' + str(curr_year) + '/' + 'Расписание ' + cat_name + '.docx'
+    path = 'static/files/generated_files/schedules/' + str(curr_year) + '/' + 'Расписание ' \
+           + ', '.join([c['short_name'] for c in categories]) + '.docx'
 
     document = document_set()
 
-    h = 'Расписание заседания секции' + '\n' + cat_name
+    if union is True:
+        a = 'Расписание заседания секций'
+    else:
+        a = 'Расписание заседания секции'
+    h = a + '\n' + '\n'.join([c['cat_name'] for c in categories])
 
     section = document.sections[0]
     header = section.header
@@ -3660,6 +3753,53 @@ def download_schedule(cat_id):
 
     document.save(path)
     return send_file(path, as_attachment=True)
+
+
+@app.route('/category_unions')
+def category_unions():
+    unions = []
+    for u_id in set([u.union_id for u in CategoryUnions.query.filter(CategoryUnions.year == curr_year).all()]):
+        cats = [categories_info(c.cat_id)[1] for c in
+                CategoryUnions.query.filter(CategoryUnions.union_id == u_id).all()]
+        unions.append({'union_id': u_id, 'categories': cats})
+    c, cats = categories_info()
+    if unions:
+        n = max([u['union_id'] for u in unions]) + 1
+    elif [u.union_id for u in CategoryUnions.query.all()]:
+        n = max([u.union_id for u in CategoryUnions.query.all()]) + 1
+    else:
+        n = 1
+    return render_template('categories/category_unions.html', unions=unions, cats=cats, n=n)
+
+
+@app.route('/set_category_union', methods=['POST'])
+def set_category_union():
+    union_id = request.form['union_id']
+    cat_id = request.form['cat_id']
+    if union_id in [u.union_id for u in CategoryUnions.query.all()]:
+        if cat_id not in [u.cat_id for u in CategoryUnions.query.filter(CategoryUnions.union_id == union_id).all()]:
+            u = CategoryUnions(year=curr_year, union_id=union_id, cat_id=cat_id)
+            db.session.add(u)
+            db.session.commit()
+    else:
+        u = CategoryUnions(year=curr_year, union_id=union_id, cat_id=cat_id)
+        db.session.add(u)
+        db.session.commit()
+    return redirect(url_for('.category_unions'))
+
+
+@app.route('/clear_union/<union_id>/<cat_id>')
+def clear_union(union_id, cat_id):
+    union_id = int(union_id)
+    cat_id = int(cat_id)
+    if union_id in [u.union_id for u in CategoryUnions.query.all()] and cat_id in [u.cat_id for u in
+                                                                                   CategoryUnions.query.filter(
+                                                                                           CategoryUnions.union_id == union_id).all()]:
+        to_del = db.session.query(CategoryUnions).filter(CategoryUnions.union_id == union_id) \
+            .filter(CategoryUnions.cat_id == cat_id).first()
+        db.session.delete(to_del)
+        db.session.commit()
+    return redirect(url_for('.category_unions'))
 
 
 @app.route('/add_cities')
