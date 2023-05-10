@@ -3436,7 +3436,6 @@ def reports_order(cat_id):
         cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
         categories.append({'cat_id': cat_id, 'cat_name': cat_name})
         works.update(get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
-        approved_for_2 += len(works)
         if dates_db.day_1:
             d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
                    'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
@@ -3463,8 +3462,11 @@ def reports_order(cat_id):
         if works[work]['work_id'] not in [w.work_id for w in ReportOrder.query.all()]:
             works_unordered.append(works[work])
 
+    approved_for_2 += len(works_unordered)
+
     for day in c_dates:
         day_works = []
+        approved_for_2 += len(day['works'])
         for work in works.values():
             if 'report_day' in work.keys() and work['report_day'] == day['d']:
                 day_works.append(work)
