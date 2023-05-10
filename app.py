@@ -3103,7 +3103,7 @@ def applied_for_online():
         for work, error in errors.items():
             errs += str(work) + ' - ' + error + '\n'
     else:
-        errs = None
+        errs = 'a'
     return redirect(url_for('.apply_for_online', errs_a=errs, errs_b='a'))
 
 
@@ -3138,7 +3138,7 @@ def participated():
         for work, error in errors.items():
             errs += str(work) + ' - ' + error + '\n'
     else:
-        errs = None
+        errs = 'a'
     return redirect(url_for('.apply_for_online', errs_b=errs, errs_a='a'))
 
 
