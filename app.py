@@ -3934,13 +3934,15 @@ def searching_participant():
 
 @app.route('/unpayed')
 def unpayed():
-    applied = [work_info(w.work_id, w_payment_info=True, cat_info=True) for w in AppliedForOnline.query.all()
+    applied = [work_info(w.work_id, w_payment_info=True, cat_info=True, additional_info=True)
+               for w in AppliedForOnline.query.all()
                if w.work_id not in
                [p.participant for p in PaymentRegistration.query.filter(PaymentRegistration.for_work == 1).all()]]
     unpayed = [w for w in applied if w['payed'] is False]
 
     file = [{'Номер работы': w['work_id'], 'Название работы': w['work_name'], 'Авторы': w['authors'],
-             'Название секции': w['cat_name'], 'Сумма оргвзноса': str(w['fee']) + ' р.'} for w in unpayed]
+             'Название секции': w['cat_name'], 'Сумма оргвзноса': str(w['fee']) + ' р.', 'e-mail': w['email']}
+            for w in unpayed]
 
     df = pd.DataFrame(data=file)
     if not os.path.isdir('static/files/generated_files'):
