@@ -979,6 +979,12 @@ def statement_info(payment_list):
                 if participant in [p.participant_id for p in Discounts.query.all()]:
                     disc = db.session.query(Discounts).filter(Discounts.participant_id == participant).first()
                     payed = disc.payment
+                elif participant in [p.work_id for p in Discounts.query.all()]:
+                    disc = db.session.query(Discounts).filter(Discounts.work_id == participant).first()
+                    payed = disc.payment
+                elif participant in [w.work_id for w in Works.query.all()] \
+                        and Works.query.filter(Works.work_id == participant).first().reg_tour is not None:
+                    payed = tour_fee
                 else:
                     payed = fee
                 remainder -= payed
