@@ -3758,6 +3758,8 @@ def searching_participant():
 def works_participated():
     wks = [w.work_id for w in ParticipatedWorks.query.all()]
     works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    for work in works:
+        work['link_name'] = work['work_name'].strip('?')
     return render_template('works/works_participated.html', works=works)
 
 
