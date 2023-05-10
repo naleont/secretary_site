@@ -564,7 +564,7 @@ def all_news():
 
 
 def work_info(work_id, additional_info=False, site_id=False, reports_info=False, analysis_info=False,
-              w_payment_info=False, appl_info=False):
+              w_payment_info=False, appl_info=False, cat_info=False):
     work_id = int(work_id)
     work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
     work = dict()
@@ -590,6 +590,12 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
     else:
         work['cat_id'] = None
         work['cat_short'] = None
+
+    if cat_info is True:
+        if work_id in [w.work_id for w in WorkCategories.query.all()]:
+            work['cat_name'] = Categories.query.filter(Categories.cat_id == work['cat_id']).first().cat_name
+        else:
+            work['cat_name'] = None
 
     if site_id is True:
         work['site_id'] = work_db.work_site_id
@@ -3916,7 +3922,6 @@ def search_participant(query):
                     response = {'type': 'name', 'value': w}
     else:
         response = {'type': None, 'value': query}
-    print(response)
     return render_template('participants_and_payment/search_participant.html', response=response)
 
 
@@ -3925,6 +3930,29 @@ def searching_participant():
     renew_session()
     query = request.values.get('query', str)
     return redirect(url_for('.search_participant', query=query))
+
+
+@app.route('/unpayed')
+def unpayed():
+    applied = [work_info(w.work_id, w_payment_info=True, cat_info=True) for w in AppliedForOnline.query.all()
+               if w.work_id not in
+               [p.participant for p in PaymentRegistration.query.filter(PaymentRegistration.for_work == 1).all()]]
+    unpayed = [w for w in applied if w['payed'] is False]
+
+    file = [{'Номер работы': w['work_id'], 'Название работы': w['work_name'], 'Авторы': w['authors'],
+             'Название секции': w['cat_name'], 'Сумма оргвзноса': str(w['fee']) + ' р.'} for w in unpayed]
+
+    df = pd.DataFrame(data=file)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/unpayed.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Нет оплаты')
+    return render_template('online_reports/unpayed.html', unpayed=unpayed)
+
+
+@app.route('/download_unpayed')
+def download_unpayed():
+    return send_file('static/files/generated_files/unpayed.xlsx', as_attachment=True)
 
 
 @app.route('/works_participated')
