@@ -563,8 +563,8 @@ def all_news():
     return all_n
 
 
-def work_info(work_id, additional_info=False, reports_info=False, analysis_info=False, w_payment_info=False,
-              appl_info=False):
+def work_info(work_id, additional_info=False, site_id=False, reports_info=False, analysis_info=False,
+              w_payment_info=False, appl_info=False):
     work_id = int(work_id)
     work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
     work = dict()
@@ -589,11 +589,13 @@ def work_info(work_id, additional_info=False, reports_info=False, analysis_info=
     else:
         work['cat_id'] = None
 
+    if site_id is True:
+        work['site_id'] = work_db.work_site_id
+
     if additional_info is True:
         work['email'] = work_db.email
         work['tel'] = work_db.tel
         work['reg_tour'] = work_db.reg_tour
-        work['site_id'] = work_db.work_site_id
 
     if reports_info is True:
         work['reported'] = work_db.reported
@@ -670,7 +672,7 @@ def work_info(work_id, additional_info=False, reports_info=False, analysis_info=
     return work
 
 
-def get_works(cat_id, status, mode='all', additional_info=False, reports_info=False, analysis_info=False,
+def get_works(cat_id, status, mode='all', additional_info=False, site_id=False, reports_info=False, analysis_info=False,
               w_payment_info=False, appl_info=False):
     works = dict()
     works_cat = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
@@ -681,8 +683,8 @@ def get_works(cat_id, status, mode='all', additional_info=False, reports_info=Fa
     else:
         works_searched = works_stat
     for w in works_searched:
-        works[w] = work_info(w, additional_info=additional_info, reports_info=reports_info, analysis_info=analysis_info,
-                             w_payment_info=w_payment_info, appl_info=appl_info)
+        works[w] = work_info(w, additional_info=additional_info, site_id=site_id, reports_info=reports_info,
+                             analysis_info=analysis_info, w_payment_info=w_payment_info, appl_info=appl_info)
     return works
 
 
@@ -3363,7 +3365,7 @@ def save_report_dates():
 @app.route('/reports_order/<cat_id>')
 def reports_order(cat_id):
     cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
-    works = get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True)
+    works = get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True)
     participating = 0
     works_unordered = []
     approved_for_2 = len(works)
