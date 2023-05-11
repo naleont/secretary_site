@@ -21,6 +21,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 import pandas as pd
 import random
 import string
+from bs4 import BeautifulSoup
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
@@ -2816,10 +2817,11 @@ def see_reviews(reviewer_id):
             read = True
         else:
             read = False
-        reviews.append({'id': r.review_id,
-                        'text': requests.post(url='https://vernadsky.info/personal_office/'
-                                                  'works_distribution_to_reviewers/?review=' + str(r.review_id)
-                                                  + '&raw=1', headers=mail_data.headers).text, 'read': read})
+
+        soup = BeautifulSoup(requests.post(url='https://vernadsky.info/review/' + str(r.review_id),
+                                           headers=mail_data.headers).text, 'html.parser')
+        text = str(soup).split('<br/><br/>')
+        reviews.append({'id': r.review_id, 'text': text, 'read': read})
     rev_no = len(reviews)
     read = len([r for r in reviews if r['read'] is True])
     if int(reviewer_id) in [r.reviewer_id for r in ReadingReviews.query.all()]:

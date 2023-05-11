@@ -24,7 +24,7 @@
         <table>
             <tr>
                 <td valign="middle">
-                    <textarea cols="100" rows="5" name="text">{% if comment %}{{ comment }}{% endif %}</textarea>
+                    <textarea cols="100" rows="3" name="text">{% if comment %}{{ comment }}{% endif %}</textarea>
                 </td>
                 <td valign="middle">
                     <input class="button" type="submit" value="Сохранить">
@@ -51,7 +51,9 @@
         </td>
     </tr>
 </table>
-{{ review['text'] }}<br>
+{% for line in review['text'] %}
+{{ line }}<br>
+{% endfor %}
 
 {% endfor %}
 
