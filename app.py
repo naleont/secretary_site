@@ -1015,6 +1015,11 @@ def statement_info(payment_list):
                 else:
                     payed = fee
                 remainder -= payed
+        if payment.payment_id in [p.payment_id for p in PaymentTypes.query.all()]:
+            payment_type = PaymentTypes.query.filter(PaymentTypes.payment_id == payment.payment_id)\
+                .first().payment_type
+        else:
+            payment_type = None
         remainder = str(int(remainder))
         date = datetime.datetime.strftime(payment.date, '%d.%m.%Y')
         if payment.debit % 1 == 0:
@@ -1024,7 +1029,7 @@ def statement_info(payment_list):
         pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
                'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
                'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment,
-               'remainder': remainder}
+               'remainder': remainder, 'payment_type': payment_type}
         statement.append(pay)
     return statement
 
@@ -4468,15 +4473,44 @@ def manage_payments(length, page):
                            length=length, link='manage_payments')
 
 
-@app.route('/id_payments', defaults={'length': 30, 'page': 1})
-@app.route('/id_payments/<length>/<page>')
-def id_payments(length, page):
+@app.route('/payment_types', defaults={'length': 30, 'page': 1})
+@app.route('/payment_types/<length>/<page>')
+def payment_types(length, page):
     payments = [p.payment_id for p in BankStatement.query
     .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
-    # link = request.url.lstrip(request.url_root)
-    # re.sub(r'[\/\d*]*', '', link)
+    return render_template('participants_and_payment/payment_types.html', statement=statement, pages=n, page=page,
+                           length=length, link='payment_types')
+
+
+@app.route('/set_payment_types', methods=['POST'])
+def set_payment_types():
+    for payment in [p.payment_id for p in BankStatement.query.all()]:
+        if 'payment_type/' + str(payment) in request.form.keys():
+            p_type = request.form['payment_type/' + str(payment)]
+            dict_type = {'payment_id': payment, 'payment_type': p_type}
+            if PaymentTypes(dict_type['payment_id'], dict_type['payment_type']) not in PaymentTypes.query.all():
+                if dict_type['payment_id'] in [p.payment_id for p in PaymentTypes.query.all()]:
+                    db.session.query(PaymentTypes).filter(PaymentTypes.payment_id == dict_type['payment_id'])\
+                        .update({PaymentTypes.payment_type: dict_type['payment_type']})
+                    db.session.commit()
+                else:
+                    p = PaymentTypes(dict_type['payment_id'], dict_type['payment_type'])
+                    db.session.add(p)
+                    db.session.commit()
+    return redirect(url_for('.payment_types'))
+
+
+@app.route('/id_payments', defaults={'length': 30, 'page': 1})
+@app.route('/id_payments/<length>/<page>')
+def id_payments(length, page):
+    payments = [p.payment_id for p in BankStatement.query
+    .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
+    .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
+    .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+    n, data = make_pages(length, payments, page)
+    statement = statement_info(data)
     return render_template('participants_and_payment/id_payments.html', statement=statement, pages=n, page=page,
                            length=length, link='id_payments')
 

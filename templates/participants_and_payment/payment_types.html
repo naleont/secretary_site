@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Платежи</h2>
+
+{% include 'include/iterate_pages.html' %}
+
+<form action="/set_payment_types" method="POST">
+  <fieldset>
+    <input class="button" type="submit" value="Сохранить">
+    <table frame="void" border="2px" bordercolor="#4962A4" width="100%">
+      <tr>
+        <td align="center"><b>
+
+        </b></td>
+        <td align="center"><b>
+          Дата
+        </b></td>
+        <td align="center"><b>
+          Сумма
+        </b></td>
+        <td align="center"><b>
+          Комментарий
+        </b></td>
+        <td align="center"><b>
+          Тип
+        </b></td>
+      </tr>
+      {% for payment in statement %}
+
+      <tr>
+        <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
+          {{ payment['payment_id'] }}
+        </a></td>
+        <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
+          {{ payment['date'] }}
+        </a></td>
+        <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
+          {{ payment['debit'] }} р.
+        </a></td>
+        <td><a href="/set_payee/{{ payment['payment_id'] }}">
+          {{ payment['comment'] }}
+        </a></td>
+        <td>
+          <select name="payment_type/{{ payment['payment_id'] }}">
+              <option class="container-fluid bg-2" value="None">Выберите тип</option>
+              <option class="container-fluid bg-2" selected="true" {% if payment['payment_type'] == 'Чтения Вернадского' %}
+                      selected="true" {% endif %} value="Чтения Вернадского">Чтения Вернадского</option>
+              <option class="container-fluid bg-2" {% if payment['payment_type'] == 'Целевой взнос' %}
+                      selected="true" {% endif %} value="Целевой взнос">Целевой взнос</option>
+              <option class="container-fluid bg-2" {% if payment['payment_type'] == 'Я - Исследователь' %}
+                      selected="true" {% endif %} value="Я - Исследователь">Я - Исследователь</option>
+              <option class="container-fluid bg-2" {% if payment['payment_type'] == 'МИШ' %}
+                      selected="true" {% endif %} value="МИШ">МИШ</option>
+          </select>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <input class="button" type="submit" value="Сохранить">
+  </fieldset>
+</form>
+
+
+
+
+{% endblock %}

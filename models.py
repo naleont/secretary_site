@@ -715,6 +715,18 @@ class PaymentRegistration(db.Model):
         self.for_work = for_work
 
 
+class PaymentTypes(db.Model):
+    __tablename__ = 'payment_types'
+    __table_args__ = (PrimaryKeyConstraint('payment_id'),)
+
+    payment_id = db.Column('payment_id', db.Integer, ForeignKey('bank_statement.payment_id'))
+    payment_type = db.Column('payment_type', db.Text, default='Чтения Вернадского')
+
+    def __init__(self, payment_id, payment_type):
+        self.payment_id = payment_id
+        self.payment_type = payment_type
+
+
 class OrganisingCommittee(db.Model):
     __tablename__ = 'organising_committee'
 
