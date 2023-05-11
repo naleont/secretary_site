@@ -3974,6 +3974,23 @@ def delete_participated_work(work_id):
     return redirect(url_for('.works_participated'))
 
 
+@app.route('/online_participants')
+def online_participants():
+    wks = [w.work_id for w in AppliedForOnline.query.all()]
+    works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    for work in works:
+        work['link_name'] = work['work_name'].strip('?')
+    return render_template('online_reports/online_participants.html', works=works)
+
+
+@app.route('/delete_online_participant/<work_id>')
+def delete_online_participant(work_id):
+    to_del = db.session.query(AppliedForOnline).filter(AppliedForOnline.work_id == int(work_id)).first()
+    db.session.delete(to_del)
+    db.session.commit()
+    return redirect(url_for('.online_participants'))
+
+
 @app.route('/discount_and_participation_mode/<part_id>')
 def discount_and_participation_mode(part_id):
     if len(part_id) == 5:
