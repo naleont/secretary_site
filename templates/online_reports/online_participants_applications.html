@@ -33,7 +33,12 @@
         </b></td>
     </tr>
     {% for work in works %}
-    <tr>
+    <tr
+    {% if work['appl_no'] != False and work['included'] == True and work['arrived'] == True %}
+        bgcolor="#C6E0B4"
+    {% else %}
+        bgcolor="#F7EEC4"
+    {% endif %}>
         <td align="сenter">
             {{ work['organisation_id'] }}
         </td>

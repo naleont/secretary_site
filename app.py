@@ -683,9 +683,18 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()
             work['appl_no'] = appl_db.appl_no
             work['arrived'] = appl_db.arrived
+            work['included'] = True
         else:
             work['appl_no'] = False
             work['arrived'] = False
+            work['included'] = False
+
+            if not work['organisation_id']:
+                work['organisation_id'] = org_db.organisation_id
+            if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
+                work['appl_no'] = OrganisationApplication.query\
+                    .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().appl_no
+                work['included'] = False
 
     return work
 
@@ -2623,6 +2632,9 @@ def analysis_form(work_id, internal):
                                rev_comment=rev_comment, internal=None)
     else:
         work = {'work_id': int(work_id)}
+        soup = BeautifulSoup(requests.post(url='https://vernadsky.info/review/' + str(work['work_id']),
+                                           headers=mail_data.headers).text, 'html.parser')
+        text = str(soup).split('<br/><br/>')
         rk, analysis = get_analysis(work_id, 'internal')
         if int(work_id) in [r.review_id for r in InternalReviewComments.query.all()]:
             rev_comment = InternalReviewComments.query.filter(InternalReviewComments.review_id == int(work_id)) \
@@ -2630,7 +2642,7 @@ def analysis_form(work_id, internal):
         else:
             rev_comment = ''
         return render_template('/rev_analysis/analysis_form.html', criteria=criteria, work=work, internal=internal,
-                               analysis=analysis, rev_comment=rev_comment)
+                               analysis=analysis, rev_comment=rev_comment, text=text)
 
 
 @app.route('/write_analysis/<internal>', methods=['POST'])
@@ -3202,59 +3214,90 @@ def many_applications():
     return redirect(url_for('.applications_2_tour'))
 
 
-# @app.route('/button_applications')
-# def button_applications():
-#     response = json.loads(requests.post(url="https://vernadsky.info/personal_office/requests_2/?report=21",
-#                                         headers=mail_data.headers).text)
-#     works_applied = []
-#     participants = []
-#     for n in response:
-#         works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
-#         works_applied.extend(works)
-#         part_s = [{'id': int(p['id']), 'appl': int(n['id']), 'last_name': p['last_name'],
-#                    'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
-#                    'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
-#         participants.extend(part_s)
-#         for participant in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(n['id'])).all():
-#             if participant.participant_id not in [p['id'] for p in participants]:
-#                 part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
-#                                                                            participant.participant_id).first()
-#                 db.session.delete(part_to_del)
-#                 db.session.commit()
-#     for appl in set(a.appl_id for a in ParticipantsApplied.query.all()):
-#         if appl not in [a['appl'] for a in participants]:
-#             ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).delete()
-#             db.session.commit()
-#     for work in works_applied:
-#         if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
-#             db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
-#                                                        ).update({Applications2Tour.appl_no: work['appl'],
-#                                                                  Applications2Tour.arrived: work['arrived']})
-#             db.session.commit()
-#         else:
-#             if work['work'] in [wo.work_id for wo in Works.query.all()]:
-#                 wo = Works.query.filter(Works.work_id == work['work']).first().work_id
-#                 appl = Applications2Tour(wo, work['appl'], False)
-#                 db.session.add(appl)
-#             db.session.commit()
-#     for participant in participants:
-#         if participant['id'] in [part.participant_id for part in ParticipantsApplied.query.all()]:
-#             db.session.query(ParticipantsApplied
-#                              ).filter(ParticipantsApplied.participant_id == participant['id']
-#                                       ).update({ParticipantsApplied.appl_id: participant['appl'],
-#                                                 ParticipantsApplied.last_name: participant['last_name'],
-#                                                 ParticipantsApplied.first_name: participant['first_name'],
-#                                                 ParticipantsApplied.patronymic_name: participant['patronymic_name'],
-#                                                 ParticipantsApplied.participant_class: participant['participant_class'],
-#                                                 ParticipantsApplied.role: participant['role']})
-#             db.session.commit()
-#         else:
-#             part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
-#                                        participant['first_name'], participant['patronymic_name'],
-#                                        participant['participant_class'], participant['role'], None)
-#             db.session.add(part)
-#             db.session.commit()
-#     return redirect(url_for('.applications_2_tour'))
+@app.route('/button_applications')
+def button_applications():
+    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
+                                        headers=mail_data.headers).text)
+    works_applied = []
+    participants = []
+    organisations = []
+    for n in response:
+        organisation = {'organisation_id': int(n['organization']['id']), 'name': n['organization']['name'],
+                        'city': n['organization']['city'], 'country': n['organization']['country'],
+                        'appl_no': int(n['id'])}
+        organisations.append(organisation)
+        works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
+        works_applied.extend(works)
+        part_s = [{'id': int(p['id']), 'appl': int(n['id']), 'last_name': p['last_name'],
+                   'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
+                   'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
+        participants.extend(part_s)
+        for participant in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(n['id'])).all():
+            if participant.participant_id not in [p['id'] for p in participants]:
+                part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
+                                                                           participant.participant_id).first()
+                db.session.delete(part_to_del)
+                db.session.commit()
+    for appl in set(a.appl_id for a in ParticipantsApplied.query.all()):
+        if appl not in [a['appl'] for a in participants]:
+            ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).delete()
+            db.session.commit()
+    for work in works_applied:
+        if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
+            db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
+                                                       ).update({Applications2Tour.appl_no: work['appl'],
+                                                                 Applications2Tour.arrived: work['arrived']})
+            db.session.commit()
+        else:
+            if work['work'] in [wo.work_id for wo in Works.query.all()]:
+                wo = Works.query.filter(Works.work_id == work['work']).first().work_id
+                appl = Applications2Tour(wo, work['appl'], False)
+                db.session.add(appl)
+            db.session.commit()
+    for participant in participants:
+        if participant['id'] in [part.participant_id for part in ParticipantsApplied.query.all()]:
+            db.session.query(ParticipantsApplied
+                             ).filter(ParticipantsApplied.participant_id == participant['id']
+                                      ).update({ParticipantsApplied.appl_id: participant['appl'],
+                                                ParticipantsApplied.last_name: participant['last_name'],
+                                                ParticipantsApplied.first_name: participant['first_name'],
+                                                ParticipantsApplied.patronymic_name: participant['patronymic_name'],
+                                                ParticipantsApplied.participant_class: participant['participant_class'],
+                                                ParticipantsApplied.role: participant['role']})
+            db.session.commit()
+        else:
+            part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
+                                       participant['first_name'], participant['patronymic_name'],
+                                       participant['participant_class'], participant['role'], None)
+            db.session.add(part)
+            db.session.commit()
+
+    for organisation in organisations:
+        if Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
+                         organisation['country']) not in Organisations.query.all():
+            if organisation['organisation_id'] in [o.organisation_id for o in Organisations.query.all()]:
+                db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id'])\
+                    .update({Organisations.name: organisation['name'],
+                             Organisations.city: organisation['city'],
+                             Organisations.country: organisation['country']})
+                db.session.commit()
+            else:
+                o = Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
+                         organisation['country'])
+                db.session.add(o)
+                db.session.commit()
+        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'])\
+                not in OrganisationApplication.query.all():
+            if organisation['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
+                db.session.query(OrganisationApplication)\
+                    .filter(OrganisationApplication.organisation_id == organisation['organisation_id']) \
+                    .update({OrganisationApplication.appl_no: organisation['appl_no']})
+                db.session.commit()
+            else:
+                o = OrganisationApplication(organisation['organisation_id'], organisation['appl_no'])
+                db.session.add(o)
+                db.session.commit()
+    return redirect(url_for('.applications_2_tour'))
 
 
 @app.route('/top_100')
@@ -4225,33 +4268,71 @@ def online_participants_applications(length, page):
     n, data = make_pages(length, works, page)
     works = [work_info(w, organisation_info=True, appl_info=True) for w in data]
     # works = sorted(works_applied, key=lambda x: x['organisation_id'])
-    for work in works:
-        work['included'] = False
     return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
                            length=length, link='online_participants_applications')
 
 
-# @app.route('/renew_applications/<q_type>/<q_id>')
-# def renew_applications(q_type, q_id):
-#     q_id = int(q_id)
-#     response = json.loads(requests.post(url="https://vernadsky.info/personal_office/requests_2/?report=20&year=2023",
-#                                         headers=mail_data.headers).text)
-#     if q_type == 'work':
-#         for a in response:
-#             for w in a['works']:
-#                 if int(w['number']) == q_id:
-#                     application = a
-#     elif q_type == 'appl':
-#         for a in response:
-#             if int(a['id']) == q_id:
-#                 application = a
-#     else:
-#         for a in response:
-#             if int(a['organization']['id']) == q_id:
-#                 application = a
-#
-#     print(applcation)
-#     return redirect('.online_participants_applications')
+@app.route('/renew_applications/<q_type>/<q_id>')
+def renew_applications(q_type, q_id):
+    q_id = int(q_id)
+    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
+                                        headers=mail_data.headers).text)
+    if q_type == 'work':
+        for a in response:
+            for w in a['works']:
+                if int(w['number']) == q_id:
+                    application = a
+                    break
+                else:
+                    application = None
+            if application:
+                break
+    elif q_type == 'appl':
+        for a in response:
+            if int(a['id']) == q_id:
+                application = a
+                break
+            else:
+                application = None
+    elif q_type == 'org':
+        for a in response:
+            if int(a['organization']['id']) == q_id:
+                application = a
+                break
+            else:
+                application = None
+    else:
+        application = None
+
+    if application:
+        appl_no = int(application['id'])
+        organisation_id = int(application['organization']['id'])
+        works = [int(w['number']) for w in application['works']]
+        arrival = bool(application['arrival'])
+        if OrganisationApplication(organisation_id, appl_no) not in OrganisationApplication.query.all():
+            if organisation_id in [o.organisation_id for o in OrganisationApplication.query.all()]:
+                db.session.query(OrganisationApplication)\
+                    .filter(OrganisationApplication.organisation_id == organisation_id)\
+                    .update({OrganisationApplication.appl_no: appl_no})
+                db.session.commit()
+            else:
+                o = OrganisationApplication(organisation_id, appl_no)
+                db.session.add(o)
+                db.session.commit()
+        for work_id in works:
+            if Applications2Tour(work_id, appl_no, arrival) not in Applications2Tour.query.all():
+                if work_id in [w.work_id for w in Applications2Tour.query.all()]:
+                    db.session.query(Applications2Tour)\
+                        .filter(Applications2Tour.work_id == work_id)\
+                        .update({Applications2Tour.appl_no: appl_no,
+                                 Applications2Tour.arrived: arrival})
+                    db.session.commit()
+                else:
+                    a = Applications2Tour(work_id, appl_no, arrival)
+                    db.session.add(a)
+                    db.session.commit()
+
+    return redirect(url_for('.online_participants_applications'))
 
 
 @app.route('/renew_organisations', defaults={'which': 'all'})
@@ -4299,6 +4380,7 @@ def renew_organisations(which):
                 a = WorkOrganisations(organisation['work_id'], organisation['organisation_id'])
                 db.session.add(a)
                 db.session.commit()
+
     return redirect(url_for('.online_participants_applications'))
 
 

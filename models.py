@@ -287,6 +287,18 @@ class WorkOrganisations(db.Model):
         self.organisation_id = organisation_id
 
 
+class OrganisationApplication(db.Model):
+    __tablename__ = 'organisation_application'
+    __table_args__ = (PrimaryKeyConstraint('organisation_id'),)
+
+    organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('organisations.organisation_id'), unique=False)
+    appl_no = db.Column('appl_no', db.Integer, ForeignKey('categories.cat_id'))
+
+    def __init__(self, organisation_id, appl_no):
+        self.organisation_id = organisation_id
+        self.appl_no = appl_no
+
+
 class WorkCategories(db.Model):
     __tablename__ = 'work_cats'
     __table_args__ = (PrimaryKeyConstraint('cat_id', 'work_id'),)
