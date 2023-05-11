@@ -564,7 +564,7 @@ def all_news():
 
 
 def work_info(work_id, additional_info=False, site_id=False, reports_info=False, analysis_info=False,
-              w_payment_info=False, appl_info=False, cat_info=False):
+              w_payment_info=False, appl_info=False, cat_info=False, organisation_info=False):
     work_id = int(work_id)
     work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
     work = dict()
@@ -596,6 +596,15 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['cat_name'] = Categories.query.filter(Categories.cat_id == work['cat_id']).first().cat_name
         else:
             work['cat_name'] = None
+
+    if organisation_info is True:
+        org_db = db.session.query(Organisations)\
+            .join(WorkOrganisations, Organisations.organisation_id == WorkOrganisations.organisation_id)\
+            .filter(WorkOrganisations.work_id == work_id).first()
+        work['organisation_id'] = org_db.organisation_id
+        work['organisation_name'] = org_db.name
+        work['organisation_city'] = org_db.city
+        work['organisation_country'] = org_db.country
 
     if site_id is True:
         work['site_id'] = work_db.work_site_id
@@ -2992,6 +3001,148 @@ def many_works():
     return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
 
 
+@app.route('/button_works', defaults={'cat_id': 'all'})
+@app.route('/button_works/<cat_id>')
+def button_works(cat_id):
+    url = request.referrer.lstrip(request.url_root).split('/')
+
+    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
+                                        headers=mail_data.headers).text)
+    works_added = 0
+    works_edited = 0
+    if cat_id == 'all':
+        cats = [c.cat_site_id for c in Categories.query.filter(Categories.year == curr_year).all()]
+    else:
+        cats = [Categories.query.filter(Categories.cat_id == int(cat_id)).first().cat_site_id]
+
+    for n in response:
+        if int(n['section']['id']) in cats:
+            edited = False
+            work_site_id = int(n['id'])
+            work_id = int(n['number'])
+            email = n['contacts']['email']
+            tel = n['contacts']['phone']
+            work_name = n['title']
+            cat = n['section']['id']
+            country = n['organization']['country']
+            region = n['organization']['region']
+            city = n['organization']['city']
+            country_db = db.session.query(Cities)
+            if country in [c.country for c in country_db.all()]:
+                region_db = country_db.filter(Cities.country == country)
+                if region in [r.region for r in region_db.all()]:
+                    city_db = region_db.filter(Cities.region == region)
+                    if city in [c.city for c in city_db.all()]:
+                        timeshift = city_db.filter(Cities.city == city).first().msk_time_shift
+                    else:
+                        timeshift = None
+                else:
+                    timeshift = None
+            else:
+                timeshift = None
+
+            if cat == 0:
+                cat_id = None
+            else:
+                cat_id = Categories.query.filter(Categories.cat_site_id == cat).first().cat_id
+            authors = n['authors']
+            author_1_name = authors[0]['name']
+            author_1_age = authors[0]['age']
+            author_1_class = authors[0]['class']
+            if len(authors) > 1:
+                author_2_name = authors[1]['name']
+                author_2_age = authors[1]['age']
+                author_2_class = authors[1]['class']
+            else:
+                author_2_name = None
+                author_2_age = None
+                author_2_class = None
+            if len(authors) > 2:
+                author_3_name = authors[2]['name']
+                author_3_age = authors[2]['age']
+                author_3_class = authors[2]['class']
+            else:
+                author_3_name = None
+                author_3_age = None
+                author_3_class = None
+            teacher_name = n['teacher']['name']
+            if teacher_name == '':
+                teacher_name = None
+            status_id = int(n['status']['id'])
+            status_name = n['status']['value']
+            reg_tour = n['regional_tour']
+            if work_id in [w.work_id for w in Works.query.all()]:
+                rep = Works.query.filter(Works.work_id == work_id).first().reported
+                d = Works(work_id=work_id, work_name=work_name, work_site_id=work_site_id, email=email, tel=tel,
+                          author_1_name=author_1_name, author_1_age=author_1_age, author_1_class=author_1_class,
+                          author_2_name=author_2_name, author_2_age=author_2_age, author_2_class=author_2_class,
+                          author_3_name=author_3_name, author_3_age=author_3_age, author_3_class=author_3_class,
+                          teacher_name=teacher_name, reg_tour=reg_tour, msk_time_shift=timeshift, reported=rep)
+                if Works.query.filter(Works.work_id == work_id).first() != d:
+                    db.session.query(Works).filter(Works.work_id == work_id).update({Works.work_name: work_name,
+                                                                                     Works.work_site_id: work_site_id,
+                                                                                     Works.email: email, Works.tel: tel,
+                                                                                     Works.author_1_name: author_1_name,
+                                                                                     Works.author_1_age: author_1_age,
+                                                                                     Works.author_1_class: author_1_class,
+                                                                                     Works.author_2_name: author_2_name,
+                                                                                     Works.author_2_age: author_2_age,
+                                                                                     Works.author_2_class: author_2_class,
+                                                                                     Works.author_3_name: author_3_name,
+                                                                                     Works.author_3_age: author_3_age,
+                                                                                     Works.author_3_class: author_3_class,
+                                                                                     Works.teacher_name: teacher_name,
+                                                                                     Works.reg_tour: reg_tour,
+                                                                                     Works.msk_time_shift: timeshift})
+                    edited = True
+                    db.session.commit()
+            else:
+                work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age,
+                                   author_1_class,
+                                   author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class,
+                                   teacher_name, reg_tour, timeshift, None)
+                db.session.add(work_write)
+                works_added += 1
+                db.session.commit()
+            if status_id not in [s.status_id for s in ParticipationStatuses.query.all()]:
+                part_status = ParticipationStatuses(status_id, status_name)
+                db.session.add(part_status)
+                db.session.commit()
+            if work_id in [s.work_id for s in WorkStatuses.query.all()]:
+                db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
+                                                      ).update({WorkStatuses.status_id: status_id})
+                db.session.commit()
+                edited = True
+            else:
+                work_status = WorkStatuses(work_id, status_id)
+                db.session.add(work_status)
+                db.session.commit()
+            if work_id in [w.work_id for w in WorkCategories.query.all()]:
+                if not cat_id:
+                    work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
+                    db.session.delete(work_cat)
+                    db.session.commit()
+                    edited = True
+                else:
+                    db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id
+                                                            ).update({WorkCategories.cat_id: cat_id})
+                    db.session.commit()
+                    edited = True
+            else:
+                if cat_id:
+                    work_cat = WorkCategories(work_id, cat_id)
+                    db.session.add(work_cat)
+                    db.session.commit()
+            if edited:
+                works_edited += 1
+
+    if type(url) == list:
+        errs = 'Обновлено успешно'
+        return redirect(url_for('.category_page', cat_id=url[1]))
+    else:
+        return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
+
+
 @app.route('/many_applications', methods=['POST'])
 def many_applications():
     renew_session()
@@ -3049,6 +3200,61 @@ def many_applications():
     return redirect(url_for('.applications_2_tour'))
 
 
+# @app.route('/button_applications')
+# def button_applications():
+#     response = json.loads(requests.post(url="https://vernadsky.info/personal_office/requests_2/?report=21",
+#                                         headers=mail_data.headers).text)
+#     works_applied = []
+#     participants = []
+#     for n in response:
+#         works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
+#         works_applied.extend(works)
+#         part_s = [{'id': int(p['id']), 'appl': int(n['id']), 'last_name': p['last_name'],
+#                    'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
+#                    'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
+#         participants.extend(part_s)
+#         for participant in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(n['id'])).all():
+#             if participant.participant_id not in [p['id'] for p in participants]:
+#                 part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
+#                                                                            participant.participant_id).first()
+#                 db.session.delete(part_to_del)
+#                 db.session.commit()
+#     for appl in set(a.appl_id for a in ParticipantsApplied.query.all()):
+#         if appl not in [a['appl'] for a in participants]:
+#             ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).delete()
+#             db.session.commit()
+#     for work in works_applied:
+#         if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
+#             db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
+#                                                        ).update({Applications2Tour.appl_no: work['appl'],
+#                                                                  Applications2Tour.arrived: work['arrived']})
+#             db.session.commit()
+#         else:
+#             if work['work'] in [wo.work_id for wo in Works.query.all()]:
+#                 wo = Works.query.filter(Works.work_id == work['work']).first().work_id
+#                 appl = Applications2Tour(wo, work['appl'], False)
+#                 db.session.add(appl)
+#             db.session.commit()
+#     for participant in participants:
+#         if participant['id'] in [part.participant_id for part in ParticipantsApplied.query.all()]:
+#             db.session.query(ParticipantsApplied
+#                              ).filter(ParticipantsApplied.participant_id == participant['id']
+#                                       ).update({ParticipantsApplied.appl_id: participant['appl'],
+#                                                 ParticipantsApplied.last_name: participant['last_name'],
+#                                                 ParticipantsApplied.first_name: participant['first_name'],
+#                                                 ParticipantsApplied.patronymic_name: participant['patronymic_name'],
+#                                                 ParticipantsApplied.participant_class: participant['participant_class'],
+#                                                 ParticipantsApplied.role: participant['role']})
+#             db.session.commit()
+#         else:
+#             part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
+#                                        participant['first_name'], participant['patronymic_name'],
+#                                        participant['participant_class'], participant['role'], None)
+#             db.session.add(part)
+#             db.session.commit()
+#     return redirect(url_for('.applications_2_tour'))
+
+
 @app.route('/top_100')
 def top_100():
     access = check_access(5, request.url.lstrip(request.url_root))
@@ -3061,6 +3267,9 @@ def top_100():
 @app.route('/apply_for_online', defaults={'errs_a': None, 'errs_b': None})
 @app.route('/apply_for_online/<errs_a>/<errs_b>')
 def apply_for_online(errs_a, errs_b):
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     if errs_b == 'a':
         errs_b = None
     elif errs_b is not None:
@@ -3763,6 +3972,9 @@ def download_schedule(cat_id):
 
 @app.route('/category_unions')
 def category_unions():
+    access = check_access(6, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     unions = []
     for u_id in set([u.union_id for u in CategoryUnions.query.filter(CategoryUnions.year == curr_year).all()]):
         cats = [categories_info(c.cat_id)[1] for c in
@@ -3934,6 +4146,9 @@ def searching_participant():
 
 @app.route('/unpayed')
 def unpayed():
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     applied = [work_info(w.work_id, w_payment_info=True, cat_info=True, additional_info=True)
                for w in AppliedForOnline.query.all()
                if w.work_id not in
@@ -3959,6 +4174,9 @@ def download_unpayed():
 
 @app.route('/works_participated')
 def works_participated():
+    access = check_access(5, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     wks = [w.work_id for w in ParticipatedWorks.query.all()]
     works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
     for work in works:
@@ -3976,6 +4194,9 @@ def delete_participated_work(work_id):
 
 @app.route('/online_participants')
 def online_participants():
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     wks = [w.work_id for w in AppliedForOnline.query.all()]
     works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
     for work in works:
@@ -3989,6 +4210,94 @@ def delete_online_participant(work_id):
     db.session.delete(to_del)
     db.session.commit()
     return redirect(url_for('.online_participants'))
+
+
+@app.route('/online_participants_applications', defaults={'length': 30, 'page': 1})
+@app.route('/online_participants_applications/<length>/<page>')
+def online_participants_applications(length, page):
+    access = check_access(3, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
+    wks = [w.work_id for w in AppliedForOnline.query.all()]
+    works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    n, data = make_pages(length, works, page)
+    works = [work_info(w, organisation_info=True, appl_info=True) for w in data]
+    # works = sorted(works_applied, key=lambda x: x['organisation_id'])
+    for work in works:
+        work['included'] = False
+    return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
+                           length=length, link='online_participants_applications')
+
+
+# @app.route('/renew_applications/<q_type>/<q_id>')
+# def renew_applications(q_type, q_id):
+#     q_id = int(q_id)
+#     response = json.loads(requests.post(url="https://vernadsky.info/personal_office/requests_2/?report=20&year=2023",
+#                                         headers=mail_data.headers).text)
+#     if q_type == 'work':
+#         for a in response:
+#             for w in a['works']:
+#                 if int(w['number']) == q_id:
+#                     application = a
+#     elif q_type == 'appl':
+#         for a in response:
+#             if int(a['id']) == q_id:
+#                 application = a
+#     else:
+#         for a in response:
+#             if int(a['organization']['id']) == q_id:
+#                 application = a
+#
+#     print(applcation)
+#     return redirect('.online_participants_applications')
+
+
+@app.route('/renew_organisations', defaults={'which': 'all'})
+@app.route('/renew_organisations/<which>')
+def renew_organisations(which):
+    if which == 'online':
+        wks = [w.work_id for w in AppliedForOnline.query.all()]
+        works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    else:
+        wks = [w.work_id for w in Works.query.all()]
+        works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
+                                        headers=mail_data.headers).text)
+    for w in response:
+        if int(w['number']) in works:
+            organisation = {'work_id': int(w['number']), 'organisation_id': int(w['organization']['id']),
+                            'name': w['organization']['name'], 'city': w['organization']['city'],
+                            'country': w['organization']['country']}
+
+            if organisation['organisation_id'] in [o.organisation_id for o in Organisations.query.all()]:
+                a = Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
+                                  organisation['country'])
+                if Organisations.query.filter(Organisations.organisation_id == organisation['organisation_id'])\
+                        .first() != a:
+                    db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id'])\
+                        .update({Organisations.organisation_id: organisation['organisation_id'],
+                                 Organisations.name: organisation['name'],
+                                 Organisations.city: organisation['city'],
+                                 Organisations.country: organisation['country']})
+                    db.session.commit()
+            else:
+                a = Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
+                                  organisation['country'])
+                db.session.add(a)
+                db.session.commit()
+
+            if organisation['work_id'] in [w.work_id for w in WorkOrganisations.query.all()]:
+                a = WorkOrganisations(organisation['work_id'], organisation['organisation_id'])
+                if WorkOrganisations.query.filter(WorkOrganisations.work_id == organisation['work_id'])\
+                        .first() != a:
+                    db.session.query(WorkOrganisations).filter(WorkOrganisations.work_id == organisation['work_id'])\
+                        .update({WorkOrganisations.organisation_id: organisation['organisation_id']})
+                    db.session.commit()
+            else:
+                a = WorkOrganisations(organisation['work_id'], organisation['organisation_id'])
+                db.session.add(a)
+                db.session.commit()
+    return redirect(url_for('.online_participants_applications'))
 
 
 @app.route('/discount_and_participation_mode/<part_id>')

@@ -2,9 +2,22 @@
 
 {% block content %}
 
-<h2><b>Добавить работы </b>
-    <a target="_blank" href="https://vernadsky.info/personal_office/requests_2/?report=21">
-        (Копировать отсюда)</a></h2>
+<table>
+    <tr>
+        <td>
+            <h2><b>Добавить работы </b>
+                <a target="_blank" href="https://vernadsky.info/personal_office/requests_2/?report=21">
+                    (Копировать отсюда)</a></h2>
+        </td>
+        <td align="right">
+            <a href="/button_works">
+                <button>Загрузить по кнопке</button>
+            </a>
+        </td>
+    </tr>
+</table>
+
+
 <p>Работ этого года добавлено: {{ works_no }}</p>
 <form action="/many_works" method = 'POST'>
     <fieldset>

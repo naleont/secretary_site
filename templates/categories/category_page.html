@@ -10,7 +10,7 @@
 
 <table width="100%">
     <tr>
-        <td rowspan="2">
+        <td rowspan="3">
             {{ category['contest'] }}<br>
             Направление: {{ category['direction'] }}<br>
             {% if category['tg_channel'] %}
@@ -37,13 +37,18 @@
         {% if session['type'] in ['admin', 'org', 'manager']
         or (session['supervisor'] == True and category['id'] in session['cat_id'])
         or (session['secretary'] == True and category['id'] in session['cat_id']) %}
-            <td width="auto"><a href="/analysis_works/{{ category['id'] }}">
-                <button {% if need_analysis == True %} class="red-button" {% else %} {% endif %}>Анализ рецензий</button>
+            <td width="auto" valign="middle"><a href="/button_works/{{ category['id'] }}">
+                <button>Обновить работы секции</button>
             </a></td>
     </tr>
     <tr>
-            <td width="auto"><a href="/reports_order/{{ category['id'] }}">
+            <td width="auto" valign="middle"><a href="/reports_order/{{ category['id'] }}">
                 <button>Порядок выступлений</button>
+            </a></td>
+    </tr>
+    <tr>
+            <td width="auto" valign="middle"><a href="/analysis_works/{{ category['id'] }}">
+                <button {% if need_analysis == True %} class="red-button" {% else %} {% endif %}>Анализ рецензий</button>
             </a></td>
         {% endif %}
     </tr>

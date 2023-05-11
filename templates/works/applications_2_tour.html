@@ -2,9 +2,21 @@
 
 {% block content %}
 
-<h2><b>Добавить заявки </b>
-    <a target="_blank" href="https://vernadsky.info/personal_office/requests_2/?report=20&year={{ year }}">
-        (Копировать отсюда)</a></h2>
+<table>
+    <tr>
+        <td>
+            <h2><b>Добавить заявки </b>
+                <a target="_blank" href="https://vernadsky.info/personal_office/requests_2/?report=20&year={{ year }}">
+                    (Копировать отсюда)</a></h2>
+        </td>
+        <td align="right">
+            <a href="">
+                <button>Загрузить по кнопке</button>
+            </a>
+        </td>
+    </tr>
+</table>
+
 <form action="/many_applications" method = 'POST'>
     <fieldset>
         <textarea cols="120" rows="10" name="text"></textarea><br><br>

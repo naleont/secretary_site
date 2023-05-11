@@ -260,6 +260,33 @@ class Works(db.Model):
         self.reported = reported
 
 
+class Organisations(db.Model):
+    __tablename__ = 'organisations'
+
+    organisation_id = db.Column('organisation_id', db.Integer, primary_key=True)
+    name = db.Column('name', db.Text)
+    city = db.Column('city', db.Text)
+    country = db.Column('country', db.Text)
+
+    def __init__(self, organisation_id, name, city, country):
+        self.organisation_id = organisation_id
+        self.name = name
+        self.city = city
+        self.country = country
+
+
+class WorkOrganisations(db.Model):
+    __tablename__ = 'work_organisations'
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'organisation_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('categories.cat_id'))
+    organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('organisations.organisation_id'), unique=False)
+
+    def __init__(self, work_id, organisation_id):
+        self.work_id = work_id
+        self.organisation_id = organisation_id
+
+
 class WorkCategories(db.Model):
     __tablename__ = 'work_cats'
     __table_args__ = (PrimaryKeyConstraint('cat_id', 'work_id'),)
