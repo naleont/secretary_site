@@ -18,6 +18,11 @@
                 <td align="center">
                     <b>Название</b>
                 </td>
+                {% if union == True %}
+                <td align="center" width="9%"><b>
+                    Секция
+                </b></td>
+                {% endif %}
                 <td align="center">
                     <b>MSK</b>
                 </td>
@@ -40,6 +45,11 @@
                     <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
                         {{ work['work_name'] }}</a>
                 </td>
+                {% if union == True %}
+                <td>
+                    {{ work['cat_short'] }}
+                </td>
+                {% endif %}
                 <td align="center">
                     {% if work['timeshift'] != None %}
                     {{ work['timeshift'] }}
