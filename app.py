@@ -3478,8 +3478,6 @@ def reports_order(cat_id):
         if [w['report_order'] for w in day['works']]:
             day['max_order'] = max([w['report_order'] for w in day['works']])
 
-    print(c_dates)
-    print(works_unordered)
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
                            participating=participating, c_dates=c_dates, approved_for_2=approved_for_2,
                            categories=categories, union=union)
