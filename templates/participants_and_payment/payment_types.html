@@ -29,7 +29,12 @@
       </tr>
       {% for payment in statement %}
 
-      <tr>
+      <tr
+        {% if payment['remainder'] == '0' %}
+        bgcolor="#C6E0B4"
+        {% elif payment['remainder'] != payment['debit'] %}
+        bgcolor="#FFEE91"
+        {% endif %}>
         <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
           {{ payment['payment_id'] }}
         </a></td>
