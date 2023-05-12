@@ -599,13 +599,19 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['cat_name'] = None
 
     if organisation_info is True:
-        org_db = db.session.query(Organisations)\
-            .join(WorkOrganisations, Organisations.organisation_id == WorkOrganisations.organisation_id)\
-            .filter(WorkOrganisations.work_id == work_id).first()
-        work['organisation_id'] = org_db.organisation_id
-        work['organisation_name'] = org_db.name
-        work['organisation_city'] = org_db.city
-        work['organisation_country'] = org_db.country
+        if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
+            org_db = db.session.query(Organisations)\
+                .join(WorkOrganisations, Organisations.organisation_id == WorkOrganisations.organisation_id)\
+                .filter(WorkOrganisations.work_id == work_id).first()
+            work['organisation_id'] = org_db.organisation_id
+            work['organisation_name'] = org_db.name
+            work['organisation_city'] = org_db.city
+            work['organisation_country'] = org_db.country
+        else:
+            work['organisation_id'] = None
+            work['organisation_name'] = None
+            work['organisation_city'] = None
+            work['organisation_country'] = None
 
     if site_id is True:
         work['site_id'] = work_db.work_site_id
@@ -689,8 +695,10 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['arrived'] = False
             work['included'] = False
 
-            if not work['organisation_id']:
-                work['organisation_id'] = org_db.organisation_id
+            if 'organisation_id' not in work.keys():
+                if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
+                    work['organisation_id'] = WorkOrganisations.query.filter(WorkOrganisations.work_id == work_id)\
+                        .first().organisation_id
             if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
                 work['appl_no'] = OrganisationApplication.query\
                     .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().appl_no
@@ -4456,10 +4464,15 @@ def add_bank_statement():
                                         organisation=payment['plat_name'], tin=payment['plat_inn'],
                                         bic=payment['plat_bic'],
                                         bank_name=payment['plat_bank'], account=payment['plat_acc'],
-                                        payment_comment=payment['text70'])
+                                        payment_comment=payment['text70'], alternative=None, alternative_comment=None)
                     db.session.add(pay)
                     db.session.commit()
     return redirect(url_for('.load_statement', success=True))
+
+
+@app.route('/alternative_payments')
+def alternative_payments():
+    return render_template('participants_and_payment/alternative_payments.html')
 
 
 @app.route('/manage_payments', defaults={'length': 30, 'page': 1})

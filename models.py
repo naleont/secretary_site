@@ -687,8 +687,11 @@ class BankStatement(db.Model):
     bank_name = db.Column('bank_name', db.Text)
     account = db.Column('account', db.Text)
     payment_comment = db.Column('payment_comment', db.Text)
+    alternative = db.Column('alternative', db.Text)
+    alternative_comment = db.Column('alternative_comment', db.Text)
 
-    def __init__(self, date, order_id, debit, credit, organisation, tin, bic, bank_name, account, payment_comment):
+    def __init__(self, date, order_id, debit, credit, organisation, tin, bic, bank_name, account, payment_comment,
+                 alternative, alternative_comment):
         self.date = date
         self.order_id = order_id
         self.debit = debit
@@ -699,6 +702,8 @@ class BankStatement(db.Model):
         self.bank_name = bank_name
         self.account = account
         self.payment_comment = payment_comment
+        self.alternative = alternative
+        self.alternative_comment = alternative_comment
 
 
 class PaymentRegistration(db.Model):
