@@ -58,7 +58,7 @@ year
         {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
         </td>
         <td rowspan="4" align="right" width="30%">
-            <a href="/edit_user"><button class="blue">Редактировать основную информацию</button></a>
+            <a href="/edit_user/{{ session['user_id'] }}"><button class="blue">Редактировать основную информацию</button></a>
         </td>
     </tr>
     <tr>

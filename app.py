@@ -198,6 +198,8 @@ def find_user(user_got):
 
 def personal_info_form():
     info = dict()
+    if 'user_id' in request.form.keys():
+        info['user_id'] = request.form['user_id']
     info['email'] = request.form['email']
     tel_n = request.form['tel']
     info['tel'] = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in tel_n if n not in tel_unneeded]))
@@ -279,15 +281,21 @@ def get_profile_info(user):
 
 # Запись исправленной информации пользователя в БД
 def write_user(user_info):
-    if 'user_id' in session.keys():
+    if 'user_id' not in user_info.keys():
+        user_id = int(session['user_id'])
+    elif 'user_id' in session.keys():
+        user_id = int(user_info['user_id'])
+    else:
+        user_id = None
+    if user_id:
         # Загрузка информации пользователя из БД
-        user_db = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
+        user_db = db.session.query(Users).filter(Users.user_id == user_id).first()
         # Проверка существования другого пользователя с новым введенным email
         same_email = [user.user_id for user in db.session.query(Users).filter(Users.email == user_info['email']).all()]
         if not same_email:
             user_db.email = user_info['email']
-        elif session['user_id'] in same_email:
-            if same_email.remove(session['user_id']) is None:
+        elif user_id in same_email:
+            if not same_email.remove(user_id):
                 user_db.email = user_info['email']
         else:
             return 'email'
@@ -295,13 +303,13 @@ def write_user(user_info):
         same_tel = [user.user_id for user in db.session.query(Users).filter(Users.email == user_info['tel']).all()]
         if not same_tel:
             user_db.tel = user_info['tel']
-        elif session['user_id'] in same_tel:
-            if same_tel.remove(session['user_id']) is None:
+        elif user_id in same_tel:
+            if same_tel.remove(user_id) is None:
                 user_db.tel = user_info['tel']
             else:
                 return 'tel'
 
-        db.session.query(Users).filter(Users.user_id == session['user_id']).update(
+        db.session.query(Users).filter(Users.user_id == user_id).update(
             {Users.last_name: user_info['last_name'], Users.first_name: user_info['first_name'],
              Users.patronymic: user_info['patronymic']})
     else:
@@ -1288,6 +1296,8 @@ def logging(url):
         user.last_login = datetime.datetime.now()
         db.session.commit()
         renew_session()
+        if u == 'login':
+            u = ''
         return redirect(request.url_root + u)
 
 
@@ -1340,28 +1350,31 @@ def profile_info(message):
 
 
 # Форма изменения информации пользователя (email, телефон, ФИО, дата рождения)
-@app.route('/edit_user', defaults={'message': None})
-@app.route('/edit_user/<message>')
-def edit_user(message):
+@app.route('/edit_user/<user_id>', defaults={'message': None})
+@app.route('/edit_user/<user_id>/<message>')
+def edit_user(user_id, message):
     access = check_access(2, request.url.lstrip(request.url_root))
     if access is not True:
         return access
     # Получение информации текущего пользователя из БД
-    user = get_user_info(session['user_id'])
-    renew_session()
+    user = get_user_info(int(user_id))
+    url = request.referrer.lstrip(request.url_root).split('/')
     # Вывод формы изменения информации пользователя с предзаполненными из БД полями
-    return render_template('registration, logging and applications/edit_user.html', user=user, message=message)
+    return render_template('registration, logging and applications/edit_user.html', user=user, message=message, url=url)
 
 
 # Обработка информации из формы изменения информации пользователя
-@app.route('/edited_user', methods=['POST'])
-def edited_user():
+@app.route('/edited_user/<url>', methods=['POST'])
+def edited_user(url):
     # Получение новых данных пользователя из формы и запись их в БД
     user_info = personal_info_form()
     message = write_user(user_info)
     if message == 'email' or message == 'tel':
-        return redirect(url_for('.edit_user', message=message))
-    return redirect(url_for('.profile_info'))
+        return redirect(url_for('.edit_user', user_id=user_info['user_id'], message=message))
+    if url == 'rofile_info':
+        return redirect(url_for('.profile_info'))
+    else:
+        return redirect(url_for('.users_list'))
 
 
 # Форма редактирования информации профиля

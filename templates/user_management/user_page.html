@@ -5,12 +5,18 @@
 {% block content %}
 <table width="100%">
     <tr>
-        <td>
+        <td rowspan="2">
             <h3>{{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}</h3>
         </td>
         <td align="right" valign="bottom">
             <a href="/change_user_password/{{ user['user_id'] }}"><button class="blue" type="button">
                 Сменить пароль</button></a>
+        </td>
+    </tr>
+    <tr>
+        <td align="right" valign="bottom">
+            <a href="/edit_user/{{ user['user_id'] }}"><button class="blue" type="button">
+                Редактировать пользователя</button></a>
         </td>
     </tr>
 </table>

@@ -13,7 +13,7 @@
 </div>
 
 <legend><h2><b>Информация профиля</b></h2></legend>
-<form action="/edited_user" method = 'POST'>
+<form action="/edited_user/{{ url }}" method = 'POST'>
     <fieldset>
             <table width="800px">
                 <tr><td border-spacing="10px">
@@ -36,6 +36,7 @@
                            pattern="[А-ЯЁ][а-яё]+" required><br><br>
             </td></tr>
             <tr><td colspan="2">
+                <input type="hidden" name="user_id" value="{{ user['user_id'] }}">
                 <input class="button" type="submit" value="Сохранить">
             </td></tr>
         </table>
