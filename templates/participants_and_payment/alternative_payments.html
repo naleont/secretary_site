@@ -3,5 +3,128 @@
 {% block content %}
 
 <h2>Альтернативные платежи</h2>
+<form action="/add_alternative_payment" method="POST">
+    <fieldset>
+        <table width="100%" frame="hsides">
+            <tr>
+                <td align="center">
+                    <span>Дата платежа</span><br>
+                    <input type="date" name="date" class="blue-border" required
+                    {% if payment_to_edit != None %}
+                    {% if payment_to_edit['date'] %}
+                    value="{{ payment_to_edit['date'] }}"
+                    {% endif %}
+                    {% endif %}><br><br>
+                    <span>Сумма платежа</span><br>
+                    <input type="text" size="10" name="debit" pattern="\d+[\,\.]*\d*" class="blue-border" required
+                    {% if payment_to_edit != None %}
+                    {% if payment_to_edit['debit'] %}
+                    value="{{ payment_to_edit['debit'] }}"
+                    {% endif %}
+                    {% endif %}><br>
+                </td>
+                <td align="center">
+                    <span>Плательщик</span><br>
+                    <input type="text" size="40" name="organisation" class="blue-border" required
+                    {% if payment_to_edit != None %}
+                    {% if payment_to_edit['organisation'] %}
+                    value="{{ payment_to_edit['organisation'] }}"
+                    {% endif %}
+                    {% endif %}><br><br>
+                    <span>Комментарий (в т.ч. номер работы)</span><br>
+                    <input type="text" size="50" name="payment_comment" class="blue-border" required
+                    {% if payment_to_edit != None %}
+                    {% if payment_to_edit['comment'] %}
+                    value="{{ payment_to_edit['comment'] }}"
+                    {% endif %}
+                    {% endif %}><br>
+                </td>
+                <td align="center">
+                <span>Другой комментарий</span><br>
+                <span class="comment">Например, кому и на какой банк или "Гарантийное письмо"</span><br>
+                <input type="text" size="50" name="alternative_comment" class="blue-border"
+                    {% if payment_to_edit != None %}
+                    {% if payment_to_edit['alternative_comment'] %}
+                    value="{{ payment_to_edit['alternative_comment'] }}"
+                    {% endif %}
+                    {% endif %}><br><br>
+                {% if payment_to_edit != None %}
+                    <input type="hidden" name="payment_id" value="{{ payment_to_edit['payment_id'] }}">
+                {% endif %}
+                <input class="button" type="submit" value="Сохранить">
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+</form>
+
+{% include 'include/iterate_pages.html' %}
+
+<table frame="void" border="2px" bordercolor="#4962A4" width="100%">
+    <tr>
+        <td><b>
+
+        </b></td>
+        <td><b>
+            Дата
+        </b></td>
+        <td><b>
+            Сумма
+        </b></td>
+        <td><b>
+            Комментарий
+        </b></td>
+        <td><b>
+            Плательщик
+        </b></td>
+        <td><b>
+            Еще комментарий
+        </b></td>
+        <td><b>
+
+        </b></td>
+        <td><b>
+
+        </b></td>
+    </tr>
+    {% for payment in payments %}
+    <tr>
+        <td align="center">
+            {{ payment['payment_id'] }}
+        </td>
+        <td align="center">
+            {{ payment['date'] }}
+        </td>
+        <td align="center">
+            {{ payment['debit'] }} р.
+        </td>
+        <td>
+            {{ payment['comment'] }}
+        </td>
+        <td>
+            {{ payment['organisation'] }}
+        </td>
+        <td>
+            {% if payment['alternative_comment'] != None %}
+            {{ payment['alternative_comment'] }}
+            {% endif %}
+        </td>
+        <td align="center">
+            <a href="/alternative_payments/True/{{ payment['payment_id'] }}/30/1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                </svg>
+            </a>
+        </td>
+        <td align="center">
+            <a href="/delete_alternative/{{ payment['payment_id'] }}" class="alarm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 
 {% endblock %}

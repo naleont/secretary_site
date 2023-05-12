@@ -1035,10 +1035,18 @@ def statement_info(payment_list):
             debit = str(int(payment.debit))
         else:
             debit = str(payment.debit).replace('.', ',')
-        pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
-               'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
-               'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment,
-               'remainder': remainder, 'payment_type': payment_type}
+        if payment.alternative is True:
+            pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': None,
+                   'debit': debit, 'organisation': None, 'tin': None, 'bic': None,
+                   'bank_name': None, 'account': None, 'comment': payment.payment_comment,
+                   'remainder': remainder, 'payment_type': payment_type, 'alternative': payment.alternative,
+                   'alternative_comment': payment.alternative_comment}
+        else:
+            pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
+                   'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
+                   'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment,
+                   'remainder': remainder, 'payment_type': payment_type, 'alternative': None,
+                   'alternative_comment': None}
         statement.append(pay)
     return statement
 
@@ -4471,14 +4479,78 @@ def add_bank_statement():
     return redirect(url_for('.load_statement', success=True))
 
 
-@app.route('/alternative_payments')
-def alternative_payments():
-    return render_template('participants_and_payment/alternative_payments.html')
+@app.route('/alternative_payments', defaults={'edit': None, 'payment_id': None, 'length': 30, 'page': 1})
+@app.route('/alternative_payments/<edit>/<payment_id>/<length>/<page>')
+def alternative_payments(edit, payment_id, length, page):
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
+    length = int(length)
+    page = int(page)
+    if edit:
+        payment_id = int(payment_id)
+        if payment_id in [p.payment_id for p in BankStatement.query.filter(BankStatement.alternative == 1).all()]:
+            payment_to_edit = payment_info(payment_id)
+            date = datetime.datetime.strptime(payment_to_edit['date'], '%d.%m.%Y').strftime('%Y-%m-%d')
+            payment_to_edit['date'] = date
+            payment_to_edit['debit'] = payment_to_edit['debit'].strip(' р.')
+        else:
+            payment_to_edit = None
+    else:
+        payment_to_edit = None
+    payments = [p.payment_id for p in BankStatement.query.filter(BankStatement.alternative == 1).all()]
+    if edit:
+        payments.remove(payment_id)
+    n, data = make_pages(length, payments, page)
+    payments = statement_info(payments)
+    return render_template('participants_and_payment/alternative_payments.html', payments=payments, pages=n, page=page,
+                           length=length, link='alternative_payments', payment_to_edit=payment_to_edit)
+
+
+@app.route('/add_alternative_payment', methods=['POST'])
+def add_alternative_payment():
+    date = datetime.datetime.strptime(request.form['date'], '%Y-%m-%d').date()
+    debit = float(request.form['debit'].replace(',', '.'))
+    organisation = request.form['organisation']
+    payment_comment = request.form['payment_comment']
+    alternative = True
+    alternative_comment = request.form['alternative_comment']
+    if 'payment_id' in request.form.keys():
+        payment_id = int(request.form['payment_id'])
+        if payment_id in [p.payment_id for p in BankStatement.query.all()]:
+            db.session.query(BankStatement).filter(BankStatement.payment_id == payment_id)\
+                .update({BankStatement.date: date,
+                         BankStatement.organisation: organisation,
+                         BankStatement.payment_comment: payment_comment,
+                         BankStatement.alternative: alternative,
+                         BankStatement.alternative_comment: alternative_comment})
+            db.session.commit()
+    else:
+        p = BankStatement(date=date, order_id=None, debit=debit, credit=None, organisation=organisation, tin=None,
+                          bic=None, bank_name=None, account=None, payment_comment=payment_comment,
+                          alternative=alternative, alternative_comment=alternative_comment)
+        db.session.add(p)
+        db.session.commit()
+    return redirect(url_for('.alternative_payments'))
+
+
+@app.route('/delete_alternative/<payment_id>')
+def delete_alternative(payment_id):
+    payment_id = int(payment_id)
+    if payment_id in [p.payment_id for p in BankStatement.query.filter(BankStatement.alternative == 1).all()]:
+        to_del = db.session.query(BankStatement).filter(BankStatement.alternative == 1)\
+            .filter(BankStatement.payment_id == payment_id).first()
+        db.session.delete(to_del)
+        db.session.commit()
+    return redirect(url_for('.alternative_payments'))
 
 
 @app.route('/manage_payments', defaults={'length': 30, 'page': 1})
 @app.route('/manage_payments/<length>/<page>')
 def manage_payments(length, page):
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     payments = [p.payment_id for p in BankStatement.query
     .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
     n, data = make_pages(length, payments, page)
@@ -4490,6 +4562,9 @@ def manage_payments(length, page):
 @app.route('/payment_types', defaults={'length': 30, 'page': 1})
 @app.route('/payment_types/<length>/<page>')
 def payment_types(length, page):
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     payments = [p.payment_id for p in BankStatement.query
     .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
     n, data = make_pages(length, payments, page)
@@ -4519,6 +4594,9 @@ def set_payment_types():
 @app.route('/id_payments', defaults={'length': 30, 'page': 1})
 @app.route('/id_payments/<length>/<page>')
 def id_payments(length, page):
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     payments = [p.payment_id for p in BankStatement.query
     .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
     .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
@@ -4532,6 +4610,9 @@ def id_payments(length, page):
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})
 @app.route('/set_payee/<payment_id>/<payee>')
 def set_payee(payment_id, payee):
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     payment = payment_info(payment_id)
     participant = {'type': None, 'participant': payee}
     if payee is not None:
@@ -4589,6 +4670,9 @@ def application_payment(payment_id, payee):
 
 @app.route('/сheck_payees/<payment_id>/<appl>')
 def сheck_payees(payment_id, appl):
+    access = check_access(8, request.url.lstrip(request.url_root))
+    if access is not True:
+        return access
     payment = payment_info(payment_id)
     application = application_2_tour(appl)
     return render_template('participants_and_payment/check_payees.html', payment=payment, appl=application)
