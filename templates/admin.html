@@ -2,77 +2,127 @@
 
 {% block content %}
 <h2>Админка</h2>
-<ul class="large-text">
-    <li>
-        <a href="/alternative_payments">Альтернативные платежи</a>
-    </li>
-    <li>
-        <a href="/rev_analysis">Анализ рецензий</a>
-    </li>
-    <li>
-        <a href="/int_analysis">Анализ внутренних рецензий</a>
-    </li>
-    <li>
-        <a href="/add_cities">Добавить города</a>
-    </li>
-    <li>
-        <a href="/id_payments">Внести платежи</a>
-    </li>
-    <li>
-        <a href="/load_statement">Загрузить выписку</a>
-    </li>
-    <li>
-        <a href="/applications_2_tour">Загрузить заявки на 2 тур</a>
-    </li>
-    <li>
-        <a href="/add_works">Загрузить информацию о работах</a>
-    </li>
-    <li>
-        <a href="/view_applications">Заявки в команду</a>
-    </li>
-    <li>
-        <a href="/unpayed">Заявлены на онлайн и не оплатили участие</a>
-    </li>
-    <li>
-        <a href="/set_report_dates">Назначить даты заседаний секций</a>
-    </li>
-    <li>
-        <a href="/search_participant">Найти работу или заявку</a>
-    </li>
-    <li>
-        <a href="/news_list">Новости</a>
-    </li>
-    <li>
-        <a href="/category_unions">Объениненные секции</a>
-    </li>
-    <li>
-        <a href="/set_orgcom">Оргкомитет</a>
-    </li>
-    <li>
-        <a href="/responsibilities">Оргкомитет - Зоны ответственности</a>
-    </li>
-    <li>
-        <a href="/users_list">Пользователи</a>
-    </li>
-    <li>
-        <a href="/apply_for_online">Работы, заявленные на онлайн</a>
-    </li>
-    <li>
-        <a href="/works_participated">Работы, которые уже участвовали очно</a>
-    </li>
-    <li>
-        <a href="/manage_payments">Управлять платежами</a>
-    </li>
-    <li>
-        <a href="/online_participants">Участники онлайна</a>
-    </li>
-    <li>
-        <a href="/online_participants_applications">Участники онлайна - по организациям</a>
-    </li>
-    <li>
-        <a href="/payment_types">Типы платежей</a>
-    </li>
-</ul>
+
+<br>
+
+<table width="100%" class="table-menu">
+    <tr>
+        <td width="25%">
+            <div class="drop fill">
+              <button class="dropping men fill">
+                Платежи
+              </button>
+              <div class="dropped m">
+                <a href="/alternative_payments">Альтернативные платежи</a>
+                <a href="/id_payments">Внести платежи</a>
+                <a href="/load_statement">Загрузить выписку</a>
+                <a href="/manage_payments">Управлять платежами</a>
+                <a href="/payment_types">Типы платежей</a>
+              </div>
+            </div>
+        </td>
+        <td width="25%">
+            <div class="drop fill">
+              <button class="dropping men fill">
+                Пользователи и команда
+              </button>
+              <div class="dropped m">
+                <a href="/view_applications">Заявки в команду</a>
+                <a href="/set_orgcom">Оргкомитет</a>
+                <a href="/responsibilities">Оргкомитет - Зоны ответственности</a>
+                <a href="/users_list">Пользователи</a>
+              </div>
+            </div>
+        </td>
+        <td width="25%">
+            <div class="drop fill">
+              <button class="dropping men fill">
+                Анализ рецензий
+              </button>
+              <div class="dropped m">
+                  <a href="/analysis_criteria">Критерии анализа</a>
+                  <a href="/analysis_state">Состояние анализа</a>
+                  <a href="/rev_analysis_results">Итоги анализа</a>
+              </div>
+            </div>
+        </td>
+        <td width="25%">
+            <div class="drop fill">
+              <button class="dropping men fill">
+                Анализ внутренних рецензий
+              </button>
+              <div class="dropped m">
+                <a href="/add_reviews">Добавить рецензентов</a>
+        <!--        <a href="/reviewers_to_review">Кого читать?</a>-->
+                <a href="/internal_reviews">Сидим, читаем</a>
+              </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="drop fill">
+              <button class="dropping men fill">
+                Заседания секций
+              </button>
+              <div class="dropped m">
+                <a href="/add_cities">Добавить города</a>
+                <a href="/set_report_dates">Назначить даты заседаний секций</a>
+                <a href="/category_unions">Объениненные секции</a>
+              </div>
+            </div>
+        </td>
+        <td>
+            <div class="drop fill">
+              <button class="dropping men fill">
+                Информация о работах
+              </button>
+              <div class="dropped m">
+                <a href="/add_works">Загрузить информацию о работах</a>
+                <a href="/unpayed">Заявлены на онлайн и не оплатили участие</a>
+                <a href="/apply_for_online">Работы, заявленные на онлайн</a>
+                <a href="/works_participated">Работы, которые уже участвовали очно</a>
+                <a href="/online_participants">Участники онлайна</a>
+                <a href="/online_participants_applications">Участники онлайна - по организациям</a>
+              </div>
+            </div>
+        </td>
+        <td>
+            <a href="/applications_2_tour">
+                <button class="dropping men fill">
+                    Загрузить заявки на 2 тур
+                </button>
+            </a>
+        </td>
+        <td>
+            <a href="/search_participant">
+                <button class="dropping men fill">
+                    Найти работу или заявку
+                </button>
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="/news_list">
+                <button class="dropping men fill">
+                    Новости
+                </button>
+            </a>
+        </td>
+        <td>
+
+        </td>
+        <td>
+
+        </td>
+        <td>
+
+        </td>
+    </tr>
+</table>
+
+<br>
 
 <h3>Страницы для сайта Конкурса</h3>
 <ul>
