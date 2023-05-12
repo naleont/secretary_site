@@ -699,10 +699,11 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
                 if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
                     work['organisation_id'] = WorkOrganisations.query.filter(WorkOrganisations.work_id == work_id)\
                         .first().organisation_id
-            if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
-                work['appl_no'] = OrganisationApplication.query\
-                    .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().appl_no
-                work['included'] = False
+            else:
+                if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
+                    work['appl_no'] = OrganisationApplication.query\
+                        .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().appl_no
+                    work['included'] = False
 
     return work
 
