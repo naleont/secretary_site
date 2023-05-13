@@ -4,9 +4,42 @@
 
 <h2>Работы, заявленные для участия в Дополнительном онлайн-конкурсе</h2>
 
-<a href="/renew_organisations/online"><button>Обновить организации</button></a>
+<table width="100%" class="bigger">
+  <tr>
+    <td align="left" vertical-align="middle" width="40%">
+        <a href="/renew_organisations/online"><button>Обновить организации</button></a>
+    </td>
+    <td align="left">
+      <div vertical-align="middle">Секция
+        <div class="drop">
+          <button class="dropping">
+            {% if one_cat == 'all' %}
+            Все
+            {% else %}
+            {{ one_cat['short_name'] }}
+            {% endif %}
+          </button>
+          <div class="dropped">
+            <a href="/online_participants_applications/all">Все</a>
+            {% for cat in cats %}
+            <a href="/online_participants_applications/{{ cat['id'] }}">{{ cat['short_name'] }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table><br>
 
+{% if one_cat == 'all' %}
+Все работы, подавшие заявку на участие онлайн
+{% else %}
+Только выступившие работы
+{% endif %}<br><br>
+
+{% if one_cat == 'all' %}
 {% include 'include/iterate_pages.html' %}
+{% endif %}
 
 <table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px" width="100%">
     <tr>
@@ -16,9 +49,11 @@
         <td align="сenter"><b>
             Организация
         </b></td>
+        {% if cat_id != 'all' %}
         <td align="сenter"><b>
             Cекция
         </b></td>
+        {% endif %}
         <td align="сenter"><b>
             Номер работы
         </b></td>
@@ -48,9 +83,11 @@
         <td>
             {{ work['organisation_name'] }}
         </td>
+        {% if cat_id != 'all' %}
         <td align="сenter">
             {{ work['cat_short'] }}
         </td>
+        {% endif %}
         <td align="сenter">
             {{ work['work_id'] }}
         </td>

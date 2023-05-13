@@ -4311,21 +4311,35 @@ def delete_online_participant(work_id):
     return redirect(url_for('.online_participants'))
 
 
-@app.route('/online_participants_applications', defaults={'length': 30, 'page': 1})
-@app.route('/online_participants_applications/<length>/<page>')
-def online_participants_applications(length, page):
+@app.route('/online_participants_applications/<cat_id>', defaults={'length': 30, 'page': 1})
+@app.route('/online_participants_applications/<cat_id>/<length>/<page>')
+def online_participants_applications(cat_id, length, page):
     access = check_access(3)
     if access is not True:
         return access
-    wks = [w.work_id for w in AppliedForOnline.query
-    .join(WorkCategories, AppliedForOnline.work_id == WorkCategories.work_id)
-    .order_by(WorkCategories.cat_id).all()]
-    works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
-    n, data = make_pages(length, works, page)
-    works = [work_info(w, organisation_info=True, appl_info=True) for w in data]
+    c, cats = categories_info()
+    if cat_id == 'all':
+        wks = [w.work_id for w in AppliedForOnline.query
+        .join(WorkCategories, AppliedForOnline.work_id == WorkCategories.work_id)
+        .order_by(WorkCategories.cat_id).all()]
+        works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+        n, data = make_pages(length, works, page)
+        works = [work_info(w, organisation_info=True, appl_info=True) for w in data]
+        one_cat = 'all'
+    else:
+        cat_id = int(cat_id)
+        wks = [w.work_id for w in AppliedForOnline.query
+        .join(WorkCategories, AppliedForOnline.work_id == WorkCategories.work_id)
+        .join(Works, AppliedForOnline.work_id == Works.work_id)
+        .filter(WorkCategories.cat_id == cat_id)
+        .filter(Works.reported == 1).all()]
+        works = [work_info(w, organisation_info=True, appl_info=True) for w in wks]
     # works = sorted(works_applied, key=lambda x: x['organisation_id'])
+        one_cat = {'cat_id': cat_id, 'short_name': Categories.query.filter(Categories.cat_id == cat_id)
+        .first().short_name}
+        n = 1
     return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
-                           length=length, link='online_participants_applications')
+                           length=length, link='online_participants_applications', cats=cats, one_cat=one_cat)
 
 
 @app.route('/renew_applications/<q_type>/<q_id>')
