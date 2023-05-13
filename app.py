@@ -2017,14 +2017,17 @@ def users_list(query, length, page):
 @app.route('/search_user', methods=['GET'])
 def search_user():
     query = request.values.get('query', str)
-    # tel = re.sub(
-    #     r'(^\+7|^8|^7|^9)(-|\(|\)|\s)*(?P<a>\d+)(-|\(|\)|\s)*(?P<b>\d+)(-|\(|\)|\s)*(?P<c>\d+)(-|\(|\)|\s)*(?P<d>\d+)',
-    #     '+7\g<a>\g<b>\g<c>\g<d>', query)
+    tel = re.sub(
+        r'(^\+7|^8|^7|^9)(-|\(|\)|\s)*(?P<a>\d+)(-|\(|\)|\s)*(?P<b>\d+)(-|\(|\)|\s)*(?P<c>\d+)(-|\(|\)|\s)*(?P<d>\d+)',
+        '+7\g<a>\g<b>\g<c>\g<d>', query)
+    users = []
+    if tel in [u.tel for u in Users.query.all()]:
+        users.extend([u.user_id for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all()])
     try:
         query = int(query)
-        users = [u.user_id for u in Users.query.filter(Users.user_id == query).order_by(Users.user_id.desc()).all()]
+        users.extend([u.user_id for u in Users.query.filter(Users.user_id == query)
+                     .order_by(Users.user_id.desc()).all()])
     except ValueError:
-        users = []
         if query == 'secretary':
             users.extend([u.secretary_id for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()])
         elif query == 'supervisor':
@@ -2040,8 +2043,6 @@ def search_user():
         if query in [u.email for u in Users.query.all()]:
             users.extend(
                 [u.user_id for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all()])
-        # if tel in [u.tel for u in Users.query.all()]:
-        #     users.extend([u.user_id for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all()])
         users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
                                                               if query.lower() == u.last_name.lower()[:len(query)]])
         users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
