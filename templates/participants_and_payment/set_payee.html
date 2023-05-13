@@ -59,6 +59,7 @@
                         <span class="alarm">{{ participant['works']['reg_tour'] }} тур</span>
                         {% endif %}<br>
                     <i>{{ participant['works']['authors'] }}</i><br>
+                    <i>Руководитель {{ participant['works']['supervisor'] }}</i><br>
                         Оргвзнос {{ participant['works']['fee'] }}р.
                             {% if participant['works']['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
@@ -106,7 +107,8 @@
                 {% if work['reg_tour'] %}
                 <span class="alarm">{{ work['reg_tour'] }} тур</span>
                 {% endif %}<br>
-                    <i>{{ work['authors'] }}</i><br><br>
+                    <i>{{ work['authors'] }}</i><br>
+                    <i>Руководитель {{ work['supervisor'] }}</i><br><br>
                 {% endfor %}<br>
                 <b>Участники</b><br>
                 {% for member in appl['participants'] %}
@@ -160,6 +162,7 @@
                         <span class="alarm">{{ work['reg_tour'] }} тур</span>
                         {% endif %}<br>
                     <i>{{ work['authors'] }}</i><br>
+                    <i>Руководитель {{ work['supervisor'] }}</i><br>
                         Оргвзнос {{ work['fee'] }}р.
                             {% if work['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
@@ -206,7 +209,8 @@
                 {% if work['reg_tour'] %}
                 <span class="alarm">{{ work['reg_tour'] }} тур</span>
                 {% endif %}<br>
-                    <i>{{ work['authors'] }}</i><br><br>
+                    <i>{{ work['authors'] }}</i><br>
+            <i>Руководитель {{ works['supervisor'] }}</i><br><br>
                 {% endfor %}<br>
                 <b>Участники</b><br>
                 {% for member in appl['participants'] %}

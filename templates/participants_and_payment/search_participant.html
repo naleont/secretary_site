@@ -33,9 +33,11 @@
                 </svg>
             </a><br>
         {{ response['works']['work_name'] }}</b>
-            {% if response['works']['reg_tour'] %}<br>
+            {% if response['works']['reg_tour'] %}
             <span class="alarm">{{ response['works']['reg_tour'] }} тур</span>
             {% endif %}<br>
+        {{ response['works']['authors'] }}<br>
+        Руководитель {{ response['works']['supervisor'] }}<br>
             {% if response['works']['appl_no'] == False %}
         Заявка отсутствует<br>
             {% else %}
@@ -72,6 +74,8 @@
                     {% if work['reg_tour'] %}
                     <span class="alarm">{{ work['reg_tour'] }} тур</span>
                     {% endif %}<br>
+                {{ work['authors'] }}<br>
+                Руководитель {{ work['supervisor'] }}<br>
                 {% endfor %}<br>
             <b>Участники</b><br>
                 {% for participant in response['value']['participants'] %}
@@ -132,6 +136,8 @@
             {% if work['reg_tour'] %}<br>
             <span class="alarm">{{ work['reg_tour'] }} тур</span>
             {% endif %}<br>
+            {{ work['authors'] }}<br>
+            Руководитель {{ work['supervisor'] }}<br>
         Заявка {{ work['appl_no'] }}<br>
         Оргвзнос {{ work['fee'] }} р.,
             {% if not work['format'] or work['format'] == 'face-to-face' %}
@@ -168,6 +174,8 @@
                     {% if work['reg_tour'] %}
                     <span class="alarm">{{ work['reg_tour'] }} тур</span>
                     {% endif %}<br>
+                    {{ response['works']['authors'] }}<br>
+                    Руководитель {{ response['works']['supervisor'] }}<br>
                 {% endfor %}<br>
         <b>Участники</b><br>
             {% for participant in appl['participants'] %}

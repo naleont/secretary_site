@@ -595,6 +595,7 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
     work['author_3_name'] = work_db.author_3_name
     work['author_3_age'] = work_db.author_3_age
     work['author_3_class'] = work_db.author_3_class
+    work['supervisor'] = work_db.teacher_name
     work['authors'] = work['author_1_name']
     if work['author_2_name'] is not None:
         work['authors'] += ', ' + work['author_2_name']
@@ -4200,16 +4201,13 @@ def search_participant(query):
         except ValueError:
             if query == 'sear':
                 response = 'search'
-            elif query.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
-                parts = [p.participant_id for p
-                         in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == query.lower()).all()]
-                parts.extend([p.participant_id for p
-                              in
-                              ParticipantsApplied.query.filter(ParticipantsApplied.last_name == query.upper()).all()])
-                parts.extend([p.participant_id for p
-                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
-                                                                  ''.join(
-                                                                      [query[0].upper(), query[1:].lower()])).all()])
+            else:
+                parts = [u.participant_id for u in ParticipantsApplied.query.all()
+                         if query.lower() == u.last_name.lower()[:len(query)]]
+                parts.extend([u.participant_id for u in ParticipantsApplied.query.all()
+                              if query.lower() == u.first_name.lower()[:len(query)]])
+                parts.extend([u.participant_id for u in ParticipantsApplied.query.all()
+                              if query.lower() == u.patronymic_name.lower()[:len(query)]])
                 p = []
                 for part in parts:
                     appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
@@ -4217,18 +4215,20 @@ def search_participant(query):
                         partic = application_2_tour(appl)
                         p.append(partic)
                 response = {'type': 'appls', 'value': p}
-                authors = [{'id': a.work_id, 'authors': [a.author_1_name, a.author_2_name, a.author_3_name]} for a in
-                           Works.query.all()]
-                wks = []
-                for a in authors:
-                    if query.lower() in [a[:len(query)].lower() for a in a['authors'] if a is not None]:
-                        if str(a['id'])[:2] == str(curr_year)[-2:]:
-                            wks.append(a['id'])
-                w = [work_info(wo) for wo in wks]
+
+                works = [u.work_id for u in Works.query.all()
+                         if query.lower() == u.author_1_name.lower()[:len(query)]]
+                works.extend([u.work_id for u in Works.query.all()
+                              if u.author_2_name and query.lower() == u.author_2_name.lower()[:len(query)]])
+                works.extend([u.work_id for u in Works.query.all()
+                              if u.author_3_name and query.lower() == u.author_3_name.lower()[:len(query)]])
+                w = [work_info(wo, w_payment_info=True, appl_info=True) for wo in works]
                 if response['type']:
                     response['works'] = w
                 else:
                     response = {'type': 'name', 'value': w}
+                if not parts and not works:
+                    response = {'type': None, 'value': query}
     else:
         response = {'type': None, 'value': query}
     return render_template('participants_and_payment/search_participant.html', response=response)
@@ -4656,35 +4656,33 @@ def set_payee(payment_id, payee):
             else:
                 participant = {'type': None, 'participant': payee}
         except ValueError:
-            if payee.lower() in [p.last_name.lower() for p in ParticipantsApplied.query.all()]:
-                parts = [p.participant_id for p
-                         in ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.lower()).all()]
-                parts.extend([p.participant_id for p
-                              in
-                              ParticipantsApplied.query.filter(ParticipantsApplied.last_name == payee.upper()).all()])
-                parts.extend([p.participant_id for p
-                              in ParticipantsApplied.query.filter(ParticipantsApplied.last_name ==
-                                                                  ''.join(
-                                                                      [payee[0].upper(), payee[1:].lower()])).all()])
-                p = []
-                for part in parts:
-                    appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
-                    if appl not in [pa['id'] for pa in p]:
-                        partic = application_2_tour(appl)
-                        p.append(partic)
-                participant = {'type': 'name', 'participant': p}
-            authors = [{'id': a.work_id, 'authors': [a.author_1_name, a.author_2_name, a.author_3_name]} for a in
-                       Works.query.all()]
-            wks = []
-            for a in authors:
-                if payee.lower() in [a[:len(payee)].lower() for a in a['authors'] if a is not None]:
-                    if str(a['id'])[:2] == str(curr_year)[-2:]:
-                        wks.append(a['id'])
-            w = [work_info(wo, w_payment_info=True, appl_info=True) for wo in wks]
+            parts = [u.participant_id for u in ParticipantsApplied.query.all()
+                     if payee.lower() == u.last_name.lower()[:len(payee)]]
+            parts.extend([u.participant_id for u in ParticipantsApplied.query.all()
+                          if payee.lower() == u.first_name.lower()[:len(payee)]])
+            parts.extend([u.participant_id for u in ParticipantsApplied.query.all()
+                          if payee.lower() == u.patronymic_name.lower()[:len(payee)]])
+            p = []
+            for part in parts:
+                appl = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first().appl_id
+                if appl not in [pa['id'] for pa in p]:
+                    partic = application_2_tour(appl)
+                    p.append(partic)
+            participant = {'type': 'name', 'participant': p}
+
+            works = [u.work_id for u in Works.query.all()
+                     if payee.lower() == u.author_1_name.lower()[:len(payee)]]
+            works.extend([u.work_id for u in Works.query.all()
+                          if u.author_2_name and payee.lower() == u.author_2_name.lower()[:len(payee)]])
+            works.extend([u.work_id for u in Works.query.all()
+                          if u.author_3_name and payee.lower() == u.author_3_name.lower()[:len(payee)]])
+            w = [work_info(wo, w_payment_info=True, appl_info=True) for wo in works]
             if participant['type']:
                 participant['works'] = w
             else:
                 participant = {'type': 'name', 'works': w}
+            if not parts and not works:
+                participant = {'type': None, 'participant': payee}
     else:
         participant = {'type': None, 'participant': payee}
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
