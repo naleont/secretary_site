@@ -2025,41 +2025,29 @@ def search_user():
         users = [u.user_id for u in Users.query.filter(Users.user_id == query).order_by(Users.user_id.desc()).all()]
     except ValueError:
         users = []
+        if query == 'secretary':
+            users.extend([u.secretary_id for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()])
+        elif query == 'supervisor':
+            users.extend([u.user_id for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all()])
+        elif query in access_types.keys():
+            us = []
+            for val in [val for val in access_types.values() if val >= access_types[query]]:
+                us.extend([u.user_id for u in Users.query
+                          .filter(Users.user_type == list(access_types.keys())[list(access_types.values()).index(val)])
+                          .order_by(Users.user_id.desc()).all()])
+            us.sort(reverse=True)
+            users.extend(us)
         if query in [u.email for u in Users.query.all()]:
             users.extend(
                 [u.user_id for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all()])
         # if tel in [u.tel for u in Users.query.all()]:
         #     users.extend([u.user_id for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all()])
-        users.extend([u.user_id for u in Users.query.all() if query.lower() == u.last_name.lower()[:len(query)]])
-        users.extend([u.user_id for u in Users.query.all() if query.lower() == u.first_name.lower()[:len(query)]])
-        users.extend([u.user_id for u in Users.query.all() if query.lower() == u.patronymic.lower()[:len(query)]])
-
-        # if query.lower() in [u.first_name.lower() for u in Users.query.all()]:
-        #     users.extend([u.user_id for u in Users.query.filter(Users.first_name == ''.join([query[0].upper(),
-        #                                                                                      query[
-        #                                                                                      1:].lower()])).all()])
-        # if query.lower() in [u.patronymic.lower() for u in Users.query.all()]:
-        #     users.extend([u.user_id for u in Users.query.filter(Users.patronymic == ''.join([query[0].upper(),
-        #                                                                                      query[
-        #                                                                                      1:].lower()])).all()])
-        if not users:
-            if query == 'secretary':
-                users = [u.secretary_id for u in
-                         CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()]
-            elif query == 'supervisor':
-                users = [u.user_id for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all()]
-            elif query in access_types.keys():
-                us = []
-                for val in [val for val in access_types.values() if val >= access_types[query]]:
-                    for u in Users.query.filter(Users.user_type == list(access_types.keys())[
-                        list(access_types.values()).index(val)]).order_by(Users.user_id.desc()).all():
-                        us.append(u.user_id)
-                us.sort(reverse=True)
-                users = us
-            else:
-                users = None
-        else:
-            users = None
+        users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
+                                                              if query.lower() == u.last_name.lower()[:len(query)]])
+        users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
+                                                              if query.lower() == u.first_name.lower()[:len(query)]])
+        users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
+                                                              if query.lower() == u.patronymic.lower()[:len(query)]])
     if users:
         us = set(users)
         users = [u for u in us]
