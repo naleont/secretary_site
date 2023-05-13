@@ -4193,7 +4193,8 @@ def search_participant(query):
         try:
             qu = int(query)
             if len(query) == 6 and qu:
-                response = {'type': 'work', 'works': work_info(int(query), w_payment_info=True, appl_info=True)}
+                response = {'type': 'work', 'works': work_info(int(query), w_payment_info=True, appl_info=True,
+                                                               cat_info=True)}
             elif len(query) == 5:
                 response = {'type': 'appl', 'value': application_2_tour(int(query))}
             else:
@@ -4222,7 +4223,7 @@ def search_participant(query):
                               if u.author_2_name and query.lower() == u.author_2_name.lower()[:len(query)]])
                 works.extend([u.work_id for u in Works.query.all()
                               if u.author_3_name and query.lower() == u.author_3_name.lower()[:len(query)]])
-                w = [work_info(wo, w_payment_info=True, appl_info=True) for wo in works]
+                w = [work_info(wo, w_payment_info=True, appl_info=True, cat_info=True) for wo in works]
                 if response['type']:
                     response['works'] = w
                 else:

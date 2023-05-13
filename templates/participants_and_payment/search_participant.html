@@ -38,6 +38,7 @@
             {% endif %}<br>
         {{ response['works']['authors'] }}<br>
         Руководитель {{ response['works']['supervisor'] }}<br>
+        Секция {{ response['works']['cat_name'] }}<br>
             {% if response['works']['appl_no'] == False %}
         Заявка отсутствует<br>
             {% else %}
@@ -76,6 +77,7 @@
                     {% endif %}<br>
                 {{ work['authors'] }}<br>
                 Руководитель {{ work['supervisor'] }}<br>
+                Секция {{ work['cat_name'] }}<br>
                 {% endfor %}<br>
             <b>Участники</b><br>
                 {% for participant in response['value']['participants'] %}
@@ -138,6 +140,7 @@
             {% endif %}<br>
             {{ work['authors'] }}<br>
             Руководитель {{ work['supervisor'] }}<br>
+            Секция {{ work['cat_name'] }}<br>
         Заявка {{ work['appl_no'] }}<br>
         Оргвзнос {{ work['fee'] }} р.,
             {% if not work['format'] or work['format'] == 'face-to-face' %}
@@ -176,6 +179,7 @@
                     {% endif %}<br>
                     {{ response['works']['authors'] }}<br>
                     Руководитель {{ response['works']['supervisor'] }}<br>
+                    Секция {{ response['works']['cat_name'] }}<br>
                 {% endfor %}<br>
         <b>Участники</b><br>
             {% for participant in appl['participants'] %}
