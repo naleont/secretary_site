@@ -1995,17 +1995,19 @@ def users_list(query, length, page):
     access = check_access(8)
     if access is not True:
         return access
-    if query == 'all' or query is None or query == []:
-        pages, us = make_pages(length, [u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()], page)
-        users = [get_user_info(u) for u in us]
-    else:
-        if type(query) == str:
-            query = json.loads(query)
-        users = [get_user_info(u) for u in query]
-        pages = 1
-    if query is None or query == []:
+    if query == 'not_found' or query == []:
         found = None
+        users = None
+        pages = 1
     else:
+        if query == 'all' or query is None or query == []:
+            pages, us = make_pages(length, [u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()], page)
+            users = [get_user_info(u) for u in us]
+        else:
+            if type(query) == str:
+                query = json.loads(query)
+            users = [get_user_info(u) for u in query]
+            pages = 1
         found = 'ugu'
     return render_template('user_management/users_list.html', users=users, length=length, page=page, pages=pages,
                            found=found, link='users_list/all')
@@ -2055,9 +2057,13 @@ def search_user():
                 users = us
             else:
                 users = None
+        else:
+            users = None
     if users:
         us = set(users)
         users = [u for u in us]
+    else:
+        users = 'not_found'
     return redirect(url_for('.users_list', query=users, length='all', page=1))
 
 

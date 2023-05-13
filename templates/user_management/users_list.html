@@ -34,7 +34,8 @@
 
 {% if found == None %}
 <p class="bigger">Ничего не найдено</p>
-{% endif %}
+<a href="/users_list"><button>Назад</button></a>
+{% else %}
 
 {% include 'include/iterate_pages.html' %}
 
@@ -71,5 +72,6 @@
     </tr>
 {% endfor %}
 </table>
+{% endif %}
 
 {% endblock %}
