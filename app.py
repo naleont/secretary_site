@@ -2027,17 +2027,18 @@ def search_user():
                 [u.user_id for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all()])
         # if tel in [u.tel for u in Users.query.all()]:
         #     users.extend([u.user_id for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all()])
-        if query.lower() in [u.last_name.lower() for u in Users.query.all()]:
-            users.extend([u.user_id for u in Users.query.filter(Users.last_name == ''.join([query[0].upper(),
-                                                                                            query[1:].lower()])).all()])
-        if query.lower() in [u.first_name.lower() for u in Users.query.all()]:
-            users.extend([u.user_id for u in Users.query.filter(Users.first_name == ''.join([query[0].upper(),
-                                                                                             query[
-                                                                                             1:].lower()])).all()])
-        if query.lower() in [u.patronymic.lower() for u in Users.query.all()]:
-            users.extend([u.user_id for u in Users.query.filter(Users.patronymic == ''.join([query[0].upper(),
-                                                                                             query[
-                                                                                             1:].lower()])).all()])
+        users.extend([u.user_id for u in Users.query.all() if query.lower() == u.last_name.lower()[:len(query)]])
+        users.extend([u.user_id for u in Users.query.all() if query.lower() == u.first_name.lower()[:len(query)]])
+        users.extend([u.user_id for u in Users.query.all() if query.lower() == u.patronymic.lower()[:len(query)]])
+
+        # if query.lower() in [u.first_name.lower() for u in Users.query.all()]:
+        #     users.extend([u.user_id for u in Users.query.filter(Users.first_name == ''.join([query[0].upper(),
+        #                                                                                      query[
+        #                                                                                      1:].lower()])).all()])
+        # if query.lower() in [u.patronymic.lower() for u in Users.query.all()]:
+        #     users.extend([u.user_id for u in Users.query.filter(Users.patronymic == ''.join([query[0].upper(),
+        #                                                                                      query[
+        #                                                                                      1:].lower()])).all()])
         if not users:
             if query == 'secretary':
                 users = [u.secretary_id for u in
@@ -2054,6 +2055,9 @@ def search_user():
                 users = us
             else:
                 users = None
+    if users:
+        us = set(users)
+        users = [u for u in us]
     return redirect(url_for('.users_list', query=users, length='all', page=1))
 
 
