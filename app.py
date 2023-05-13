@@ -4317,7 +4317,9 @@ def online_participants_applications(length, page):
     access = check_access(3)
     if access is not True:
         return access
-    wks = [w.work_id for w in AppliedForOnline.query.all()]
+    wks = [w.work_id for w in AppliedForOnline.query
+    .join(WorkCategories, AppliedForOnline.work_id == WorkCategories.work_id)
+    .order_by(WorkCategories.cat_id).all()]
     works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
     n, data = make_pages(length, works, page)
     works = [work_info(w, organisation_info=True, appl_info=True) for w in data]
