@@ -1198,7 +1198,7 @@ def secretary_job():
 @app.route('/login/<wrong>')
 def login(wrong):
     if request.referrer is not None:
-        url = request.referrer.lstrip(request.url_root).split('/')
+        url = request.referrer.replace(request.url_root, '').strip('/').split('/')
     else:
         url = ''
     return render_template('registration, logging and applications/login.html', wrong=wrong, url=url)
@@ -1358,7 +1358,7 @@ def edit_user(user_id, message):
         return access
     # Получение информации текущего пользователя из БД
     user = get_user_info(int(user_id))
-    url = request.referrer.lstrip(request.url_root).split('/')
+    url = request.referrer.replace(request.url_root, '').strip('/').split('/')
     # Вывод формы изменения информации пользователя с предзаполненными из БД полями
     return render_template('registration, logging and applications/edit_user.html', user=user, message=message, url=url)
 
@@ -3053,7 +3053,7 @@ def many_works():
 @app.route('/button_works', defaults={'cat_id': 'all'})
 @app.route('/button_works/<cat_id>')
 def button_works(cat_id):
-    url = request.referrer.lstrip(request.url_root).split('/')
+    url = request.referrer.replace(request.url_root, '').strip('/').split('/')
 
     response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
                                         headers=mail_data.headers).text)
