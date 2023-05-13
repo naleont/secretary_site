@@ -61,7 +61,10 @@
         </b></td>
     </tr>
     {% for work in day['works']%}
-    <tr>
+    <tr
+        {% if work['payed'] == True%}
+            bgcolor="#E9FFD4"
+        {% endif %}>
         <td align="center">
             <div>
             {% if work['report_order'] != 1 %}

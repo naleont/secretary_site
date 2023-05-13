@@ -31,11 +31,13 @@
   </tr>
 </table><br>
 
+<div class="bigger green-text">
 {% if one_cat == 'all' %}
 Все работы, подавшие заявку на участие онлайн
 {% else %}
 Только выступившие работы
 {% endif %}<br><br>
+</div>
 
 {% if one_cat == 'all' %}
 {% include 'include/iterate_pages.html' %}
