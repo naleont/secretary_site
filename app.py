@@ -264,8 +264,10 @@ def all_users():
 
 # Загрузка информации профиля из БД
 def get_profile_info(user):
+    user_id = int(user)
     profile = dict()
-    if db.session.query(Profile).filter(Profile.user_id == user).first():
+    profile['user_id'] = user_id
+    if db.session.query(Profile).filter(Profile.user_id == user_id).first():
         prof_info = db.session.query(Profile).filter(Profile.user_id == user).first()
         profile['vk'] = prof_info.vk
         profile['tg'] = prof_info.telegram
@@ -278,8 +280,9 @@ def get_profile_info(user):
         profile['year'] = prof_info.year
         profile['born'] = prof_info.born
     else:
-        profile = {'filled': False, 'vk': None, 'tg': None, 'username': None, 'occupation': None, 'involved': None,
-                   'place_of_work': None, 'grade': None, 'year': None, 'born': None}
+        profile = {'user_id': profile['user_id'], 'filled': False, 'vk': None, 'tg': None, 'username': None,
+                   'occupation': None, 'involved': None, 'place_of_work': None, 'grade': None, 'year': None,
+                   'born': None}
     return profile
 
 
@@ -1386,13 +1389,13 @@ def edited_user(url):
 
 
 # Форма редактирования информации профиля
-@app.route('/edit_profile')
-def edit_profile():
+@app.route('/edit_profile/<user_id>')
+def edit_profile(user_id):
     access = check_access(2)
     if access is not True:
         return access
     # Извлечение информации профиля из БД (если она заполнен)
-    profile = get_profile_info(session['user_id'])
+    profile = get_profile_info(user_id)
     if profile['born'] is not None:
         profile['born'] = profile['born'].strftime('%Y-%m-%d')
     renew_session()
@@ -1403,6 +1406,10 @@ def edit_profile():
 # Обработка данных формы редактирования профиля
 @app.route('/write_profile', methods=['POST'])
 def write_profile():
+    if 'user_id' in request.form.keys():
+        user_id = request.form['user_id']
+    else:
+        user_id = session['user_id']
     if 'occupation' in request.form:
         occupation = request.form['occupation']
     else:
@@ -1446,14 +1453,19 @@ def write_profile():
         username = None
     if 'born' in request.form.keys():
         born = datetime.datetime.strptime(request.form['born'], '%Y-%m-%d').date()
+    else:
+        born = None
 
-    if session['user_id'] not in [prof.user_id for prof in Profile.query.all()]:
-        prof = Profile(session['user_id'], occupation, place_of_work, involved, grade, year, vk, tg, username, born)
+    if user_id not in [prof.user_id for prof in Profile.query.all()]:
+        prof = Profile(user_id, occupation, place_of_work, involved, grade, year, vk, tg, username, born)
         db.session.add(prof)
         db.session.commit()
-        return redirect(url_for('.team_application'))
+        if user_id == session['user_id']:
+            return redirect(url_for('.team_application'))
+        else:
+            return redirect(url_for('.user_page', user=user_id))
     else:
-        db.session.query(Profile).filter(Profile.user_id == session['user_id']).update(
+        db.session.query(Profile).filter(Profile.user_id == user_id).update(
             {Profile.occupation: occupation, Profile.place_of_work: place_of_work, Profile.involved: involved,
              Profile.grade: grade, Profile.year: year, Profile.vk: vk, Profile.telegram: tg,
              Profile.vernadsky_username: username, Profile.born: born})

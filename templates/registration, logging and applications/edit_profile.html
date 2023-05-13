@@ -115,9 +115,11 @@ place_of_work
                     </select></p><br>
             </td></tr>
             <tr><td colspan="2">
+                <input type="hidden" name="user_id" value="{{ profile['user_id'] }}">
                 <input class="button" type="submit" value="Сохранить">
             </td></tr>
         </table>
     </fieldset>
 </form>
+
 {% endblock %}
