@@ -530,8 +530,11 @@ def application_info(info_type, user, year=curr_year):
         applications = db.session.query(Application).join(Users).filter(Application.year == year).order_by(
             Users.last_name)
     elif info_type == 'user-year':
-        applications = db.session.query(Application).filter(Application.user_id == user).filter(
-            Application.year == year)
+        if user in [u.user_id for u in Application.query.filter(Application.year == year)]:
+            applications = db.session.query(Application).filter(Application.user_id == user).filter(
+                Application.year == year)
+        else:
+            applications = None
     else:
         applications = None
     appl = dict()
@@ -1907,6 +1910,7 @@ def view_applications():
 
 @app.route('/one_application/<year>/<user>')
 def see_one_application(year, user):
+    user = int(user)
     access = check_access(8)
     if access is not True:
         return access
@@ -2066,7 +2070,7 @@ def user_page(user, message):
     cats_count, cats = categories_info()
     supers = get_supervisors()
     return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats,
-                           message=message, supervisors=supers)
+                           message=message, supervisors=supers, curr_year=curr_year)
 
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
