@@ -1311,7 +1311,7 @@ def logging(url):
         user.last_login = datetime.datetime.now()
         db.session.commit()
         renew_session()
-        if u == '' or url == [''] or url == '''['']''':
+        if u == '' or u == [''] or u == '''['']''' or u == request.url_root:
             return redirect(url_for('.main_page'))
         else:
             return redirect(request.url_root + u)
