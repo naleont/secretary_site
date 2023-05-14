@@ -4324,17 +4324,17 @@ def delete_online_participant(work_id):
     return redirect(url_for('.online_participants'))
 
 
-@app.route('/online_participants_applications/<cat_id>', defaults={'length': 30, 'page': 1})
-@app.route('/online_participants_applications/<cat_id>/<length>/<page>')
-def online_participants_applications(cat_id, length, page):
+@app.route('/online_participants_applications/<one_cat>', defaults={'length': 30, 'page': 1})
+@app.route('/online_participants_applications/<one_cat>/<length>/<page>')
+def online_participants_applications(one_cat, length, page):
     access = check_access(3)
     if access is not True:
         return access
     c, cats = categories_info()
-    if cat_id == 'all':
+    if one_cat == 'all':
         wks = [w.work_id for w in AppliedForOnline.query
         .join(WorkOrganisations, AppliedForOnline.work_id == WorkOrganisations.work_id)
-        .join(WorkStatuses, WorkOrganisations.work_id == WorkStatuses.work_id)
+        .join(WorkStatuses, AppliedForOnline.work_id == WorkStatuses.work_id)
         .order_by(WorkOrganisations.organisation_id)
         .order_by(WorkStatuses.status_id).all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
@@ -4342,10 +4342,10 @@ def online_participants_applications(cat_id, length, page):
         works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
         one_cat = 'all'
     else:
-        cat_id = int(cat_id)
+        cat_id = int(one_cat)
         wks = [w.work_id for w in AppliedForOnline.query
         .join(WorkCategories, AppliedForOnline.work_id == WorkCategories.work_id)
-        .join(WorkStatuses, WorkOrganisations.work_id == WorkStatuses.work_id)
+        .join(WorkStatuses, AppliedForOnline.work_id == WorkStatuses.work_id)
         .join(Works, AppliedForOnline.work_id == Works.work_id)
         .filter(WorkCategories.cat_id == cat_id)
         .filter(Works.reported == 1).all()]
@@ -4358,8 +4358,8 @@ def online_participants_applications(cat_id, length, page):
                            length=length, link='online_participants_applications', cats=cats, one_cat=one_cat)
 
 
-@app.route('/renew_applications/<cat_id>/<q_type>/<q_id>')
-def renew_applications(cat_id, q_type, q_id):
+@app.route('/renew_applications/<one_cat>/<q_type>/<q_id>')
+def renew_applications(one_cat, q_type, q_id):
     q_id = int(q_id)
     response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
                                         headers=mail_data.headers).text)
@@ -4418,12 +4418,12 @@ def renew_applications(cat_id, q_type, q_id):
                     db.session.add(a)
                     db.session.commit()
 
-    return redirect(url_for('.online_participants_applications', cat_id=cat_id))
+    return redirect(url_for('.online_participants_applications', one_cat=one_cat))
 
 
-@app.route('/renew_organisations', defaults={'which': 'all'})
-@app.route('/renew_organisations/<which>')
-def renew_organisations(which):
+@app.route('/renew_organisations/<one_cat>', defaults={'which': 'all'})
+@app.route('/renew_organisations/<one_cat>/<which>')
+def renew_organisations(one_cat, which):
     if which == 'online':
         wks = [w.work_id for w in AppliedForOnline.query.all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
@@ -4467,7 +4467,13 @@ def renew_organisations(which):
                 db.session.add(a)
                 db.session.commit()
 
-    return redirect(url_for('.online_participants_applications'))
+    if one_cat == 'all':
+        length = 30
+        page = 1
+    else:
+        length = 'all'
+        page = 1
+    return redirect(url_for('.online_participants_applications', one_cat=one_cat, length=length, page=page))
 
 
 @app.route('/discount_and_participation_mode/<part_id>')
