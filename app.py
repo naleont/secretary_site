@@ -1210,6 +1210,8 @@ def secretary_job():
 @app.route('/login', defaults={'wrong': None})
 @app.route('/login/<wrong>')
 def login(wrong):
+    if 'user_id' in session.keys():
+        return redirect(url_for('.main_page'))
     if request.referrer is not None:
         url = request.referrer.replace(request.url_root, '').strip('/').split('/')
     else:
@@ -1309,7 +1311,7 @@ def logging(url):
         user.last_login = datetime.datetime.now()
         db.session.commit()
         renew_session()
-        if u == 'login' or u == '':
+        if u == '':
             return redirect(url_for('.main_page'))
         else:
             return redirect(request.url_root + u)
