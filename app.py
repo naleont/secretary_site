@@ -190,7 +190,9 @@ def send_email(email):
 
 
 def find_user(user_got):
-    tel = re.sub(r'^8|^7|^(?=9)', '+7', ''.join([n for n in user_got if n not in tel_unneeded]))
+    tel = re.sub(
+        r'(^\+7|^8|^7|^9)(-|\(|\)|\s)*(?P<a>\d+)(-|\(|\)|\s)*(?P<b>\d+)(-|\(|\)|\s)*(?P<c>\d+)(-|\(|\)|\s)*(?P<d>\d+)',
+        '+7\g<a>\g<b>\g<c>\g<d>', user_got)
     if user_got in [user.email for user in Users.query.all()]:
         user = db.session.query(Users).filter(Users.email == user_got).first()
     elif tel in [user.tel for user in Users.query.all()]:
@@ -1307,9 +1309,10 @@ def logging(url):
         user.last_login = datetime.datetime.now()
         db.session.commit()
         renew_session()
-        if u == 'login':
-            u = ''
-        return redirect(request.url_root + u)
+        if u == 'login' or u == '':
+            return redirect(request.url_root)
+        else:
+            return redirect(request.url_root + u)
 
 
 # Выход из учетной записи
