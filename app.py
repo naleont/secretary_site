@@ -585,7 +585,7 @@ def all_news():
 
 
 def work_info(work_id, additional_info=False, site_id=False, reports_info=False, analysis_info=False,
-              w_payment_info=False, appl_info=False, cat_info=False, organisation_info=False):
+              w_payment_info=False, appl_info=False, cat_info=False, organisation_info=False, status_info=False):
     work_id = int(work_id)
     work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
     work = dict()
@@ -618,6 +618,11 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['cat_name'] = Categories.query.filter(Categories.cat_id == work['cat_id']).first().cat_name
         else:
             work['cat_name'] = None
+
+    if status_info is True:
+        work['status'] = ParticipationStatuses.query\
+            .join(WorkStatuses, ParticipationStatuses.status_id == WorkStatuses.status_id)\
+            .filter(WorkStatuses.work_id == work_id).first().status_name
 
     if organisation_info is True:
         if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
@@ -4329,19 +4334,22 @@ def online_participants_applications(cat_id, length, page):
     if cat_id == 'all':
         wks = [w.work_id for w in AppliedForOnline.query
         .join(WorkOrganisations, AppliedForOnline.work_id == WorkOrganisations.work_id)
-        .order_by(WorkOrganisations.organisation_id).all()]
+        .join(WorkStatuses, WorkOrganisations.work_id == WorkStatuses.work_id)
+        .order_by(WorkOrganisations.organisation_id)
+        .order_by(WorkStatuses.status_id).all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
         n, data = make_pages(length, works, page)
-        works = [work_info(w, organisation_info=True, appl_info=True) for w in data]
+        works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
         one_cat = 'all'
     else:
         cat_id = int(cat_id)
         wks = [w.work_id for w in AppliedForOnline.query
         .join(WorkCategories, AppliedForOnline.work_id == WorkCategories.work_id)
+        .join(WorkStatuses, WorkOrganisations.work_id == WorkStatuses.work_id)
         .join(Works, AppliedForOnline.work_id == Works.work_id)
         .filter(WorkCategories.cat_id == cat_id)
         .filter(Works.reported == 1).all()]
-        works = [work_info(w, organisation_info=True, appl_info=True) for w in wks]
+        works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in wks]
     # works = sorted(works_applied, key=lambda x: x['organisation_id'])
         one_cat = {'cat_id': cat_id, 'short_name': Categories.query.filter(Categories.cat_id == cat_id)
         .first().short_name}

@@ -60,6 +60,9 @@
             Номер работы
         </b></td>
         <td align="сenter"><b>
+            Статус
+        </b></td>
+        <td align="сenter"><b>
             Заявка
         </b></td>
         <td align="сenter"><b>
@@ -92,6 +95,13 @@
         {% endif %}
         <td align="сenter">
             {{ work['work_id'] }}
+        </td>
+        <td align="сenter">
+            {% if work['status'] == 'Допущена до дополнительного онлайн-конкурса' %}
+            Доп
+            {% elif work['status'] == 'Допущена до 2-го тура' %}
+            2 тур
+            {% endif %}
         </td>
         <td align="сenter">
             {% if work['appl_no'] == False %}
