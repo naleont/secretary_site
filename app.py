@@ -1310,7 +1310,7 @@ def logging(url):
         db.session.commit()
         renew_session()
         if u == 'login' or u == '':
-            return redirect(request.url_root)
+            return redirect(url_for('.main_page'))
         else:
             return redirect(request.url_root + u)
 
