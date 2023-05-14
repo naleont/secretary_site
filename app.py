@@ -1213,7 +1213,10 @@ def login(wrong):
     if 'user_id' in session.keys():
         return redirect(url_for('.main_page'))
     if request.referrer is not None:
-        url = request.referrer.replace(request.url_root, '').strip('/').split('/')
+        if request.referrer == request.url_root:
+            url = ''
+        else:
+            url = request.referrer.replace(request.url_root, '').strip('/').split('/')
     else:
         url = ''
     return render_template('registration, logging and applications/login.html', wrong=wrong, url=url)
