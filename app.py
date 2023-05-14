@@ -1285,13 +1285,12 @@ def logging(url):
     if '[' in url:
         url = json.loads(url.replace("'", "\""))
     if type(url) == list:
-        if 'change_pwd' in url or url == ['']:
+        if 'change_pwd' in url:
             u = ''
         else:
             u = '/'.join(url)
     else:
         u = url
-    print(url)
     # Извлечение данных формы
     user_got = request.values.get('user', str)
     pwd = request.values.get('password', str)
@@ -1312,7 +1311,7 @@ def logging(url):
         user.last_login = datetime.datetime.now()
         db.session.commit()
         renew_session()
-        if u == '':
+        if u == '' or url == [''] or url == '''['']''':
             return redirect(url_for('.main_page'))
         else:
             return redirect(request.url_root + u)
