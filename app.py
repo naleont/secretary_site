@@ -4358,8 +4358,8 @@ def online_participants_applications(cat_id, length, page):
                            length=length, link='online_participants_applications', cats=cats, one_cat=one_cat)
 
 
-@app.route('/renew_applications/<q_type>/<q_id>')
-def renew_applications(q_type, q_id):
+@app.route('/renew_applications/<cat_id>/<q_type>/<q_id>')
+def renew_applications(cat_id, q_type, q_id):
     q_id = int(q_id)
     response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
                                         headers=mail_data.headers).text)
@@ -4418,7 +4418,7 @@ def renew_applications(q_type, q_id):
                     db.session.add(a)
                     db.session.commit()
 
-    return redirect(url_for('.online_participants_applications'))
+    return redirect(url_for('.online_participants_applications', cat_id=cat_id))
 
 
 @app.route('/renew_organisations', defaults={'which': 'all'})
