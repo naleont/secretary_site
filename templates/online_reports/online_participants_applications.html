@@ -60,7 +60,7 @@
             Номер работы
         </b></td>
         <td align="сenter"><b>
-            Статус
+            Допуск
         </b></td>
         <td align="сenter"><b>
             Заявка
@@ -101,6 +101,8 @@
             Доп
             {% elif work['status'] == 'Допущена до 2-го тура' %}
             2 тур
+            {% else %}
+            {{ work['status'] }}
             {% endif %}
         </td>
         <td align="сenter">
