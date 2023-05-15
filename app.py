@@ -4638,7 +4638,47 @@ def payment_stats():
         else:
             s = f'{s:,}'.replace(',', ' ')
         clauses.append({'name': t, 'sum': s})
-    return render_template('participants_and_payment/payment_stats.html', year=curr_year, clauses=clauses)
+    online = [w.work_id for w in AppliedForOnline.query.all()]
+    online_sum = 0
+    online_unpayed = 0
+    reported_unpayed = 0
+
+    for work in online:
+        w = Works.query.filter(Works.work_id == work).first()
+        reg_tour = w.reg_tour
+        reported = w.reported
+        if work in [w.work_id for w in Discounts.query.all()]:
+            disc = db.session.query(Discounts).filter(Discounts.work_id == work).first()
+            w_fee = disc.payment
+        elif work in [w.work_id for w in WorksNoFee.query.all()]:
+            w_fee = 0
+        elif reg_tour is not None:
+            w_fee = tour_fee
+        else:
+            w_fee = fee
+
+        if work in [w.participant for w in PaymentRegistration.query.all()]:
+            online_sum += w_fee
+        else:
+            online_unpayed += w_fee
+            if reported is True:
+                reported_unpayed += w_fee
+
+    if online_sum % 1 == 0:
+        online_sum = f'{int(online_sum):,}'.replace(',', ' ')
+    else:
+        online_sum = f'{online_sum:,}'.replace(',', ' ')
+    if online_unpayed % 1 == 0:
+        online_unpayed = f'{int(online_unpayed):,}'.replace(',', ' ')
+    else:
+        online_unpayed = f'{online_unpayed:,}'.replace(',', ' ')
+    if reported_unpayed % 1 == 0:
+        reported_unpayed = f'{int(reported_unpayed):,}'.replace(',', ' ')
+    else:
+        reported_unpayed = f'{reported_unpayed:,}'.replace(',', ' ')
+
+    return render_template('participants_and_payment/payment_stats.html', year=curr_year, clauses=clauses,
+                           online_sum=online_sum, online_unpayed=online_unpayed, reported_unpayed=reported_unpayed)
 
 
 @app.route('/alternative_payments', defaults={'edit': None, 'payment_id': None, 'length': 30, 'page': 1})
