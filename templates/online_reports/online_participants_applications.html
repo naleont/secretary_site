@@ -122,6 +122,8 @@
         <td align="сenter">
             {% if work['arrived'] == True %}
             Отмечен
+            {% elif work['org_arrived'] == True %}
+            Отмечен
             {% else %}
             Не отмечен
             {% endif %}

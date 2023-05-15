@@ -293,10 +293,12 @@ class OrganisationApplication(db.Model):
 
     organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('organisations.organisation_id'), unique=False)
     appl_no = db.Column('appl_no', db.Integer, ForeignKey('categories.cat_id'))
+    arrived = db.Column('arrived', db.Boolean)
 
-    def __init__(self, organisation_id, appl_no):
+    def __init__(self, organisation_id, appl_no, arrived):
         self.organisation_id = organisation_id
         self.appl_no = appl_no
+        self.arrived = arrived
 
 
 class WorkCategories(db.Model):

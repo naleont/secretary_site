@@ -725,11 +725,16 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
                 if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
                     work['organisation_id'] = WorkOrganisations.query.filter(WorkOrganisations.work_id == work_id)\
                         .first().organisation_id
+                    if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
+                        work['org_arrived'] = OrganisationApplication.query\
+                            .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().arrived
             else:
                 if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
                     work['appl_no'] = OrganisationApplication.query\
                         .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().appl_no
                     work['included'] = False
+                    work['org_arrived'] = OrganisationApplication.query\
+                        .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().arrived
 
     return work
 
@@ -3291,7 +3296,7 @@ def button_applications():
     for n in response:
         organisation = {'organisation_id': int(n['organization']['id']), 'name': n['organization']['name'],
                         'city': n['organization']['city'], 'country': n['organization']['country'],
-                        'appl_no': int(n['id'])}
+                        'appl_no': int(n['id']), 'arrived': bool(n['arrival'])}
         organisations.append(organisation)
         works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
         works_applied.extend(works)
@@ -3358,10 +3363,12 @@ def button_applications():
             if organisation['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
                 db.session.query(OrganisationApplication)\
                     .filter(OrganisationApplication.organisation_id == organisation['organisation_id']) \
-                    .update({OrganisationApplication.appl_no: organisation['appl_no']})
+                    .update({OrganisationApplication.appl_no: organisation['appl_no'],
+                             OrganisationApplication.arrived: organisation['arrived']})
                 db.session.commit()
             else:
-                o = OrganisationApplication(organisation['organisation_id'], organisation['appl_no'])
+                o = OrganisationApplication(organisation['organisation_id'], organisation['appl_no'],
+                                            organisation['arrived'])
                 db.session.add(o)
                 db.session.commit()
     return redirect(url_for('.applications_2_tour'))
@@ -4395,14 +4402,15 @@ def renew_applications(one_cat, q_type, q_id):
         organisation_id = int(application['organization']['id'])
         works = [int(w['number']) for w in application['works']]
         arrival = bool(application['arrival'])
-        if OrganisationApplication(organisation_id, appl_no) not in OrganisationApplication.query.all():
+        if OrganisationApplication(organisation_id, appl_no, arrival) not in OrganisationApplication.query.all():
             if organisation_id in [o.organisation_id for o in OrganisationApplication.query.all()]:
                 db.session.query(OrganisationApplication)\
                     .filter(OrganisationApplication.organisation_id == organisation_id)\
-                    .update({OrganisationApplication.appl_no: appl_no})
+                    .update({OrganisationApplication.appl_no: appl_no,
+                             OrganisationApplication.arrived: arrival})
                 db.session.commit()
             else:
-                o = OrganisationApplication(organisation_id, appl_no)
+                o = OrganisationApplication(organisation_id, appl_no, arrival)
                 db.session.add(o)
                 db.session.commit()
         for work_id in works:
