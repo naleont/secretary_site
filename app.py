@@ -3183,46 +3183,44 @@ def button_works(cat_id):
                     edited = True
                     db.session.commit()
             else:
-                work_write = Works(work_id, work_name, work_site_id, email, tel, author_1_name, author_1_age,
-                                   author_1_class,
-                                   author_2_name, author_2_age, author_2_class, author_3_name, author_3_age, author_3_class,
-                                   teacher_name, reg_tour, timeshift, None)
-                db.session.add(work_write)
+                db.session.add(d)
                 works_added += 1
                 db.session.commit()
             if status_id not in [s.status_id for s in ParticipationStatuses.query.all()]:
                 part_status = ParticipationStatuses(status_id, status_name)
                 db.session.add(part_status)
                 db.session.commit()
-            if work_id in [s.work_id for s in WorkStatuses.query.all()]:
-                db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
-                                                      ).update({WorkStatuses.status_id: status_id})
-                db.session.commit()
-                edited = True
-            else:
-                work_status = WorkStatuses(work_id, status_id)
-                db.session.add(work_status)
-                db.session.commit()
-            if work_id in [w.work_id for w in WorkCategories.query.all()]:
-                if not cat_id:
-                    work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
-                    db.session.delete(work_cat)
+            s = WorkStatuses(work_id, status_id)
+            if s not in WorkStatuses.query.all():
+                if work_id in [s.work_id for s in WorkStatuses.query.all()]:
+                    db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
+                                                          ).update({WorkStatuses.status_id: status_id})
                     db.session.commit()
                     edited = True
+            else:
+                db.session.add(s)
+                db.session.commit()
+            w_cat = WorkCategories(work_id, cat_id)
+            if w_cat not in WorkCategories.query.all():
+                if work_id in [w.work_id for w in WorkCategories.query.all()]:
+                    if not cat_id:
+                        work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
+                        db.session.delete(work_cat)
+                        db.session.commit()
+                        edited = True
+                    else:
+                        db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id
+                                                                ).update({WorkCategories.cat_id: cat_id})
+                        db.session.commit()
+                        edited = True
                 else:
-                    db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id
-                                                            ).update({WorkCategories.cat_id: cat_id})
-                    db.session.commit()
-                    edited = True
-            else:
-                if cat_id:
-                    work_cat = WorkCategories(work_id, cat_id)
-                    db.session.add(work_cat)
-                    db.session.commit()
+                    if cat_id:
+                        db.session.add(w_cat)
+                        db.session.commit()
             if edited:
                 works_edited += 1
 
-    if type(url) == list:
+    if type(url) == list and 'category_page' in url:
         errs = 'Обновлено успешно'
         return redirect(url_for('.category_page', cat_id=url[1]))
     else:
@@ -3235,61 +3233,6 @@ def many_applications():
     text = '{"works": ' + request.form['text'].strip('\n') + '}'
     works = json.loads(text)
     w = works['works']
-    works_applied = []
-    participants = []
-    for n in w:
-        works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
-        works_applied.extend(works)
-        part_s = [{'id': int(p['id']), 'appl': int(n['id']), 'last_name': p['last_name'],
-                   'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
-                   'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
-        participants.extend(part_s)
-        for participant in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(n['id'])).all():
-            if participant.participant_id not in [p['id'] for p in participants]:
-                part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
-                                                                           participant.participant_id).first()
-                db.session.delete(part_to_del)
-                db.session.commit()
-    for appl in set(a.appl_id for a in ParticipantsApplied.query.all()):
-        if appl not in [a['appl'] for a in participants]:
-            ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).delete()
-            db.session.commit()
-    for work in works_applied:
-        if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
-            db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
-                                                       ).update({Applications2Tour.appl_no: work['appl'],
-                                                                 Applications2Tour.arrived: work['arrived']})
-            db.session.commit()
-        else:
-            if work['work'] in [wo.work_id for wo in Works.query.all()]:
-                wo = Works.query.filter(Works.work_id == work['work']).first().work_id
-                appl = Applications2Tour(wo, work['appl'], False)
-                db.session.add(appl)
-            db.session.commit()
-    for participant in participants:
-        if participant['id'] in [part.participant_id for part in ParticipantsApplied.query.all()]:
-            db.session.query(ParticipantsApplied
-                             ).filter(ParticipantsApplied.participant_id == participant['id']
-                                      ).update({ParticipantsApplied.appl_id: participant['appl'],
-                                                ParticipantsApplied.last_name: participant['last_name'],
-                                                ParticipantsApplied.first_name: participant['first_name'],
-                                                ParticipantsApplied.patronymic_name: participant['patronymic_name'],
-                                                ParticipantsApplied.participant_class: participant['participant_class'],
-                                                ParticipantsApplied.role: participant['role']})
-            db.session.commit()
-        else:
-            part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
-                                       participant['first_name'], participant['patronymic_name'],
-                                       participant['participant_class'], participant['role'], None)
-            db.session.add(part)
-            db.session.commit()
-    return redirect(url_for('.applications_2_tour'))
-
-
-@app.route('/button_applications')
-def button_applications():
-    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
-                                        headers=mail_data.headers).text)
     works_applied = []
     participants = []
     organisations = []
@@ -3310,39 +3253,40 @@ def button_applications():
                                                                            participant.participant_id).first()
                 db.session.delete(part_to_del)
                 db.session.commit()
-    for appl in set(a.appl_id for a in ParticipantsApplied.query.all()):
-        if appl not in [a['appl'] for a in participants]:
-            ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).delete()
-            db.session.commit()
     for work in works_applied:
-        if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
-            db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
-                                                       ).update({Applications2Tour.appl_no: work['appl'],
-                                                                 Applications2Tour.arrived: work['arrived']})
-            db.session.commit()
-        else:
-            if work['work'] in [wo.work_id for wo in Works.query.all()]:
-                wo = Works.query.filter(Works.work_id == work['work']).first().work_id
-                appl = Applications2Tour(wo, work['appl'], False)
-                db.session.add(appl)
-            db.session.commit()
+        if Applications2Tour(work['work'], work['appl'], False) not in Applications2Tour.query.all():
+            if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
+                db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
+                                                           ).update({Applications2Tour.appl_no: work['appl'],
+                                                                     Applications2Tour.arrived: work['arrived']})
+                db.session.commit()
+            else:
+                if work['work'] in [wo.work_id for wo in Works.query.all()]:
+                    wo = Works.query.filter(Works.work_id == work['work']).first().work_id
+                    appl = Applications2Tour(wo, work['appl'], False)
+                    db.session.add(appl)
+                    db.session.commit()
     for participant in participants:
-        if participant['id'] in [part.participant_id for part in ParticipantsApplied.query.all()]:
-            db.session.query(ParticipantsApplied
-                             ).filter(ParticipantsApplied.participant_id == participant['id']
-                                      ).update({ParticipantsApplied.appl_id: participant['appl'],
-                                                ParticipantsApplied.last_name: participant['last_name'],
-                                                ParticipantsApplied.first_name: participant['first_name'],
-                                                ParticipantsApplied.patronymic_name: participant['patronymic_name'],
-                                                ParticipantsApplied.participant_class: participant['participant_class'],
-                                                ParticipantsApplied.role: participant['role']})
-            db.session.commit()
-        else:
-            part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
-                                       participant['first_name'], participant['patronymic_name'],
-                                       participant['participant_class'], participant['role'], None)
-            db.session.add(part)
-            db.session.commit()
+        if ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
+                               participant['first_name'], participant['patronymic_name'],
+                               participant['participant_class'], participant['role'], None) \
+                not in ParticipantsApplied.query.all():
+            if participant['id'] in [p.participant_id for p in ParticipantsApplied.query.all()]:
+                db.session.query(ParticipantsApplied
+                                 ).filter(ParticipantsApplied.participant_id == participant['id']
+                                          ).update({ParticipantsApplied.appl_id: participant['appl'],
+                                                    ParticipantsApplied.last_name: participant['last_name'],
+                                                    ParticipantsApplied.first_name: participant['first_name'],
+                                                    ParticipantsApplied.patronymic_name: participant['patronymic_name'],
+                                                    ParticipantsApplied.participant_class: participant['participant_class'],
+                                                    ParticipantsApplied.role: participant['role']})
+                db.session.commit()
+            else:
+                part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
+                                           participant['first_name'], participant['patronymic_name'],
+                                           participant['participant_class'], participant['role'], None)
+                db.session.add(part)
+                db.session.commit()
 
     for organisation in organisations:
         if Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
@@ -3370,6 +3314,127 @@ def button_applications():
                 o = OrganisationApplication(organisation['organisation_id'], organisation['appl_no'],
                                             organisation['arrived'])
                 db.session.add(o)
+                db.session.commit()
+
+    applications_to_del = [a.appl_no for a in Applications2Tour.query.all()
+                           if a.appl_no not in [o['appl_no'] for o in organisations]]
+    for a in applications_to_del:
+        if a in [wo.appl_no for wo in Applications2Tour.query.all()]:
+            for to_del in db.session.query(Applications2Tour).filter(Applications2Tour.appl_no == a).all():
+                db.session.delete(to_del)
+                db.session.commit()
+        if a in [wo.appl_id for wo in ParticipantsApplied.query.all()]:
+            for to_del in db.session.query(ParticipantsApplied).filter(ParticipantsApplied.appl_id == a).all():
+                db.session.delete(to_del)
+                db.session.commit()
+        if a in [wo.appl_no for wo in OrganisationApplication.query.all()]:
+            for to_del in db.session.query(OrganisationApplication).filter(OrganisationApplication.appl_no == a).all():
+                db.session.delete(to_del)
+                db.session.commit()
+    return redirect(url_for('.applications_2_tour'))
+
+
+@app.route('/button_applications')
+def button_applications():
+    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
+                                        headers=mail_data.headers).text)
+    works_applied = []
+    participants = []
+    organisations = []
+    for n in response:
+        organisation = {'organisation_id': int(n['organization']['id']), 'name': n['organization']['name'],
+                        'city': n['organization']['city'], 'country': n['organization']['country'],
+                        'appl_no': int(n['id']), 'arrived': bool(n['arrival'])}
+        organisations.append(organisation)
+        works = [{'work': int(a['number']), 'appl': int(n['id']), 'arrived': bool(n['arrival'])} for a in n['works']]
+        works_applied.extend(works)
+        part_s = [{'id': int(p['id']), 'appl': int(n['id']), 'last_name': p['last_name'],
+                   'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
+                   'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
+        participants.extend(part_s)
+        for participant in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(n['id'])).all():
+            if participant.participant_id not in [p['id'] for p in participants]:
+                part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
+                                                                           participant.participant_id).first()
+                db.session.delete(part_to_del)
+                db.session.commit()
+    for work in works_applied:
+        if Applications2Tour(work['work'], work['appl'], False) not in Applications2Tour.query.all():
+            if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
+                db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
+                                                           ).update({Applications2Tour.appl_no: work['appl'],
+                                                                     Applications2Tour.arrived: work['arrived']})
+                db.session.commit()
+            else:
+                if work['work'] in [wo.work_id for wo in Works.query.all()]:
+                    wo = Works.query.filter(Works.work_id == work['work']).first().work_id
+                    appl = Applications2Tour(wo, work['appl'], False)
+                    db.session.add(appl)
+                    db.session.commit()
+    for participant in participants:
+        if ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
+                               participant['first_name'], participant['patronymic_name'],
+                               participant['participant_class'], participant['role'], None) \
+                not in ParticipantsApplied.query.all():
+            if participant['id'] in [p.participant_id for p in ParticipantsApplied.query.all()]:
+                db.session.query(ParticipantsApplied
+                                 ).filter(ParticipantsApplied.participant_id == participant['id']
+                                          ).update({ParticipantsApplied.appl_id: participant['appl'],
+                                                    ParticipantsApplied.last_name: participant['last_name'],
+                                                    ParticipantsApplied.first_name: participant['first_name'],
+                                                    ParticipantsApplied.patronymic_name: participant['patronymic_name'],
+                                                    ParticipantsApplied.participant_class: participant['participant_class'],
+                                                    ParticipantsApplied.role: participant['role']})
+                db.session.commit()
+            else:
+                part = ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
+                                           participant['first_name'], participant['patronymic_name'],
+                                           participant['participant_class'], participant['role'], None)
+                db.session.add(part)
+                db.session.commit()
+
+    for organisation in organisations:
+        if Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
+                         organisation['country']) not in Organisations.query.all():
+            if organisation['organisation_id'] in [o.organisation_id for o in Organisations.query.all()]:
+                db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id'])\
+                    .update({Organisations.name: organisation['name'],
+                             Organisations.city: organisation['city'],
+                             Organisations.country: organisation['country']})
+                db.session.commit()
+            else:
+                o = Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
+                         organisation['country'])
+                db.session.add(o)
+                db.session.commit()
+        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'], organisation['arrived'])\
+                not in OrganisationApplication.query.all():
+            if organisation['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
+                db.session.query(OrganisationApplication)\
+                    .filter(OrganisationApplication.organisation_id == organisation['organisation_id']) \
+                    .update({OrganisationApplication.appl_no: organisation['appl_no'],
+                             OrganisationApplication.arrived: organisation['arrived']})
+                db.session.commit()
+            else:
+                o = OrganisationApplication(organisation['organisation_id'], organisation['appl_no'],
+                                            organisation['arrived'])
+                db.session.add(o)
+                db.session.commit()
+
+    applications_to_del = [a.appl_no for a in Applications2Tour.query.all()
+                           if a.appl_no not in [o['appl_no'] for o in organisations]]
+    for a in applications_to_del:
+        if a in [wo.appl_no for wo in Applications2Tour.query.all()]:
+            for to_del in db.session.query(Applications2Tour).filter(Applications2Tour.appl_no == a).all():
+                db.session.delete(to_del)
+                db.session.commit()
+        if a in [wo.appl_id for wo in ParticipantsApplied.query.all()]:
+            for to_del in db.session.query(ParticipantsApplied).filter(ParticipantsApplied.appl_id == a).all():
+                db.session.delete(to_del)
+                db.session.commit()
+        if a in [wo.appl_no for wo in OrganisationApplication.query.all()]:
+            for to_del in db.session.query(OrganisationApplication).filter(OrganisationApplication.appl_no == a).all():
+                db.session.delete(to_del)
                 db.session.commit()
     return redirect(url_for('.applications_2_tour'))
 
@@ -4555,6 +4620,22 @@ def add_bank_statement():
                     db.session.add(pay)
                     db.session.commit()
     return redirect(url_for('.load_statement', success=True))
+
+
+@app.route('/payment_stats')
+def payment_stats():
+    statement_db = db.session.query(BankStatement)\
+        .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
+    clauses = []
+    for t in set(p.payment_type for p in PaymentTypes.query.all()):
+        t_payments = statement_db.filter(PaymentTypes.payment_type == t).all()
+        s = sum([p.debit for p in t_payments])
+        if s % 1 == 0:
+            s = f'{int(s):,}'.replace(',', ' ')
+        else:
+            s = f'{s:,}'.replace(',', ' ')
+        clauses.append({'name': t, 'sum': s})
+    return render_template('participants_and_payment/payment_stats.html', year=curr_year, clauses=clauses)
 
 
 @app.route('/alternative_payments', defaults={'edit': None, 'payment_id': None, 'length': 30, 'page': 1})

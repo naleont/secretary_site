@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Статистика оплат</h2>
+
+{% for clause in clauses %}
+Получено денег ({{ clause['name'] }}): {{ clause['sum'] }} р.<br>
+{% endfor %}
+
+{% endblock %}
