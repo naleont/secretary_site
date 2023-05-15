@@ -110,26 +110,33 @@
             {{ work['status'] }}
             {% endif %}
         </td>
-        <td align="сenter">
+        <td align="сenter"
             {% if work['appl_no'] == False %}
+            >
             Не подана
             {% else %}
+            bgcolor="#C6E0B4">
             {{ work['appl_no'] }}
             {% endif %}
         </td>
-        <td align="сenter">
+        <td align="сenter"
             {% if work['included'] == True %}
+            bgcolor="#C6E0B4">
             Включена
             {% else %}
+            >
             Не включена
             {% endif %}
         </td>
-        <td align="сenter">
+        <td align="сenter"
             {% if work['arrived'] == True %}
+            bgcolor="#C6E0B4">
             Отмечен
             {% elif work['org_arrived'] == True %}
+            bgcolor="#C6E0B4">
             Отмечен
             {% else %}
+            >
             Не отмечен
             {% endif %}
         </td>
