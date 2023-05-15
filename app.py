@@ -3358,7 +3358,7 @@ def button_applications():
                          organisation['country'])
                 db.session.add(o)
                 db.session.commit()
-        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'])\
+        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'], organisation['arrived'])\
                 not in OrganisationApplication.query.all():
             if organisation['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
                 db.session.query(OrganisationApplication)\
