@@ -4414,17 +4414,20 @@ def online_participants_applications(one_cat, length, page):
         works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
         one_cat = 'all'
     else:
-        cat_id = int(one_cat)
+        if '{' in one_cat:
+            one_cat = json.loads(one_cat.replace("'", '"'))
+        else:
+            cat_id = int(one_cat)
+            one_cat = {'cat_id': cat_id, 'short_name': Categories.query.filter(Categories.cat_id == cat_id)
+            .first().short_name}
         wks = [w.work_id for w in AppliedForOnline.query
         .join(WorkCategories, AppliedForOnline.work_id == WorkCategories.work_id)
         .join(WorkStatuses, AppliedForOnline.work_id == WorkStatuses.work_id)
         .join(Works, AppliedForOnline.work_id == Works.work_id)
-        .filter(WorkCategories.cat_id == cat_id)
+        .filter(WorkCategories.cat_id == one_cat['cat_id'])
         .filter(Works.reported == 1).all()]
         works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in wks]
     # works = sorted(works_applied, key=lambda x: x['organisation_id'])
-        one_cat = {'cat_id': cat_id, 'short_name': Categories.query.filter(Categories.cat_id == cat_id)
-        .first().short_name}
         n = 1
     return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
                            length=length, link='online_participants_applications', cats=cats, one_cat=one_cat)
