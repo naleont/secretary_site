@@ -4396,7 +4396,7 @@ def delete_online_participant(work_id):
     return redirect(url_for('.online_participants'))
 
 
-@app.route('/online_participants_applications/<one_cat>', defaults={'length': 30, 'page': 1})
+@app.route('/online_participants_applications/<one_cat>', defaults={'length': 50, 'page': 1})
 @app.route('/online_participants_applications/<one_cat>/<length>/<page>')
 def online_participants_applications(one_cat, length, page):
     access = check_access(3)
@@ -4407,11 +4407,16 @@ def online_participants_applications(one_cat, length, page):
         wks = [w.work_id for w in AppliedForOnline.query
         .join(WorkOrganisations, AppliedForOnline.work_id == WorkOrganisations.work_id)
         .join(WorkStatuses, AppliedForOnline.work_id == WorkStatuses.work_id)
+        .join(Works, AppliedForOnline.work_id == Works.work_id)
+        .filter(Works.reported == 1)
         .order_by(WorkOrganisations.organisation_id)
         .order_by(WorkStatuses.status_id).all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
         n, data = make_pages(length, works, page)
-        works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
+        w = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
+        w = sorted(w, key=lambda x: x['appl_no'])
+        w = sorted(w, key=lambda x: x['included'])
+        works = sorted(w, key=lambda x: x['arrived'])
         one_cat = 'all'
     else:
         if '{' in one_cat:
@@ -4425,12 +4430,13 @@ def online_participants_applications(one_cat, length, page):
         .join(WorkStatuses, AppliedForOnline.work_id == WorkStatuses.work_id)
         .join(Works, AppliedForOnline.work_id == Works.work_id)
         .filter(WorkCategories.cat_id == one_cat['cat_id'])
-        .filter(Works.reported == 1).all()]
+        .filter(Works.reported == 1)
+        .order_by(WorkStatuses.status_id).all()]
         works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in wks]
     # works = sorted(works_applied, key=lambda x: x['organisation_id'])
         n = 1
     return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
-                           length=length, link='online_participants_applications', cats=cats, one_cat=one_cat)
+                           length=length, link='online_participants_applications/' + one_cat, cats=cats, one_cat=one_cat)
 
 
 @app.route('/renew_applications/<one_cat>/<q_type>/<q_id>')
