@@ -4445,7 +4445,7 @@ def online_participants_applications(one_cat, length, page):
     # works = sorted(works_applied, key=lambda x: x['organisation_id'])
         n = 1
     return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
-                           length=length, link='online_participants_applications/' + one_cat, cats=cats, one_cat=one_cat)
+                           length=length, link='online_participants_applications/all', cats=cats, one_cat=one_cat)
 
 
 @app.route('/renew_applications/<one_cat>/<q_type>/<q_id>')
