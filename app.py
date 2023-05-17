@@ -735,6 +735,8 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
                     work['included'] = False
                     work['org_arrived'] = OrganisationApplication.query\
                         .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().arrived
+        if work['appl_no'] is None:
+            work['appl_no'] = False
 
     return work
 
@@ -3421,6 +3423,12 @@ def button_applications():
                 db.session.add(o)
                 db.session.commit()
 
+    for org in [o.organisation_id for o in Organisations.query.all()
+                if o.organisation_id not in [a.organisation_id for a in OrganisationApplication.query.all()]]:
+        o = OrganisationApplication(org, None, None)
+        db.session.add(o)
+        db.session.commit()
+
     applications_to_del = [a.appl_no for a in Applications2Tour.query.all()
                            if a.appl_no not in [o['appl_no'] for o in organisations]]
     for a in applications_to_del:
@@ -4408,15 +4416,16 @@ def online_participants_applications(one_cat, length, page):
         .join(WorkOrganisations, AppliedForOnline.work_id == WorkOrganisations.work_id)
         .join(WorkStatuses, AppliedForOnline.work_id == WorkStatuses.work_id)
         .join(Works, AppliedForOnline.work_id == Works.work_id)
+        .join(OrganisationApplication, WorkOrganisations.organisation_id == OrganisationApplication.organisation_id)
         .filter(Works.reported == 1)
+        .order_by(OrganisationApplication.appl_no)
+        .order_by(OrganisationApplication.arrived)
         .order_by(WorkOrganisations.organisation_id)
         .order_by(WorkStatuses.status_id).all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
         n, data = make_pages(length, works, page)
         w = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
-        w = sorted(w, key=lambda x: x['appl_no'])
-        w = sorted(w, key=lambda x: x['included'])
-        works = sorted(w, key=lambda x: x['arrived'])
+        works = sorted(w, key=lambda x: x['included'])
         one_cat = 'all'
     else:
         if '{' in one_cat:
