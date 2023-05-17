@@ -48,6 +48,9 @@
         <td align="center" width="65%"><b>
             Название
         </b></td>
+        <td align="center" width="65%"><b>
+            Авторы
+        </b></td>
         {% if union == True %}
         <td align="center" width="9%"><b>
             Секция
@@ -99,6 +102,10 @@
         <td>
             <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
                 {{ work['work_name'] }}</a>
+        </td>
+        <td>
+            <a target="_blank" href="https://vernadsky.info/personal_office/view_work/?work_id={{ work['site_id'] }}">
+                {{ work['authors'] }}</a>
         </td>
             {% if union == True %}
         <td>
