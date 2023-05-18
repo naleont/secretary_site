@@ -2,7 +2,14 @@
 
 {% block content %}
 
-<h2></h2>
+<h2>Участники Дополнительного онлайн-конкурса</h2>
+
+<div class="bigger">
+    Заявлено работ: {{ applied }}<br>
+    Выступили: {{ reported }}
+</div>
+
+{% include 'include/iterate_pages.html' %}
 
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
@@ -17,6 +24,12 @@
         </b></td>
         <td align="center"><b>
             Название работы
+        </b></td>
+        <td align="center"><b>
+            Секция
+        </b></td>
+        <td align="center"><b>
+            Выступление
         </b></td>
     </tr>
     {% for work in works %}
@@ -35,6 +48,16 @@
         </td>
         <td valign="middle">
             {{ work['work_name']}}
+        </td>
+        <td valign="middle">
+            {{ work['cat_short']}}
+        </td>
+        <td valign="middle">
+            {% if work['reported'] == True %}
+            Выступил
+            {% else %}
+            Не выступил
+            {% endif %}
         </td>
     </tr>
     {% endfor %}

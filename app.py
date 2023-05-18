@@ -4384,16 +4384,22 @@ def delete_participated_work(work_id):
     return redirect(url_for('.works_participated'))
 
 
-@app.route('/online_participants')
-def online_participants():
+@app.route('/online_participants', defaults={'length': 30, 'page': 1})
+@app.route('/online_participants/<length>/<page>')
+def online_participants(length, page):
     access = check_access(3)
     if access is not True:
         return access
     wks = [w.work_id for w in AppliedForOnline.query.all()]
-    works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    applied = len(wks)
+    n, data = make_pages(length, wks, page)
+    works = [work_info(w, reports_info=True) for w in data if str(w)[:2] == str(curr_year)[-2:]]
     for work in works:
         work['link_name'] = work['work_name'].strip('?')
-    return render_template('online_reports/online_participants.html', works=works)
+    reported = len([w.work_id for w in AppliedForOnline.query
+                   .join(Works, AppliedForOnline.work_id == Works.work_id).filter(Works.reported ==1).all()])
+    return render_template('online_reports/online_participants.html', works=works, pages=n, page=page,
+                           length=length, link='online_participants', applied=applied, reported=reported)
 
 
 @app.route('/delete_online_participant/<work_id>')
