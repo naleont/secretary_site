@@ -784,3 +784,50 @@ class CategoryUnions(db.Model):
         self.year = year
         self.union_id = union_id
         self.cat_id = cat_id
+
+
+class Experts(db.Model):
+    __tablename__ = 'experts'
+
+    expert_id = db.Column('expert_id', db.Integer, primary_key=True)
+    last_name = db.Column('last_name', db.Text)
+    first_name = db.Column('first_name', db.Text)
+    patronymic = db.Column('patronymic', db.Text)
+    email = db.Column('email', db.Text)
+    degree = db.Column('degree', db.Text)
+    place_of_work = db.Column('place_of_work', db.Text)
+    year = db.Column('year', db.Integer)
+
+    def __init__(self, last_name, first_name, patronymic, email, degree, place_of_work, year):
+        self.last_name = last_name
+        self.first_name = first_name
+        self.patronymic = patronymic
+        self.email = email
+        self.degree = degree
+        self.place_of_work = place_of_work
+        self.year = year
+
+
+class CatExperts(db.Model):
+    __tablename__ = 'cat_experts'
+    __table_args__ = (PrimaryKeyConstraint('expert_id', 'cat_id'),)
+
+    expert_id = db.Column('expert_id', db.Integer, ForeignKey('experts.expert_id'))
+    cat_id = db.Column('cat_id', db.Integer, ForeignKey('categories.cat_id'))
+    day_1_started = db.Column('day_1_started', db.Time)
+    day_1_finished = db.Column('day_1_finished', db.Time)
+    day_2_started = db.Column('day_2_started', db.Time)
+    day_2_finished = db.Column('day_2_finished', db.Time)
+    day_3_started = db.Column('day_3_started', db.Time)
+    day_3_finished = db.Column('day_3_finished', db.Time)
+
+    def __init__(self, expert_id, cat_id, day_1_started, day_1_finished, day_2_started, day_2_finished, day_3_started,
+                 day_3_finished):
+        self.expert_id = expert_id
+        self.cat_id = cat_id
+        self.day_1_started = day_1_started
+        self.day_1_finished = day_1_finished
+        self.day_2_started = day_2_started
+        self.day_2_finished = day_2_finished
+        self.day_3_started = day_3_started
+        self.day_3_finished = day_3_finished

@@ -10,7 +10,7 @@
 
 <table width="100%">
     <tr>
-        <td rowspan="3">
+        <td rowspan="4">
             {{ category['contest'] }}<br>
             Направление: {{ category['direction'] }}<br>
             {% if category['tg_channel'] %}
@@ -51,6 +51,11 @@
                 <button {% if need_analysis == True %} class="red-button" {% else %} {% endif %}>Анализ рецензий</button>
             </a></td>
         {% endif %}
+    </tr>
+    <tr>
+            <td width="auto" valign="middle"><a href="/experts/{{ category['id'] }}">
+                <button>Эксперты секции</button>
+            </a></td>
     </tr>
 </table>
 
