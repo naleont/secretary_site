@@ -2,8 +2,9 @@
 
 {% block content %}
 
-<h2>Эксперты секции {{ cat['name'] }}</h2>
+<h2>Эксперты секций</h2>
 
+{% if cat_id != 'all' %}
 <div class="bigger">Добавить эксперта, уже зарегистрированного на другой секции:
     <div class="drop">
       <button class="dropping">
@@ -11,13 +12,13 @@
       </button>
       <div class="dropped">
           {% for expert in all_exps %}
-            <a href="/add_existing_expert/{{ cat['id'] }}/{{ expert['id'] }}">{{ expert['name'] }}</a>
+            <a href="/add_existing_expert/{{ cats[0]['id'] }}/{{ expert['id'] }}">{{ expert['name'] }}</a>
           {% endfor %}
       </div>
     </div>
 </div>
 
-<form action="/save_expert/{{ cat['id'] }}" method="POST">
+<form action="/save_expert/{{ cats[0]['id'] }}" method="POST">
     <fieldset>
         <table>
             <tr>
@@ -93,11 +94,14 @@
         </table>
     </fieldset>
 </form>
+{% endif %}
 
 <br>
 
-<form action="/expert_time/{{ cat['id'] }}" method="POST">
+{% if cat_id != 'all' %}
+<form action="/expert_time/{{ cats[0]['id'] }}" method="POST">
     <fieldset>
+{% endif %}
         <table frame="void" border="2px" bordercolor="#4962A4" width="100%">
             <tr>
                 <td align="center" rowspan="2"><b>
@@ -118,41 +122,27 @@
                 <td align="center" rowspan="2"><b>
                     Место работы
                 </b></td>
-                {% if c_dates['d_3'] != None and c_dates['d_2'] != None and c_dates['d_1'] != None %}
-                <td align="center" colspan="3">
-                    <input class="button" type="submit" value="Сохранить"><br><b>
+                <td align="center" colspan="{{ all_days|length }}"><b>
+                    {% if cat_id != 'all' %}
+                    <input class="button" type="submit" value="Сохранить"><br>
+                    {% endif %}
                     Время работы
                 </b></td>
-                {% elif c_dates['d_2'] != None and c_dates['d_1'] != None %}
-                <td align="center" colspan="2">
-                    <input class="button" type="submit" value="Сохранить"><br><b>
-                    Время работы
-                </b></td>
-                {% elif c_dates['d_1'] != None %}
-                <td align="center">
-                    <input class="button" type="submit" value="Сохранить"><br><b>
-                    Время работы
-                </b></td>
-                {% endif %}
             </tr>
             <tr>
-                {% if c_dates['d_1'] != None %}
-                <td align="center"><b>
-                    {{ c_dates['d_1'] }}
+                {% for d in all_days %}
+                <td align="center">
+                    {{ d }}
                 </b></td>
-                {% endif %}
-                {% if c_dates['d_2'] != None %}
-                <td align="center"><b>
-                    {{ c_dates['d_2'] }}
-                </b></td>
-                {% endif %}
-                {% if c_dates['d_3'] != None %}
-                <td align="center"><b>
-                    {{ c_dates['d_3'] }}
-                </b></td>
-                {% endif %}
+                {% endfor %}
             </tr>
-            {% for expert in cat_experts %}
+            {% for cat in cats %}
+            <tr>
+                <td align="center" colspan="{{ 6 + all_days|length }}">
+                    <b>{{ cat['name'] }}</b>
+                </td>
+            </tr>
+            {% for expert in cat['experts'] %}
             <tr>
                 <td align="center">
                     <a href="/delete_expert/{{ cat['id'] }}/{{ expert['expert_id'] }}" class="alarm">
@@ -180,43 +170,60 @@
                 <td>
                     {{ expert['place_of_work'] }}
                 </td>
-                {% if c_dates['d_1'] != None %}
+                {% for d in all_days %}
                 <td align="center">
+                {% if cat['c_dates']['d_1'] != None and cat['c_dates']['d_1'] == d %}
+                    {% if cat_id != 'all' %}
                     <input type="time" name="day_1_start/{{ expert['expert_id'] }}"
-                    {% if expert['day_1_start'] != None %}
+                    {% if expert['day_1_start'] != '' %}
                     value="{{ expert['day_1_start'] }}"
-                    {% endif %}> -  <input type="time" name="day_1_end/{{ expert['expert_id'] }}"
-                    {% if expert['day_1_end'] != None %}
+                    {% endif %}> - <input type="time" name="day_1_end/{{ expert['expert_id'] }}"
+                    {% if expert['day_1_end'] != '' %}
                     value="{{ expert['day_1_end'] }}"
                     {% endif %}>
-                </td>
-                {% endif %}
-                {% if c_dates['d_2'] != None %}
-                <td align="center">
+                    {% else %}
+                    {% if expert['day_1_start'] != '' or expert['day_1_end'] != '' %}
+                    {{ expert['day_1_start'] }} - {{ expert['day_1_end'] }}
+                    {% endif %}
+                    {% endif %}
+                {% elif cat['c_dates']['d_2'] != None and cat['c_dates']['d_2'] == d %}
+                    {% if cat_id != 'all' %}
                     <input type="time" name="day_2_start/{{ expert['expert_id'] }}"
-                    {% if expert['day_2_start'] != None %}
+                    {% if expert['day_2_start'] != '' %}
                     value="{{ expert['day_2_start'] }}"
-                    {% endif %}> -  <input type="time" name="day_2_end/{{ expert['expert_id'] }}"
-                    {% if expert['day_2_end'] != None %}
+                    {% endif %}> - <input type="time" name="day_2_end/{{ expert['expert_id'] }}"
+                    {% if expert['day_2_end'] != '' %}
                     value="{{ expert['day_2_end'] }}"
                     {% endif %}>
-                </td>
-                {% endif %}
-                {% if c_dates['d_3'] != None %}
-                <td align="center">
+                    {% else %}
+                    {% if expert['day_2_start'] != '' or expert['day_2_end'] != '' %}
+                    {{ expert['day_2_start'] }} - {{ expert['day_2_end'] }}
+                    {% endif %}
+                    {% endif %}
+                {% elif cat['c_dates']['d_3'] != None and cat['c_dates']['d_3'] == d %}
+                    {% if cat_id != 'all' %}
                     <input type="time" name="day_3_start/{{ expert['expert_id'] }}"
-                    {% if expert['day_3_start'] != None %}
+                    {% if expert['day_3_start'] != '' %}
                     value="{{ expert['day_3_start'] }}"
-                    {% endif %}> -  <input type="time" name="day_3_end/{{ expert['expert_id'] }}"
-                    {% if expert['day_3_end'] != None %}
+                    {% endif %}> - <input type="time" name="day_3_end/{{ expert['expert_id'] }}"
+                    {% if expert['day_3_end'] != '' %}
                     value="{{ expert['day_3_end'] }}"
                     {% endif %}>
-                </td>
+                    {% else %}
+                    {% if expert['day_3_start'] != '' or expert['day_3_end'] != '' %}
+                    {{ expert['day_3_start'] }} - {{ expert['day_3_end'] }}
+                    {% endif %}
+                    {% endif %}
                 {% endif %}
+                </td>
+                {% endfor %}
             </tr>
             {% endfor %}
+            {% endfor %}
         </table>
+{% if cat_id != 'all' %}
     </fieldset>
 </form>
+{% endif %}
 
 {% endblock %}
