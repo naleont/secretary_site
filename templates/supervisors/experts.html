@@ -104,36 +104,33 @@
 {% endif %}
         <table frame="void" border="2px" bordercolor="#4962A4" width="100%">
             <tr>
-                <td align="center" rowspan="2"><b>
+                <th align="center" rowspan="2" colspan="2"><b>
 
-                </b></td>
-                <td align="center" rowspan="2"><b>
-
-                </b></td>
-                <td align="center" rowspan="2"><b>
+                </b></th>
+                <th align="center" rowspan="2"><b>
                     ФИО
-                </b></td>
-                <td align="center" rowspan="2"><b>
+                </b></th>
+                <th align="center" rowspan="2"><b>
                     e-mail
-                </b></td>
-                <td align="center" rowspan="2"><b>
+                </b></th>
+                <th align="center" rowspan="2"><b>
                     Ученая степень
-                </b></td>
-                <td align="center" rowspan="2"><b>
+                </b></th>
+                <th align="center" rowspan="2"><b>
                     Место работы
-                </b></td>
-                <td align="center" colspan="{{ all_days|length }}"><b>
+                </b></th>
+                <th align="center" colspan="{{ all_days|length }}"><b>
                     {% if cat_id != 'all' %}
                     <input class="button" type="submit" value="Сохранить"><br>
                     {% endif %}
                     Время работы
-                </b></td>
+                </b></th>
             </tr>
             <tr>
                 {% for d in all_days %}
-                <td align="center">
+                <th align="center">
                     {{ d }}
-                </b></td>
+                </b></th>
                 {% endfor %}
             </tr>
             {% for cat in cats %}
