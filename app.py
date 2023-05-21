@@ -3248,7 +3248,7 @@ def button_works(cat_id):
         if url[1] != '':
             return redirect(url_for('.category_page', cat_id=int(url[1])))
         else:
-            return redirect(url_for('.categories'))
+            return redirect(url_for('.categories_list'))
     else:
         return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
 
