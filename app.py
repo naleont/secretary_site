@@ -4601,9 +4601,15 @@ def renew_organisations(one_cat, which):
 
 @app.route('/download_online_reported')
 def download_online_reported():
-    works = [{'Номер работы': w.work_id, 'Название': w.work_name} for w
+    works = [{'Номер работы': w.work_id, 'Название': w.work_name, 'e-mail': w.email} for w
              in Works.query.join(AppliedForOnline, Works.work_id == AppliedForOnline.work_id)
              .filter(Works.reported == 1).all()]
+    for w in works:
+        if w['Номер работы'] in [wk.work_id for wk
+                                 in PaymentRegistration.query.filter(PaymentRegistration.for_work == 1).all()]:
+            w['Оплата'] = 'Да'
+        else:
+            w['Оплата'] = 'Нет'
     df = pd.DataFrame(data=works)
     if not os.path.isdir('static/files/generated_files'):
         os.mkdir('static/files/generated_files')
