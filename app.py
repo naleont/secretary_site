@@ -715,13 +715,17 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
         if work_id in [w.work_id for w in Applications2Tour.query.all()]:
             appl_db = db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work_id).first()
             work['appl_no'] = appl_db.appl_no
-            work['arrived'] = appl_db.arrived
             work['included'] = True
+            if work['appl_no'] is None:
+                work['appl_no'] = False
+                work['included'] = False
+            work['arrived'] = appl_db.arrived
         else:
             work['appl_no'] = False
             work['arrived'] = False
             work['included'] = False
 
+        if work['appl_no'] is False:
             if 'organisation_id' not in work.keys():
                 if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
                     work['organisation_id'] = WorkOrganisations.query.filter(WorkOrganisations.work_id == work_id)\
@@ -3101,6 +3105,14 @@ def button_works(cat_id):
     works_edited = 0
     if cat_id == 'all':
         cats = [c.cat_site_id for c in Categories.query.filter(Categories.year == curr_year).all()]
+    elif cat_id =='en':
+        cats = [c.cat_site_id for c in Categories.query.join(CatDirs, Categories.cat_id == CatDirs.cat_id)
+        .join(Directions, CatDirs.dir_id == Directions.direction_id).filter(Categories.year == curr_year)
+        .filter(Directions.dir_name == 'Естественнонаучное').all()]
+    elif cat_id =='gum':
+        cats = [c.cat_site_id for c in Categories.query.join(CatDirs, Categories.cat_id == CatDirs.cat_id)
+        .join(Directions, CatDirs.dir_id == Directions.direction_id).filter(Categories.year == curr_year)
+        .filter(Directions.dir_name == 'Гуманитарное').all()]
     else:
         cats = [Categories.query.filter(Categories.cat_id == int(cat_id)).first().cat_site_id]
 
@@ -3162,11 +3174,14 @@ def button_works(cat_id):
             reg_tour = n['regional_tour']
             if work_id in [w.work_id for w in Works.query.all()]:
                 rep = Works.query.filter(Works.work_id == work_id).first().reported
-                d = Works(work_id=work_id, work_name=work_name, work_site_id=work_site_id, email=email, tel=tel,
-                          author_1_name=author_1_name, author_1_age=author_1_age, author_1_class=author_1_class,
-                          author_2_name=author_2_name, author_2_age=author_2_age, author_2_class=author_2_class,
-                          author_3_name=author_3_name, author_3_age=author_3_age, author_3_class=author_3_class,
-                          teacher_name=teacher_name, reg_tour=reg_tour, msk_time_shift=timeshift, reported=rep)
+            else:
+                rep = False
+            d = Works(work_id=work_id, work_name=work_name, work_site_id=work_site_id, email=email, tel=tel,
+                      author_1_name=author_1_name, author_1_age=author_1_age, author_1_class=author_1_class,
+                      author_2_name=author_2_name, author_2_age=author_2_age, author_2_class=author_2_class,
+                      author_3_name=author_3_name, author_3_age=author_3_age, author_3_class=author_3_class,
+                      teacher_name=teacher_name, reg_tour=reg_tour, msk_time_shift=timeshift, reported=rep)
+            if work_id in [w.work_id for w in Works.query.all()]:
                 if Works.query.filter(Works.work_id == work_id).first() != d:
                     db.session.query(Works).filter(Works.work_id == work_id).update({Works.work_name: work_name,
                                                                                      Works.work_site_id: work_site_id,
@@ -3222,6 +3237,11 @@ def button_works(cat_id):
                         db.session.commit()
             if edited:
                 works_edited += 1
+
+            if work_id not in [w.work_id for w in Applications2Tour.query.all()]:
+                w = Applications2Tour(work_id, None, False)
+                db.session.add(w)
+                db.session.commit()
 
     if type(url) == list and 'category_page' in url:
         errs = 'Обновлено успешно'
@@ -3434,8 +3454,9 @@ def button_applications():
                            if a.appl_no not in [o['appl_no'] for o in organisations]]
     for a in applications_to_del:
         if a in [wo.appl_no for wo in Applications2Tour.query.all()]:
-            for to_del in db.session.query(Applications2Tour).filter(Applications2Tour.appl_no == a).all():
-                db.session.delete(to_del)
+            for to_del in db.session.query(Applications2Tour).filter(Applications2Tour.appl_no == a):
+                to_del.update({Applications2Tour.appl_no: None,
+                               Applications2Tour.arrived: False})
                 db.session.commit()
         if a in [wo.appl_id for wo in ParticipantsApplied.query.all()]:
             for to_del in db.session.query(ParticipantsApplied).filter(ParticipantsApplied.appl_id == a).all():
@@ -4424,15 +4445,16 @@ def online_participants_applications(one_cat, length, page):
         .join(WorkStatuses, AppliedForOnline.work_id == WorkStatuses.work_id)
         .join(Works, AppliedForOnline.work_id == Works.work_id)
         .join(OrganisationApplication, WorkOrganisations.organisation_id == OrganisationApplication.organisation_id)
+        .join(Applications2Tour, AppliedForOnline.work_id == Applications2Tour.work_id)
         .filter(Works.reported == 1)
-        .order_by(OrganisationApplication.appl_no)
+        .order_by(Applications2Tour.appl_no)
         .order_by(OrganisationApplication.arrived)
+        .order_by(OrganisationApplication.appl_no)
         .order_by(WorkOrganisations.organisation_id)
         .order_by(WorkStatuses.status_id).all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
         n, data = make_pages(length, works, page)
-        w = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
-        works = sorted(w, key=lambda x: x['included'])
+        works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
         one_cat = 'all'
     else:
         if '{' in one_cat:
