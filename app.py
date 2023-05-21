@@ -3244,8 +3244,8 @@ def button_works(cat_id):
                 db.session.commit()
 
     if type(url) == list and 'category_page' in url:
-        errs = 'Обновлено успешно'
-        return redirect(url_for('.category_page', cat_id=url[1]))
+        # errs = 'Обновлено успешно'
+        return redirect(url_for('.category_page', cat_id=int(url[1])))
     else:
         return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
 
@@ -5564,7 +5564,6 @@ def add_registration():
             sta = {name.strip().strip('\r'): value.strip().strip('\r')
                    for name, value in zip(lines[0].split('\t'), line.split('\t'))}
             reg_data.append(sta)
-    print(reg_data)
     for reg in reg_data:
         if reg != {}:
             organ = reg['ОО'].split(',')
