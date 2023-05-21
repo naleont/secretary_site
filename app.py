@@ -4605,7 +4605,7 @@ def download_online_reported():
              in Works.query.join(AppliedForOnline, Works.work_id == AppliedForOnline.work_id)
              .filter(Works.reported == 1).all()]
     for w in works:
-        if w['Номер работы'] in [wk.work_id for wk
+        if w['Номер работы'] in [wk.participant for wk
                                  in PaymentRegistration.query.filter(PaymentRegistration.for_work == 1).all()]:
             w['Оплата'] = 'Да'
         else:
