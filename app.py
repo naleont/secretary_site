@@ -87,6 +87,7 @@ access_types = {'guest': 0,
                 'team': 3,
                 'secretary': 5,
                 'supervisor': 6,
+                'other-org': 7,
                 'org': 8,
                 'manager': 9,
                 'admin': 10}
@@ -4573,6 +4574,19 @@ def renew_organisations(one_cat, which):
     return redirect(url_for('.online_participants_applications', one_cat=one_cat, length=length, page=page))
 
 
+@app.route('/download_online_reported')
+def download_online_reported():
+    works = [{'Номер работы': w.work_id, 'Название': w.work_name} for w
+             in Works.query.join(AppliedForOnline, Works.work_id == AppliedForOnline.work_id)
+             .filter(Works.reported == 1).all()]
+    df = pd.DataFrame(data=works)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/online_reported.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Работы, выступившие онлайн')
+    return send_file('static/files/generated_files/online_reported.xlsx', as_attachment=True)
+
+
 @app.route('/experts/<cat_id>', defaults={'expert_to_edit': None})
 @app.route('/experts/<cat_id>/<expert_to_edit>')
 def experts(cat_id, expert_to_edit):
@@ -5454,6 +5468,270 @@ def secretary_knowledge():
     if access is not True:
         return access
     return render_template('secretary_knowledge.html')
+
+
+#ЯИССЛЕДОВАТЕЛЬ
+@app.route('/yais_main')
+def yais_main():
+    return render_template('ya_issledovatel/yais_main.html')
+
+
+@app.route('/yais_categories', defaults={'cat_to_edit': None})
+@app.route('/yais_categories/<cat_to_edit>')
+def yais_categories(cat_to_edit):
+    access = check_access(7)
+    if access is not True:
+        return access
+    if cat_to_edit:
+        cat_to_edit = int(cat_to_edit)
+        e_db = db.session.query(YaisCategories).filter(YaisCategories.cat_id == cat_to_edit).first()
+        cat_to_edit = {'cat_id': e_db.cat_id,
+                       'cat_name': e_db.cat_name,
+                       'cat_short_name': e_db.cat_short_name}
+    cats = [{'cat_id': c.cat_id, 'cat_name': c.cat_name, 'cat_short_name': c.cat_short_name}
+            for c in YaisCategories.query.filter(YaisCategories.year == curr_year).all()]
+    return render_template('ya_issledovatel/yais_categories.html', cat_to_edit=cat_to_edit, cats=cats)
+
+
+@app.route('/yais_add_category', methods=['POST'])
+def yais_add_category():
+    cat_name = request.form['cat_name']
+    cat_short_name = request.form['cat_short_name']
+    year = curr_year
+    category = YaisCategories(cat_name=cat_name, cat_short_name=cat_short_name, year=year)
+    if 'cat_id' in request.form.keys():
+        cat_id = int(request.form['cat_id'])
+        if category not in YaisCategories.query.filter(YaisCategories.cat_id == cat_id).all():
+            db.session.query(YaisCategories).filter(YaisCategories.cat_id == cat_id)\
+                .update({YaisCategories.cat_name: cat_name,
+                         YaisCategories.cat_short_name: cat_short_name,
+                         YaisCategories.year: year})
+            db.session.commit()
+    else:
+        db.session.add(category)
+        db.session.commit()
+    return redirect(url_for('.yais_categories'))
+
+
+@app.route('/yais_delete_cat/<cat_id>')
+def yais_delete_cat(cat_id):
+    cat_id = int(cat_id)
+    if cat_id in [c.cat_id for c in YaisCategories.query.all()]:
+        to_del = db.session.query(YaisCategories).filter(YaisCategories.cat_id == cat_id).first()
+        db.session.delete(to_del)
+        db.session.commit()
+    return redirect(url_for('.yais_categories'))
+
+
+@app.route('/load_registration', defaults={'success': None})
+@app.route('/load_registration/<success>')
+def load_registration(success):
+    access = check_access(7)
+    if access is not True:
+        return access
+    return render_template('ya_issledovatel/yais_load_registration.html', success=success)
+
+
+@app.route('/add_registration', methods=['POST'])
+def add_registration():
+    data = request.files['file'].read().decode('mac_cyrillic').replace('\xa0', ' ')
+    lines = data.split('\n')
+    reg_data = []
+    for line in lines[1:]:
+        if line != '':
+            sta = {name.strip().strip('\r'): value.strip().strip('\r')
+                   for name, value in zip(lines[0].split('\t'), line.split('\t'))}
+            reg_data.append(sta)
+    print(reg_data)
+    for reg in reg_data:
+        if reg != {}:
+            organ = reg['ОО'].split(',')
+            org = [o.strip() for o in organ]
+            city = org[-1]
+            w = YaisWorks(title=reg['Тема'])
+            if reg['Тема'] not in [w.title for w in YaisWorks.query.all()]:
+                db.session.add(w)
+                db.session.flush()
+                db.session.commit()
+                work_id = w.work_id
+            else:
+                work_id = YaisWorks.query.filter(YaisWorks.title == reg['Тема']).first().work_id
+
+            name = reg['ФИ автора(ов)'].split()
+            if type(name) == list:
+                if len(name) > 2:
+                    patronymic = name[2].strip()
+                else:
+                    patronymic = ''
+                if len(name) > 1:
+                    first_name = name[1].strip()
+                else:
+                    first_name = ''
+                last_name = name[0].strip()
+            else:
+                last_name = name
+                first_name = ''
+                patronymic = ''
+            a = YaisAuthors(last_name=last_name, first_name=first_name, patronymic=patronymic, city=city)
+            if last_name not in [a.last_name for a in YaisAuthors.query.all()]:
+                db.session.add(a)
+                db.session.flush()
+                db.session.commit()
+                author_id = a.author_id
+            elif first_name not in [a.first_name for a in YaisAuthors.query
+                        .filter(YaisAuthors.last_name == last_name).all()]:
+                db.session.add(a)
+                db.session.flush()
+                db.session.commit()
+                author_id = a.author_id
+            elif patronymic not in [a.patronymic for a in YaisAuthors.query
+                    .filter(YaisAuthors.last_name == last_name).filter(YaisAuthors.first_name == first_name).all()]:
+                db.session.add(a)
+                db.session.flush()
+                db.session.commit()
+                author_id = a.author_id
+            elif city not in [a.city for a in YaisAuthors.query
+                    .filter(YaisAuthors.last_name == last_name).filter(YaisAuthors.first_name == first_name)
+                    .filter(YaisAuthors.patronymic == patronymic).all()]:
+                db.session.add(a)
+                db.session.flush()
+                db.session.commit()
+                author_id = a.author_id
+            else:
+                author_id = YaisAuthors.query.filter(YaisAuthors.last_name == last_name)\
+                    .filter(YaisAuthors.first_name == first_name)\
+                    .filter(YaisAuthors.patronymic == patronymic).first().author_id
+
+            name = reg['Руководитель'].split()
+            if type(name) == list:
+                if len(name) > 2:
+                    patronymic = name[2].strip()
+                else:
+                    patronymic = ''
+                if len(name) > 1:
+                    first_name = name[1].strip()
+                else:
+                    first_name = ''
+                last_name = name[0].strip()
+            else:
+                last_name = name
+                first_name = ''
+                patronymic = ''
+            s = YaisSupervisors(last_name=last_name, first_name=first_name, patronymic=patronymic, city=city)
+            if last_name not in [s.last_name for s in YaisSupervisors.query.all()]:
+                db.session.add(s)
+                db.session.flush()
+                db.session.commit()
+                supervisor_id = s.supervisor_id
+            elif first_name not in [s.first_name for s in YaisSupervisors.query
+                        .filter(YaisSupervisors.last_name == last_name).all()]:
+                db.session.add(s)
+                db.session.flush()
+                db.session.commit()
+                supervisor_id = s.supervisor_id
+            elif patronymic not in [s.patronymic for s in YaisSupervisors.query
+                    .filter(YaisSupervisors.last_name == last_name)
+                    .filter(YaisSupervisors.first_name == first_name).all()]:
+                db.session.add(s)
+                db.session.flush()
+                db.session.commit()
+                supervisor_id = s.supervisor_id
+            elif city not in [s.city for s in YaisSupervisors.query
+                    .filter(YaisSupervisors.last_name == last_name).filter(YaisSupervisors.first_name == first_name)
+                    .filter(YaisSupervisors.patronymic == patronymic).all()]:
+                db.session.add(s)
+                db.session.flush()
+                db.session.commit()
+                supervisor_id = s.supervisor_id
+            else:
+                supervisor_id = YaisSupervisors.query.filter(YaisSupervisors.last_name == last_name)\
+                    .filter(YaisSupervisors.first_name == first_name)\
+                    .filter(YaisSupervisors.patronymic == patronymic).first().supervisor_id
+
+            cl = reg['Класс'].split()
+            if cl[1] == 'лет':
+                age = True
+            else:
+                age = False
+            class_digit = int(cl[0])
+            cl = YaisClasses(class_digit=class_digit, age=age)
+            if class_digit not in [c.class_digit for c in YaisClasses.query.all()]:
+                db.session.add(cl)
+                db.session.flush()
+                class_id = cl.class_id
+            elif age not in [c.class_digit for c
+                             in YaisClasses.query.filter(YaisClasses.class_digit == class_digit).all()]:
+                db.session.add(cl)
+                db.session.flush()
+                class_id = cl.class_id
+            else:
+                class_id == YaisClasses.query.filter(YaisClasses.class_digit == class_digit)\
+                    .filter(YaisClasses.age == age).first().class_id
+
+            cat_id = YaisCategories.query.filter(YaisCategories.cat_short_name == reg['Секция']).first().cat_id
+
+            r = YaisRegions(reg['Регион'])
+            if reg['Регион'] not in [r.region_name for r in YaisRegions.query.all()]:
+                db.session.add(r)
+                db.session.flush()
+                region_id = r.region_id
+            else:
+                region_id = YaisRegions.query.filter(YaisRegions.region_name == reg['Регион']).first().region_id
+
+            ci = YaisCities(city)
+            if city not in [c.city_name for c in YaisCities.query.all()]:
+                db.session.add(ci)
+                db.session.flush()
+                db.session.commit()
+                city_id = ci.city_id
+            else:
+                city_id = YaisCities.query.filter(YaisCities.city_name == city).first().city_id
+
+            organisation = ','.join(org[:-1])
+            org = YaisOrganisations(organisation)
+            if org not in [o.organisation_id for o in YaisOrganisations.query.all()]:
+                db.session.add(org)
+                db.session.flush()
+                db.session.commit()
+                organisation_id = org.organisation_id
+            else:
+                organisation_id = YaisCities.query\
+                    .filter(YaisCities.organisation_name == organisation).first().organisation_id
+
+            if city_id not in [c.city_id for c in YaisRegionCities.query.all()]:
+                reg_city = YaisRegionCities(city_id, region_id)
+                db.session.add(reg_city)
+                db.session.commit()
+            if organisation_id not in [o.organisation_id for o in YaisCityOrganisations.query.all()]:
+                city_org = YaisCityOrganisations(organisation_id, city_id)
+                db.session.add(city_org)
+                db.session.commit()
+            if supervisor_id not in [s.supervisor_id for s in YaisSupervisorOrganisation.query.all()]:
+                supervisor_organisation = YaisSupervisorOrganisation(supervisor_id, organisation_id)
+                db.session.add(supervisor_organisation)
+                db.session.commit()
+            else:
+                db.session.query(YaisSupervisorOrganisation)\
+                    .filter(YaisSupervisorOrganisation.supervisor_id == supervisor_id)\
+                    .update({YaisSupervisorOrganisation.organisation_id: organisation_id})
+            if work_id not in [w.work_id for w in YaisWorkOrganisation.query.all()]:
+                work_org = YaisWorkOrganisation(work_id, organisation_id)
+                db.session.add(work_org)
+                db.session.commit()
+            if author_id not in [a.author_id for a in YaisAuthorClass.query.all()]:
+                author_class = YaisAuthorClass(author_id, class_id)
+                db.session.add(author_class)
+                db.session.commit()
+            if work_id not in [w.work_id for w in YaisWorkCategories.query.all()]:
+                work_cat = YaisWorkCategories(work_id, cat_id)
+                db.session.add(work_cat)
+                db.session.commit()
+            if work_id not in [w.work_id for w in YaisWorkAuthorSupervisor.query.all()]:
+                work_author_supervisor = YaisWorkAuthorSupervisor(work_id, author_id, supervisor_id)
+                db.session.add(work_author_supervisor)
+                db.session.commit()
+    success = True
+    return redirect(url_for('.load_registration', success=success))
 
 
 if __name__ == '__main__':

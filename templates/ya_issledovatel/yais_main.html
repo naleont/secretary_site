@@ -1,0 +1,70 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+<h2>Я - исследователь. Главная</h2>
+
+<br>
+
+<table width="100%" class="table-menu">
+    <tr>
+        <td width="25%">
+            <a href="/yais_categories">
+                <button class="dropping men fill">
+                    Секции
+                </button>
+            </a>
+        </td>
+        <td width="25%">
+            <a href="/load_registration">
+                <button class="dropping men fill">
+                    Загрузить регистрационные данные
+                </button>
+            </a>
+        </td>
+        <td width="25%">
+        </td>
+        <td width="25%">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            </a>
+        </td>
+        <td>
+        </td>
+        <td>
+
+        </td>
+        <td>
+            <div class="drop fill">
+              <button class="dropping men fill">
+                Платежи
+              </button>
+              <div class="dropped m">
+                <a href="/alternative_payments">Альтернативные платежи</a>
+                <a href="/id_payments">Внести платежи</a>
+                <a href="/load_statement">Загрузить выписку</a>
+                <a href="/manage_payments">Управлять платежами</a>
+                <a href="/payment_stats">Статистика оплат</a>
+                <a href="/payment_types">Типы платежей</a>
+              </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+
+
+
+{% endblock %}
