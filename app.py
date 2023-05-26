@@ -5051,18 +5051,26 @@ def delete_alternative(payment_id):
     return redirect(url_for('.alternative_payments'))
 
 
-@app.route('/manage_payments', defaults={'length': 30, 'page': 1})
-@app.route('/manage_payments/<length>/<page>')
-def manage_payments(length, page):
+@app.route('/manage_payments', defaults={'query': 'all', 'length': 30, 'page': 1})
+@app.route('/manage_payments/<query>/<length>/<page>')
+def manage_payments(query, length, page):
     access = check_access(8)
     if access is not True:
         return access
-    payments = [p.payment_id for p in BankStatement.query
-    .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+    if query == 'all':
+        q = BankStatement.query.order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
+        query = 'Все'
+    else:
+        q = BankStatement.query\
+            .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)\
+            .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc())\
+            .filter(PaymentTypes.payment_type == query).all()
+    payments = [p.payment_id for p in q]
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
+    types = set(p.payment_type for p in PaymentTypes.query.all())
     return render_template('participants_and_payment/manage_payments.html', statement=statement, pages=n, page=page,
-                           length=length, link='manage_payments')
+                           length=length, link='manage_payments', types=types, query=query)
 
 
 @app.route('/payment_types', defaults={'length': 30, 'page': 1})
@@ -5846,7 +5854,6 @@ def yais_set_payee(payment_id, payee):
                 else:
                     a_class += ' класс'
                 a['class'] = a_class
-            print(p)
 
         participant = {'type': 'name', 'participant': p}
 
@@ -5886,6 +5893,84 @@ def yais_set_payment(payment_id, payee):
                 db.session.commit()
     db.session.commit()
     return redirect(url_for('.yais_id_payments'))
+
+
+@app.route('/yais_find_participant', defaults={'query': 'sear'})
+@app.route('/yais_find_participant/<query>')
+def yais_find_participant(query):
+    access = check_access(3)
+    if access is not True:
+        return access
+    response = {'type': None, 'value': query}
+
+    if query:
+        if query == 'sear':
+            response = 'search'
+        else:
+            query = query.strip()
+            parts = [u.author_id for u in YaisAuthors.query.all()
+                     if query.lower() in u.last_name.lower()]
+            parts.extend([u.author_id for u in YaisAuthors.query.all()
+                          if query.lower() in u.first_name.lower()])
+            parts.extend([u.author_id for u in YaisAuthors.query.all()
+                          if query.lower() in u.patronymic.lower()])
+            p = []
+            for part in parts:
+                w_db = db.session.query(YaisWorks) \
+                    .join(YaisWorkAuthorSupervisor, YaisWorks.work_id == YaisWorkAuthorSupervisor.work_id) \
+                    .filter(YaisWorkAuthorSupervisor.author_id == part).all()
+                for w in w_db:
+                    org = YaisOrganisations.query.join(YaisWorkOrganisation,
+                                                       YaisOrganisations.organisation_id ==
+                                                       YaisWorkOrganisation.organisation_id) \
+                        .filter(YaisWorkOrganisation.work_id == w.work_id).first()
+                    if w.work_id in [wp.work_id for wp in YaisWorkPayment.query.all()]:
+                        payed = True
+                        payment_id = YaisWorkPayment.query.filter(YaisWorkPayment.work_id == w.work_id) \
+                            .first().payment_id
+                    else:
+                        payed = False
+                        payment_id = None
+                    cat = YaisCategories.query\
+                        .join(YaisWorkCategories, YaisCategories.cat_id == YaisWorkCategories.cat_id)\
+                        .filter(YaisWorkCategories.work_id == w.work_id).first()
+                    p.append({'work': w.title, 'work_id': w.work_id,
+                              'cat_id': cat.cat_id, 'cat_name': cat.cat_name,
+                              'org_id': org.organisation_id, 'organisation': org.organisation_name,
+                              'payed': payed, 'payment_id': payment_id})
+            for w in p:
+                w['authors'] = [{'author_id': a.author_id,
+                                 'author_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic,
+                                 'city': a.city}
+                                for a in YaisAuthors.query
+                                .join(YaisWorkAuthorSupervisor, YaisAuthors.author_id == YaisWorkAuthorSupervisor.author_id)
+                                .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
+                w['supervisors'] = [{'supervisor_id': a.supervisor_id,
+                                     'supervisor_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic}
+                                    for a in YaisSupervisors.query
+                                    .join(YaisWorkAuthorSupervisor, YaisSupervisors.supervisor_id
+                                          == YaisWorkAuthorSupervisor.supervisor_id)
+                                    .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
+                for a in w['authors']:
+                    cl_db = YaisClasses.query.join(YaisAuthorClass, YaisClasses.class_id == YaisClasses.class_id) \
+                        .filter(YaisAuthorClass.author_id == a['author_id']).first()
+                    a_class = str(cl_db.class_digit)
+                    if cl_db.age:
+                        a_class += ' лет'
+                    else:
+                        a_class += ' класс'
+                    a['class'] = a_class
+            response = {'type': 'appls', 'value': p}
+    else:
+        response = {'type': None, 'value': query}
+    return render_template('ya_issledovatel/yais_find_participant.html', response=response)
+
+
+@app.route('/yais_searching_participant', methods=['GET'])
+def yais_searching_participant():
+    renew_session()
+    query = request.values.get('query', str)
+    return redirect(url_for('.yais_find_participant', query=query))
 
 
 if __name__ == '__main__':
