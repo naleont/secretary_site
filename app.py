@@ -5776,6 +5776,19 @@ def add_registration():
                 work_author_supervisor = YaisWorkAuthorSupervisor(work_id, author_id, supervisor_id)
                 db.session.add(work_author_supervisor)
                 db.session.commit()
+            elif supervisor_id not in [w.supervisor_id for w
+                                       in YaisWorkAuthorSupervisor.query
+                                               .filter(YaisWorkAuthorSupervisor.work_id == work_id).all()]:
+                work_author_supervisor = YaisWorkAuthorSupervisor(work_id, author_id, supervisor_id)
+                db.session.add(work_author_supervisor)
+                db.session.commit()
+            elif author_id not in [w.author_id for w
+                                       in YaisWorkAuthorSupervisor.query
+                                               .filter(YaisWorkAuthorSupervisor.work_id == work_id)
+                                               .filter(YaisWorkAuthorSupervisor.supervisor_id == supervisor_id).all()]:
+                work_author_supervisor = YaisWorkAuthorSupervisor(work_id, author_id, supervisor_id)
+                db.session.add(work_author_supervisor)
+                db.session.commit()
     success = True
     return redirect(url_for('.load_registration', success=success))
 
