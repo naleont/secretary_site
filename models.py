@@ -1016,3 +1016,15 @@ class YaisWorkCategories(db.Model):
     def __init__(self, work_id, cat_id):
         self.work_id = work_id
         self.cat_id = cat_id
+
+
+class YaisWorkPayment(db.Model):
+    __tablename__ = 'yais_work_payment'
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'payment_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
+    payment_id = db.Column('payment_id', db.Integer, ForeignKey('bank_statement.payment_id'))
+
+    def __init__(self, work_id, payment_id):
+        self.work_id = work_id
+        self.payment_id = payment_id

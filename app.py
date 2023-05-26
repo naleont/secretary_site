@@ -1062,6 +1062,9 @@ def statement_info(payment_list):
                 else:
                     payed = fee
                 remainder -= payed
+        elif payment.payment_id in [p.payment_id for p in YaisWorkPayment.query.all()]:
+            payed = 4940 * len(YaisWorkPayment.query.filter(YaisWorkPayment.payment_id == payment.payment_id).all())
+            remainder = payment.debit - payed
         if payment.payment_id in [p.payment_id for p in PaymentTypes.query.all()]:
             payment_type = PaymentTypes.query.filter(PaymentTypes.payment_id == payment.payment_id)\
                 .first().payment_type
@@ -4911,6 +4914,15 @@ def add_bank_statement():
                                         payment_comment=payment['text70'], alternative=None, alternative_comment=None)
                     db.session.add(pay)
                     db.session.commit()
+                # else:
+                #     pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
+                #                         debit=0, credit=float(payment['sum_val'].replace(',', '.')),
+                #                         organisation=payment['plat_name'], tin=payment['plat_inn'],
+                #                         bic=payment['plat_bic'],
+                #                         bank_name=payment['plat_bank'], account=payment['plat_acc'],
+                #                         payment_comment=payment['text70'], alternative=None, alternative_comment=None)
+                #     db.session.add(pay)
+                #     db.session.commit()
     return redirect(url_for('.load_statement', success=True))
 
 
@@ -5577,7 +5589,7 @@ def add_registration():
         if reg != {}:
             organ = reg['ОО'].split(',')
             org = [o.strip() for o in organ]
-            city = org[-1]
+            city = org[-1].strip('"')
             w = YaisWorks(title=reg['Тема'])
             if reg['Тема'] not in [w.title for w in YaisWorks.query.all()]:
                 db.session.add(w)
@@ -5685,17 +5697,13 @@ def add_registration():
                 age = False
             class_digit = int(cl[0])
             cl = YaisClasses(class_digit=class_digit, age=age)
-            if class_digit not in [c.class_digit for c in YaisClasses.query.all()]:
+            if class_digit not in [c.class_digit for c in YaisClasses.query.filter(YaisClasses.age == age).all()]:
                 db.session.add(cl)
                 db.session.flush()
-                class_id = cl.class_id
-            elif age not in [c.class_digit for c
-                             in YaisClasses.query.filter(YaisClasses.class_digit == class_digit).all()]:
-                db.session.add(cl)
-                db.session.flush()
+                db.session.commit()
                 class_id = cl.class_id
             else:
-                class_id == YaisClasses.query.filter(YaisClasses.class_digit == class_digit)\
+                class_id = YaisClasses.query.filter(YaisClasses.class_digit == class_digit)\
                     .filter(YaisClasses.age == age).first().class_id
 
             cat_id = YaisCategories.query.filter(YaisCategories.cat_short_name == reg['Секция']).first().cat_id
@@ -5762,6 +5770,122 @@ def add_registration():
                 db.session.commit()
     success = True
     return redirect(url_for('.load_registration', success=success))
+
+
+@app.route('/yais_id_payments', defaults={'length': 30, 'page': 1})
+@app.route('/yais_id_payments/<length>/<page>')
+def yais_id_payments(length, page):
+    access = check_access(7)
+    if access is not True:
+        return access
+    payments = [p.payment_id for p in BankStatement.query
+    .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
+    .filter(PaymentTypes.payment_type == 'Я - Исследователь')
+    .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+    n, data = make_pages(length, payments, page)
+    statement = statement_info(data)
+    return render_template('ya_issledovatel/yais_id_payments.html', statement=statement, pages=n, page=page,
+                           length=length, link='yais_id_payments')
+
+
+@app.route('/yais_set_payee/<payment_id>', defaults={'payee': None})
+@app.route('/yais_set_payee/<payment_id>/<payee>')
+def yais_set_payee(payment_id, payee):
+    access = check_access(7)
+    if access is not True:
+        return access
+    payment = payment_info(payment_id)
+    participant = {'type': None, 'participant': payee}
+    if payee is not None:
+        payee = payee.strip()
+        parts = [u.author_id for u in YaisAuthors.query.all()
+                 if payee.lower() in u.last_name.lower()]
+        parts.extend([u.author_id for u in YaisAuthors.query.all()
+                      if payee.lower() in u.first_name.lower()])
+        parts.extend([u.author_id for u in YaisAuthors.query.all()
+                      if payee.lower() in u.patronymic.lower()])
+        p = []
+        for part in parts:
+            w_db = db.session.query(YaisWorks)\
+                .join(YaisWorkAuthorSupervisor, YaisWorks.work_id == YaisWorkAuthorSupervisor.work_id)\
+                .filter(YaisWorkAuthorSupervisor.author_id == part).all()
+            for w in w_db:
+                org = YaisOrganisations.query.join(YaisWorkOrganisation,
+                                                   YaisOrganisations.organisation_id ==
+                                                   YaisWorkOrganisation.organisation_id)\
+                    .filter(YaisWorkOrganisation.work_id == w.work_id).first()
+                if w.work_id in [wp.work_id for wp in YaisWorkPayment.query.all()]:
+                    payed = True
+                    payment_id = YaisWorkPayment.query.filter(YaisWorkPayment.work_id == w.work_id)\
+                        .first().payment_id
+                else:
+                    payed = False
+                    payment_id = None
+                p.append({'work': w.title, 'work_id': w.work_id,
+                          'org_id': org.organisation_id, 'organisation': org.organisation_name,
+                          'payed': payed, 'payment_id': payment_id})
+        for w in p:
+            w['authors'] = [{'author_id': a.author_id,
+                             'author_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic,
+                             'city': a.city}
+                            for a in YaisAuthors.query
+                            .join(YaisWorkAuthorSupervisor, YaisAuthors.author_id == YaisWorkAuthorSupervisor.author_id)
+                            .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
+            w['supervisors'] = [{'supervisor_id': a.supervisor_id,
+                                 'supervisor_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic}
+                                for a in YaisSupervisors.query
+                                .join(YaisWorkAuthorSupervisor, YaisSupervisors.supervisor_id
+                                      == YaisWorkAuthorSupervisor.supervisor_id)
+                                .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
+            for a in w['authors']:
+                cl_db = YaisClasses.query.join(YaisAuthorClass, YaisClasses.class_id == YaisClasses.class_id)\
+                    .filter(YaisAuthorClass.author_id == a['author_id']).first()
+                a_class = str(cl_db.class_digit)
+                if cl_db.age:
+                    a_class += ' лет'
+                else:
+                    a_class += ' класс'
+                a['class'] = a_class
+            print(p)
+
+        participant = {'type': 'name', 'participant': p}
+
+        if not parts:
+            participant = {'type': None, 'participant': payee}
+    else:
+        participant = {'type': None, 'participant': payee}
+    return render_template('ya_issledovatel/yais_set_payee.html', payment=payment, participant=participant)
+
+
+@app.route('/yais_application_payment/<payment_id>', methods=['GET'], defaults={'payee': None})
+@app.route('/yais_application_payment/<payment_id>/<payee>')
+def yais_application_payment(payment_id, payee):
+    if payee is None:
+        payee = request.values.get('payee', str)
+    return redirect(url_for('.yais_set_payee', payment_id=payment_id, payee=payee))
+
+
+@app.route('/yais_set_payment/<payment_id>/<payee>', methods=['POST'])
+def yais_set_payment(payment_id, payee):
+    participant = int(payee)
+    if str(participant) not in request.form.keys():
+        if participant in [p.work_id for p in YaisWorkPayment.query.all()]:
+            if YaisWorkPayment.query.filter(YaisWorkPayment.work_id == participant)\
+                    .first().payment_id == int(payment_id):
+                YaisWorkPayment.query.filter(YaisWorkPayment.work_id == participant).delete()
+                db.session.commit()
+    else:
+        data = request.form[str(participant)]
+        if data == 'on':
+            if participant not in [p.work_id for p in YaisWorkPayment.query.all()]:
+                payment = YaisWorkPayment(participant, payment_id)
+                db.session.add(payment)
+                db.session.commit()
+            else:
+                YaisWorkPayment.query.filter(YaisWorkPayment.work_id == participant).delete()
+                db.session.commit()
+    db.session.commit()
+    return redirect(url_for('.yais_id_payments'))
 
 
 if __name__ == '__main__':

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Платежи</h2>
+
+{% include 'include/iterate_pages.html' %}
+
+<table frame="void" border="2px" bordercolor="#4962A4" width="100%">
+  <tr>
+    <td align="center" width="5%"><b>
+
+    </b></td>
+    <td align="center" width="10%"><b>
+      Дата
+    </b></td>
+    <td align="center" width="7%"><b>
+      Сумма
+    </b></td>
+    <td align="center" width="7%"><b>
+      Остаток
+    </b></td>
+    <td align="center" width="40%"><b>
+      Комментарий
+    </b></td>
+    <td align="center" width="31%"><b>
+      Плательщик
+    </b></td>
+  </tr>
+  {% for payment in statement %}
+
+  <tr
+  {% if payment['remainder'] == '0' %}
+  bgcolor="#C6E0B4"
+  {% elif payment['remainder'] != payment['debit'] %}
+  bgcolor="#FFEE91"
+  {% endif %}>
+    <td align="center"><a href="/yais_set_payee/{{ payment['payment_id'] }}">
+      {{ payment['payment_id'] }}
+    </a></td>
+    <td align="center"><a href="/yais_set_payee/{{ payment['payment_id'] }}">
+      {{ payment['date'] }}
+    </a></td>
+    <td align="center"><a href="/yais_set_payee/{{ payment['payment_id'] }}">
+      {{ payment['debit'] }} р.
+    </a></td>
+    <td align="center"><a href="/yais_set_payee/{{ payment['payment_id'] }}">
+      {{ payment['remainder'] }} р.
+    </a></td>
+    <td><a href="/yais_set_payee/{{ payment['payment_id'] }}">
+      {{ payment['comment'] }}
+    </a></td>
+    <td><a href="/yais_set_payee/{{ payment['payment_id'] }}">
+      {{ payment['organisation'] }}
+    </a></td>
+  </tr>
+
+  {% endfor %}
+</table>
+
+{% endblock %}
