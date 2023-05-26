@@ -5070,7 +5070,7 @@ def manage_payments(query, length, page):
     statement = statement_info(data)
     types = set(p.payment_type for p in PaymentTypes.query.all())
     return render_template('participants_and_payment/manage_payments.html', statement=statement, pages=n, page=page,
-                           length=length, link='manage_payments', types=types, query=query)
+                           length=length, link='manage_payments/' + query, types=types, query=query)
 
 
 @app.route('/payment_types', defaults={'length': 30, 'page': 1})
