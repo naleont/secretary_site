@@ -1028,3 +1028,17 @@ class YaisWorkPayment(db.Model):
     def __init__(self, work_id, payment_id):
         self.work_id = work_id
         self.payment_id = payment_id
+
+
+class YaisArrival(db.Model):
+    __tablename__ = 'yais_arrival'
+    __table_args__ = (PrimaryKeyConstraint('author_id', 'supervisor_id'),)
+
+    author_id = db.Column('author_id', db.Integer, ForeignKey('yais_authors.author_id'), nullable=True)
+    supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('yais_supervisors.supervisor_id'), nullable=True)
+    arrived = db.Column('arrived', db.Boolean)
+
+    def __init__(self, author_id, supervisor_id, arrived):
+        self.author_id = author_id
+        self.supervisor_id = supervisor_id
+        self.arrived = arrived
