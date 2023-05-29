@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Статистика участников</h2>
+
+<span class="bigger">
+    Приехали: {{ arrived }}<br>
+    Оплатили: {{ payed }}<br>
+    Оплатили, не приехали: {{ payed_not_arrived }}<br>
+</span>
+
+<h3>Приехали, не оплатили ({{ unpayed|length }})</h3>
+<table frame="void" border="2px" bordercolor="#4962A4" width="100%">
+    <tr>
+        <th>
+            Работа
+        </th>
+        <th>
+            Авторы
+        </th>
+        <th>
+            Секция
+        </th>
+        <th>
+            Оплата
+        </th>
+        <th>
+            Организация
+        </th>
+    </tr>
+    {% for work in unpayed %}
+    <tr>
+        <td>
+            {{ work['work'] }}
+        </td>
+        <td>
+            {% for author in work['authors'] %}
+            {{ author['author_name'] }}, {{ author['class'] }} ({{ author['city'] }})<br>
+            {% endfor %}
+        </td>
+        <td>
+            {{ work['cat_name'] }}
+        </td>
+        <td align="center">
+            {% for author in work['authors'] %}
+                {% if author['payed'] == True %}
+                    <span class="green-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                          <circle cx="8" cy="8" r="8"/>
+                        </svg>
+                    </span>
+                {% else %}
+                    <span class="alarm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                          <circle cx="8" cy="8" r="8"/>
+                        </svg>
+                    </span>
+                {% endif %}
+            {% endfor %}
+        </td>
+        <td>
+            {{ work['organisation'] }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

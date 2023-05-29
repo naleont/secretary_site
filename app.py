@@ -5988,6 +5988,9 @@ def yais_searching_participant():
 
 @app.route('/yais_check_arrival')
 def yais_check_arrival():
+    access = check_access(3)
+    if access is not True:
+        return access
     authors = [{'author_id': a.author_id,
                 'author_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic,
                 'city': a.city} for a in YaisAuthors.query.order_by(YaisAuthors.last_name).all()]
@@ -6100,6 +6103,67 @@ def yais_save_arrival():
                 db.session.add(arrived)
                 db.session.commit()
     return redirect(url_for('.yais_check_arrival'))
+
+
+@app.route('/yais_stats')
+def yais_stats():
+    access = check_access(7)
+    if access is not True:
+        return access
+    ar = [w.work_id for w in YaisWorks.query
+    .join(YaisWorkAuthorSupervisor, YaisWorks.work_id == YaisWorkAuthorSupervisor.work_id)
+    .join(YaisArrival, YaisWorkAuthorSupervisor.author_id == YaisArrival.author_id)
+    .filter(YaisArrival.arrived == 1).all()]
+    arrived = len(ar)
+    pa = [w.work_id for w in YaisWorkPayment.query.all()]
+    p_payed = len(pa)
+    payed_not_arrived = len([w for w in pa if w not in ar])
+    un = [w for w in ar if w not in pa]
+    p = []
+    for part in un:
+        w_db = db.session.query(YaisWorks).filter(YaisWorks.work_id == part).first()
+        org = YaisOrganisations.query.join(YaisWorkOrganisation,
+                                           YaisOrganisations.organisation_id ==
+                                           YaisWorkOrganisation.organisation_id) \
+            .filter(YaisWorkOrganisation.work_id == w_db.work_id).first()
+        if w_db.work_id in [wp.work_id for wp in YaisWorkPayment.query.all()]:
+            payed = True
+            payment_id = YaisWorkPayment.query.filter(YaisWorkPayment.work_id == w.work_id) \
+                .first().payment_id
+        else:
+            payed = False
+            payment_id = None
+        cat = YaisCategories.query \
+            .join(YaisWorkCategories, YaisCategories.cat_id == YaisWorkCategories.cat_id) \
+            .filter(YaisWorkCategories.work_id == w_db.work_id).first()
+        p.append({'work': w_db.title, 'work_id': w_db.work_id,
+                  'cat_id': cat.cat_id, 'cat_name': cat.cat_name,
+                  'org_id': org.organisation_id, 'organisation': org.organisation_name,
+                  'payed': payed, 'payment_id': payment_id})
+    for w in p:
+        w['authors'] = [{'author_id': a.author_id,
+                         'author_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic,
+                         'city': a.city}
+                        for a in YaisAuthors.query
+                        .join(YaisWorkAuthorSupervisor, YaisAuthors.author_id == YaisWorkAuthorSupervisor.author_id)
+                        .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
+        w['supervisors'] = [{'supervisor_id': a.supervisor_id,
+                             'supervisor_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic}
+                            for a in YaisSupervisors.query
+                            .join(YaisWorkAuthorSupervisor, YaisSupervisors.supervisor_id
+                                  == YaisWorkAuthorSupervisor.supervisor_id)
+                            .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
+        for a in w['authors']:
+            cl_db = YaisClasses.query.join(YaisAuthorClass, YaisClasses.class_id == YaisClasses.class_id) \
+                .filter(YaisAuthorClass.author_id == a['author_id']).first()
+            a_class = str(cl_db.class_digit)
+            if cl_db.age:
+                a_class += ' лет'
+            else:
+                a_class += ' класс'
+            a['class'] = a_class
+    return render_template('ya_issledovatel/yais_stats.html', arrived=arrived, payed=p_payed,
+                           payed_not_arrived=payed_not_arrived, unpayed=p)
 
 
 if __name__ == '__main__':
