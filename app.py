@@ -1,5 +1,6 @@
 import datetime
 import json
+import mimetypes
 import os
 import re
 import sys
@@ -10,7 +11,7 @@ from cryptography.fernet import Fernet
 from flask import Flask
 from flask import render_template, request, redirect, url_for, session
 from flask import send_file
-from flask_mail import Mail, Message
+from flask_mail import Mail, Message, Attachment
 
 import mail_data
 from models import *
@@ -586,7 +587,8 @@ def all_news():
 
 
 def work_info(work_id, additional_info=False, site_id=False, reports_info=False, analysis_info=False,
-              w_payment_info=False, appl_info=False, cat_info=False, organisation_info=False, status_info=False):
+              w_payment_info=False, appl_info=False, cat_info=False, organisation_info=False, status_info=False,
+              mail_info=False):
     work_id = int(work_id)
     work_db = db.session.query(Works).filter(Works.work_id == work_id).first()
     work = dict()
@@ -621,14 +623,14 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['cat_name'] = None
 
     if status_info is True:
-        work['status'] = ParticipationStatuses.query\
-            .join(WorkStatuses, ParticipationStatuses.status_id == WorkStatuses.status_id)\
+        work['status'] = ParticipationStatuses.query \
+            .join(WorkStatuses, ParticipationStatuses.status_id == WorkStatuses.status_id) \
             .filter(WorkStatuses.work_id == work_id).first().status_name
 
     if organisation_info is True:
         if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
-            org_db = db.session.query(Organisations)\
-                .join(WorkOrganisations, Organisations.organisation_id == WorkOrganisations.organisation_id)\
+            org_db = db.session.query(Organisations) \
+                .join(WorkOrganisations, Organisations.organisation_id == WorkOrganisations.organisation_id) \
                 .filter(WorkOrganisations.work_id == work_id).first()
             work['organisation_id'] = org_db.organisation_id
             work['organisation_name'] = org_db.name
@@ -728,26 +730,36 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
         if work['appl_no'] is False:
             if 'organisation_id' not in work.keys():
                 if work_id in [w.work_id for w in WorkOrganisations.query.all()]:
-                    work['organisation_id'] = WorkOrganisations.query.filter(WorkOrganisations.work_id == work_id)\
+                    work['organisation_id'] = WorkOrganisations.query.filter(WorkOrganisations.work_id == work_id) \
                         .first().organisation_id
                     if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
-                        work['org_arrived'] = OrganisationApplication.query\
+                        work['org_arrived'] = OrganisationApplication.query \
                             .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().arrived
             else:
                 if work['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
-                    work['appl_no'] = OrganisationApplication.query\
+                    work['appl_no'] = OrganisationApplication.query \
                         .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().appl_no
                     work['included'] = False
-                    work['org_arrived'] = OrganisationApplication.query\
+                    work['org_arrived'] = OrganisationApplication.query \
                         .filter(OrganisationApplication.organisation_id == work['organisation_id']).first().arrived
         if work['appl_no'] is None:
             work['appl_no'] = False
-
+    if mail_info is True:
+        work['mails'] = [{'mail_id': m.mail_id, 'email': m.email} for m
+                         in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id) \
+                             .filter(WorkMail.work_id == work_id).all()]
+        for a in work['mails']:
+            a['sent'] = WorkMail.query.filter(WorkMail.work_id == work_id)\
+                .filter(WorkMail.mail_id == a['mail_id']).first().sent
+            if work_id in [w.work_id for w in Diplomas.query.all()]:
+                c = Diplomas.query.filter(Diplomas.work_id == work_id).first().diplomas
+                if not c:
+                    a['sent'] = 'Дипломы не загружены'
     return work
 
 
 def get_works(cat_id, status, mode='all', additional_info=False, site_id=False, reports_info=False, analysis_info=False,
-              w_payment_info=False, appl_info=False):
+              w_payment_info=False, appl_info=False, mail_info=False):
     works = dict()
     works_cat = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat_id).all()]
     works_stat = [w.work_id for w in WorkStatuses.query.filter(WorkStatuses.status_id >= status).all() if w.work_id
@@ -758,7 +770,8 @@ def get_works(cat_id, status, mode='all', additional_info=False, site_id=False, 
         works_searched = works_stat
     for w in works_searched:
         works[w] = work_info(w, additional_info=additional_info, site_id=site_id, reports_info=reports_info,
-                             analysis_info=analysis_info, w_payment_info=w_payment_info, appl_info=appl_info)
+                             analysis_info=analysis_info, w_payment_info=w_payment_info, appl_info=appl_info,
+                             mail_info=mail_info)
     return works
 
 
@@ -1066,7 +1079,7 @@ def statement_info(payment_list):
             payed = 4940 * len(YaisWorkPayment.query.filter(YaisWorkPayment.payment_id == payment.payment_id).all())
             remainder = payment.debit - payed
         if payment.payment_id in [p.payment_id for p in PaymentTypes.query.all()]:
-            payment_type = PaymentTypes.query.filter(PaymentTypes.payment_id == payment.payment_id)\
+            payment_type = PaymentTypes.query.filter(PaymentTypes.payment_id == payment.payment_id) \
                 .first().payment_type
         else:
             payment_type = None
@@ -2069,7 +2082,8 @@ def search_user():
                      .order_by(Users.user_id.desc()).all()])
     except ValueError:
         if query == 'secretary':
-            users.extend([u.secretary_id for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()])
+            users.extend(
+                [u.secretary_id for u in CatSecretaries.query.order_by(CatSecretaries.secretary_id.desc()).all()])
         elif query == 'supervisor':
             users.extend([u.user_id for u in SupervisorUser.query.order_by(SupervisorUser.user_id.desc()).all()])
         elif query in access_types.keys():
@@ -2084,11 +2098,11 @@ def search_user():
             users.extend(
                 [u.user_id for u in Users.query.filter(Users.email == query).order_by(Users.user_id.desc()).all()])
         users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
-                                                              if query.lower() == u.last_name.lower()[:len(query)]])
+                      if query.lower() == u.last_name.lower()[:len(query)]])
         users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
-                                                              if query.lower() == u.first_name.lower()[:len(query)]])
+                      if query.lower() == u.first_name.lower()[:len(query)]])
         users.extend([u.user_id for u in Users.query.order_by(Users.user_id.desc()).all()
-                                                              if query.lower() == u.patronymic.lower()[:len(query)]])
+                      if query.lower() == u.patronymic.lower()[:len(query)]])
     if users:
         us = set(users)
         users = [u for u in us]
@@ -3108,11 +3122,11 @@ def button_works(cat_id):
     works_edited = 0
     if cat_id == 'all':
         cats = [c.cat_site_id for c in Categories.query.filter(Categories.year == curr_year).all()]
-    elif cat_id =='en':
+    elif cat_id == 'en':
         cats = [c.cat_site_id for c in Categories.query.join(CatDirs, Categories.cat_id == CatDirs.cat_id)
         .join(Directions, CatDirs.dir_id == Directions.direction_id).filter(Categories.year == curr_year)
         .filter(Directions.dir_name == 'Естественнонаучное').all()]
-    elif cat_id =='gum':
+    elif cat_id == 'gum':
         cats = [c.cat_site_id for c in Categories.query.join(CatDirs, Categories.cat_id == CatDirs.cat_id)
         .join(Directions, CatDirs.dir_id == Directions.direction_id).filter(Categories.year == curr_year)
         .filter(Directions.dir_name == 'Гуманитарное').all()]
@@ -3307,7 +3321,8 @@ def many_applications():
                                                     ParticipantsApplied.last_name: participant['last_name'],
                                                     ParticipantsApplied.first_name: participant['first_name'],
                                                     ParticipantsApplied.patronymic_name: participant['patronymic_name'],
-                                                    ParticipantsApplied.participant_class: participant['participant_class'],
+                                                    ParticipantsApplied.participant_class: participant[
+                                                        'participant_class'],
                                                     ParticipantsApplied.role: participant['role']})
                 db.session.commit()
             else:
@@ -3321,20 +3336,20 @@ def many_applications():
         if Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
                          organisation['country']) not in Organisations.query.all():
             if organisation['organisation_id'] in [o.organisation_id for o in Organisations.query.all()]:
-                db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id'])\
+                db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id']) \
                     .update({Organisations.name: organisation['name'],
                              Organisations.city: organisation['city'],
                              Organisations.country: organisation['country']})
                 db.session.commit()
             else:
                 o = Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
-                         organisation['country'])
+                                  organisation['country'])
                 db.session.add(o)
                 db.session.commit()
-        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'], organisation['arrived'])\
+        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'], organisation['arrived']) \
                 not in OrganisationApplication.query.all():
             if organisation['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
-                db.session.query(OrganisationApplication)\
+                db.session.query(OrganisationApplication) \
                     .filter(OrganisationApplication.organisation_id == organisation['organisation_id']) \
                     .update({OrganisationApplication.appl_no: organisation['appl_no'],
                              OrganisationApplication.arrived: organisation['arrived']})
@@ -3412,7 +3427,8 @@ def button_applications():
                                                     ParticipantsApplied.last_name: participant['last_name'],
                                                     ParticipantsApplied.first_name: participant['first_name'],
                                                     ParticipantsApplied.patronymic_name: participant['patronymic_name'],
-                                                    ParticipantsApplied.participant_class: participant['participant_class'],
+                                                    ParticipantsApplied.participant_class: participant[
+                                                        'participant_class'],
                                                     ParticipantsApplied.role: participant['role']})
                 db.session.commit()
             else:
@@ -3426,20 +3442,20 @@ def button_applications():
         if Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
                          organisation['country']) not in Organisations.query.all():
             if organisation['organisation_id'] in [o.organisation_id for o in Organisations.query.all()]:
-                db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id'])\
+                db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id']) \
                     .update({Organisations.name: organisation['name'],
                              Organisations.city: organisation['city'],
                              Organisations.country: organisation['country']})
                 db.session.commit()
             else:
                 o = Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
-                         organisation['country'])
+                                  organisation['country'])
                 db.session.add(o)
                 db.session.commit()
-        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'], organisation['arrived'])\
+        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'], organisation['arrived']) \
                 not in OrganisationApplication.query.all():
             if organisation['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
-                db.session.query(OrganisationApplication)\
+                db.session.query(OrganisationApplication) \
                     .filter(OrganisationApplication.organisation_id == organisation['organisation_id']) \
                     .update({OrganisationApplication.appl_no: organisation['appl_no'],
                              OrganisationApplication.arrived: organisation['arrived']})
@@ -3870,7 +3886,8 @@ def reports_order(cat_id):
         dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
         cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
         categories.append({'cat_id': cat_id, 'cat_name': cat_name})
-        works.update(get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        works.update(
+            get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
         approved_for_2 += len(works)
         if dates_db.day_1:
             d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
@@ -3933,7 +3950,8 @@ def works_list_schedule(cat_id):
         dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
         cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
         categories.append({'cat_id': cat_id, 'cat_name': cat_name})
-        works.update(get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        works.update(
+            get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
         approved_for_2 += len(works)
         if dates_db.day_1:
             d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
@@ -4131,7 +4149,8 @@ def download_schedule(cat_id):
         cat = Categories.query.filter(Categories.cat_id == cat_id).first()
         categories.append({'cat_id': cat_id, 'cat_name': cat.cat_name, 'short_name': cat.short_name})
         dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
-        works.update(get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        works.update(
+            get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
         if dates_db.day_1:
             d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
                    'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
@@ -4232,7 +4251,7 @@ def clear_union(union_id, cat_id):
     cat_id = int(cat_id)
     if union_id in [u.union_id for u in CategoryUnions.query.all()] and cat_id in [u.cat_id for u in
                                                                                    CategoryUnions.query.filter(
-                                                                                           CategoryUnions.union_id == union_id).all()]:
+                                                                                       CategoryUnions.union_id == union_id).all()]:
         to_del = db.session.query(CategoryUnions).filter(CategoryUnions.union_id == union_id) \
             .filter(CategoryUnions.cat_id == cat_id).first()
         db.session.delete(to_del)
@@ -4425,7 +4444,7 @@ def online_participants(length, page):
     for work in works:
         work['link_name'] = work['work_name'].strip('?')
     reported = len([w.work_id for w in AppliedForOnline.query
-                   .join(Works, AppliedForOnline.work_id == Works.work_id).filter(Works.reported ==1).all()])
+                   .join(Works, AppliedForOnline.work_id == Works.work_id).filter(Works.reported == 1).all()])
     return render_template('online_reports/online_participants.html', works=works, pages=n, page=page,
                            length=length, link='online_participants', applied=applied, reported=reported)
 
@@ -4477,7 +4496,7 @@ def online_participants_applications(one_cat, length, page):
         .filter(Works.reported == 1)
         .order_by(WorkStatuses.status_id).all()]
         works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in wks]
-    # works = sorted(works_applied, key=lambda x: x['organisation_id'])
+        # works = sorted(works_applied, key=lambda x: x['organisation_id'])
         n = 1
     return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
                            length=length, link='online_participants_applications/all', cats=cats, one_cat=one_cat)
@@ -4522,8 +4541,8 @@ def renew_applications(one_cat, q_type, q_id):
         arrival = bool(application['arrival'])
         if OrganisationApplication(organisation_id, appl_no, arrival) not in OrganisationApplication.query.all():
             if organisation_id in [o.organisation_id for o in OrganisationApplication.query.all()]:
-                db.session.query(OrganisationApplication)\
-                    .filter(OrganisationApplication.organisation_id == organisation_id)\
+                db.session.query(OrganisationApplication) \
+                    .filter(OrganisationApplication.organisation_id == organisation_id) \
                     .update({OrganisationApplication.appl_no: appl_no,
                              OrganisationApplication.arrived: arrival})
                 db.session.commit()
@@ -4534,8 +4553,8 @@ def renew_applications(one_cat, q_type, q_id):
         for work_id in works:
             if Applications2Tour(work_id, appl_no, arrival) not in Applications2Tour.query.all():
                 if work_id in [w.work_id for w in Applications2Tour.query.all()]:
-                    db.session.query(Applications2Tour)\
-                        .filter(Applications2Tour.work_id == work_id)\
+                    db.session.query(Applications2Tour) \
+                        .filter(Applications2Tour.work_id == work_id) \
                         .update({Applications2Tour.appl_no: appl_no,
                                  Applications2Tour.arrived: arrival})
                     db.session.commit()
@@ -4567,9 +4586,10 @@ def renew_organisations(one_cat, which):
             if organisation['organisation_id'] in [o.organisation_id for o in Organisations.query.all()]:
                 a = Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
                                   organisation['country'])
-                if Organisations.query.filter(Organisations.organisation_id == organisation['organisation_id'])\
+                if Organisations.query.filter(Organisations.organisation_id == organisation['organisation_id']) \
                         .first() != a:
-                    db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id'])\
+                    db.session.query(Organisations).filter(
+                        Organisations.organisation_id == organisation['organisation_id']) \
                         .update({Organisations.organisation_id: organisation['organisation_id'],
                                  Organisations.name: organisation['name'],
                                  Organisations.city: organisation['city'],
@@ -4583,9 +4603,9 @@ def renew_organisations(one_cat, which):
 
             if organisation['work_id'] in [w.work_id for w in WorkOrganisations.query.all()]:
                 a = WorkOrganisations(organisation['work_id'], organisation['organisation_id'])
-                if WorkOrganisations.query.filter(WorkOrganisations.work_id == organisation['work_id'])\
+                if WorkOrganisations.query.filter(WorkOrganisations.work_id == organisation['work_id']) \
                         .first() != a:
-                    db.session.query(WorkOrganisations).filter(WorkOrganisations.work_id == organisation['work_id'])\
+                    db.session.query(WorkOrganisations).filter(WorkOrganisations.work_id == organisation['work_id']) \
                         .update({WorkOrganisations.organisation_id: organisation['organisation_id']})
                     db.session.commit()
             else:
@@ -4642,7 +4662,7 @@ def experts(cat_id, expert_to_edit):
         exps = [e.expert_id for e in CatExperts.query.filter(CatExperts.cat_id == cat['id']).all()]
         for e in exps:
             e_db = db.session.query(Experts).filter(Experts.expert_id == e).first()
-            e_t_db = db.session.query(CatExperts).filter(CatExperts.cat_id == cat['id'])\
+            e_t_db = db.session.query(CatExperts).filter(CatExperts.cat_id == cat['id']) \
                 .filter(CatExperts.expert_id == e).first()
             if e_t_db:
                 if e_t_db.day_1_started is not None:
@@ -4726,9 +4746,12 @@ def experts(cat_id, expert_to_edit):
                           'degree': e_db.degree,
                           'place_of_work': e_db.place_of_work}
 
-    all_days = set(d.day_1 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_1 is not None)
-    all_days.update(set(d.day_2 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_2 is not None))
-    all_days.update(set(d.day_3 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_3 is not None))
+    all_days = set(
+        d.day_1 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_1 is not None)
+    all_days.update(
+        set(d.day_2 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_2 is not None))
+    all_days.update(
+        set(d.day_3 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_3 is not None))
     a_days = sorted(all_days)
     all_days = [days[a.strftime('%w')] + ', ' + a.strftime('%d.%m') for a in a_days]
     return render_template('supervisors/experts.html', expert_to_edit=expert_to_edit, cats=cats, all_days=all_days,
@@ -4765,12 +4788,12 @@ def expert_time(cat_id):
             day_3_end = None
         c_e = CatExperts(expert, cat_id, day_1_start, day_1_end, day_2_start, day_2_end, day_3_start, day_3_end)
         if c_e not in CatExperts.query.all():
-            db.session.query(CatExperts).filter(CatExperts.cat_id == cat_id).filter(CatExperts.expert_id == expert)\
+            db.session.query(CatExperts).filter(CatExperts.cat_id == cat_id).filter(CatExperts.expert_id == expert) \
                 .update({CatExperts.day_1_started: day_1_start,
                          CatExperts.day_1_finished: day_1_end,
                          CatExperts.day_2_started: day_2_start,
                          CatExperts.day_2_finished: day_2_end,
-                         CatExperts.day_3_started:day_3_start,
+                         CatExperts.day_3_started: day_3_start,
                          CatExperts.day_3_finished: day_3_end})
             db.session.commit()
     return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
@@ -4790,7 +4813,7 @@ def save_expert(cat_id):
     if 'expert_id' in request.form.keys():
         expert_id = int(request.form['expert_id'])
         if expert not in Experts.query.filter(Experts.expert_id == expert_id).all():
-            db.session.query(Experts).filter(Experts.expert_id == expert_id)\
+            db.session.query(Experts).filter(Experts.expert_id == expert_id) \
                 .update({Experts.last_name: last_name,
                          Experts.first_name: first_name,
                          Experts.patronymic: patronymic,
@@ -4837,7 +4860,7 @@ def delete_expert(cat_id, expert_id):
     expert_id = int(expert_id)
     if expert_id in [e.expert_id for e in CatExperts.query.all()]:
         if cat_id in [e.cat_id for e in CatExperts.query.filter(CatExperts.expert_id == expert_id).all()]:
-            to_del = db.session.query(CatExperts).filter(CatExperts.expert_id == expert_id)\
+            to_del = db.session.query(CatExperts).filter(CatExperts.expert_id == expert_id) \
                 .filter(CatExperts.cat_id == cat_id).first()
             db.session.delete(to_del)
             db.session.commit()
@@ -4931,7 +4954,7 @@ def payment_stats():
     access = check_access(8)
     if access is not True:
         return access
-    statement_db = db.session.query(BankStatement)\
+    statement_db = db.session.query(BankStatement) \
         .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
     clauses = []
     for t in set(p.payment_type for p in PaymentTypes.query.all()):
@@ -5024,7 +5047,7 @@ def add_alternative_payment():
     if 'payment_id' in request.form.keys():
         payment_id = int(request.form['payment_id'])
         if payment_id in [p.payment_id for p in BankStatement.query.all()]:
-            db.session.query(BankStatement).filter(BankStatement.payment_id == payment_id)\
+            db.session.query(BankStatement).filter(BankStatement.payment_id == payment_id) \
                 .update({BankStatement.date: date,
                          BankStatement.organisation: organisation,
                          BankStatement.payment_comment: payment_comment,
@@ -5044,7 +5067,7 @@ def add_alternative_payment():
 def delete_alternative(payment_id):
     payment_id = int(payment_id)
     if payment_id in [p.payment_id for p in BankStatement.query.filter(BankStatement.alternative == 1).all()]:
-        to_del = db.session.query(BankStatement).filter(BankStatement.alternative == 1)\
+        to_del = db.session.query(BankStatement).filter(BankStatement.alternative == 1) \
             .filter(BankStatement.payment_id == payment_id).first()
         db.session.delete(to_del)
         db.session.commit()
@@ -5061,9 +5084,9 @@ def manage_payments(query, length, page):
         q = BankStatement.query.order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
         query = 'Все'
     else:
-        q = BankStatement.query\
-            .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)\
-            .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc())\
+        q = BankStatement.query \
+            .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id) \
+            .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()) \
             .filter(PaymentTypes.payment_type == query).all()
     payments = [p.payment_id for p in q]
     n, data = make_pages(length, payments, page)
@@ -5095,7 +5118,7 @@ def set_payment_types():
             dict_type = {'payment_id': payment, 'payment_type': p_type}
             if PaymentTypes(dict_type['payment_id'], dict_type['payment_type']) not in PaymentTypes.query.all():
                 if dict_type['payment_id'] in [p.payment_id for p in PaymentTypes.query.all()]:
-                    db.session.query(PaymentTypes).filter(PaymentTypes.payment_id == dict_type['payment_id'])\
+                    db.session.query(PaymentTypes).filter(PaymentTypes.payment_id == dict_type['payment_id']) \
                         .update({PaymentTypes.payment_type: dict_type['payment_type']})
                     db.session.commit()
                 else:
@@ -5249,6 +5272,148 @@ def delete_payment(del_id):
     BankStatement.query.filter(BankStatement.payment_id == del_id).delete()
     db.session.commit()
     return redirect(url_for('.manage_payments'))
+
+
+@app.route('/add_emails', defaults={'success': None})
+@app.route('/add_emails/<success>')
+def add_emails(success):
+    access = check_access(8)
+    if access is not True:
+        return access
+    return render_template('online_reports/add_emails.html', success=success)
+
+
+@app.route('/save_emails', methods=['POST'])
+def save_emails():
+    data = request.files['file'].read().decode('mac_cyrillic').replace('\xa0', ' ')
+    lines = data.split('\n')
+    mail_data = []
+    for line in lines[1:]:
+        if line != '':
+            sta = {name.strip().strip('\r'): value.strip().strip('\r')
+                   for name, value in zip(lines[0].split('\t'), line.split('\t'))}
+            mail_data.append(sta)
+    for work in mail_data:
+        if work['work_id'] != '':
+            work_id = int(work['work_id'])
+            if work_id in [w.work_id for w in Works.query.all()]:
+                indices = ['email' + str(i) for i in range(1, len(work))]
+                mls = [work[ind] for ind in indices if work[ind] != '' and work[ind] is not None]
+                # work_mail = Works.query.filter(Works.work_id == work_id).first().email
+                # mls.append(work_mail)
+                mails = set(mls)
+                for mail in mails:
+                    if mail in [m.email for m in Mails.query.all()]:
+                        mail_id = Mails.query.filter(Mails.email == mail).first().mail_id
+                    else:
+                        m = Mails(mail)
+                        db.session.add(m)
+                        db.session.flush()
+                        db.session.commit()
+                        mail_id = m.mail_id
+                    w_m = WorkMail(work_id, mail_id, False)
+                    if work_id not in [w.work_id for w in WorkMail.query.all()]:
+                        db.session.add(w_m)
+                        db.session.commit()
+                    elif mail_id not in [w.mail_id for w in WorkMail.query.filter(WorkMail.work_id == work_id).all()]:
+                        db.session.add(w_m)
+                        db.session.commit()
+    success = True
+    return redirect(url_for('.add_emails', success=success))
+
+
+@app.route('/load_diplomas', defaults={'success': None})
+@app.route('/load_diplomas/<success>')
+def load_diplomas(success):
+    access = check_access(8)
+    if access is not True:
+        return access
+    return render_template('online_reports/load_diplomas.html', success=success)
+
+
+@app.route('/save_diplomas', methods=['POST'])
+def save_diplomas():
+    if not os.path.isdir('static/files/uploaded_files'):
+        os.mkdir('static/files/uploaded_files')
+    if not os.path.isdir('static/files/uploaded_files/diplomas_' + str(curr_year)):
+        os.mkdir('static/files/uploaded_files/diplomas_' + str(curr_year))
+    files = request.files.getlist("diplomas")
+    for file in files:
+        file.save(os.path.join('static/files/uploaded_files/diplomas_' + str(curr_year), file.filename))
+    success = True
+    return redirect(url_for('.load_diplomas', success=success))
+
+
+@app.route('/send_diplomas', defaults={'cat_id': 'first', 'wrong': None})
+@app.route('/send_diplomas/<cat_id>/<wrong>')
+def send_diplomas(cat_id, wrong):
+    if cat_id == 'first':
+        cat_id = min([c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()])
+    c, cats = categories_info()
+    for cat in cats:
+        if cat['id'] == int(cat_id) or cat_id == 'all':
+            cat['works'] = [work_info(work_id=w.work_id, mail_info=True) for w in Works.query
+            .join(WorkCategories, Works.work_id == WorkCategories.work_id).filter(WorkCategories.cat_id == cat['id'])
+            .filter(Works.reported == 1).all()]
+    if cat_id != 'all':
+        cat_id = int(cat_id)
+    return render_template('online_reports/send_diplomas.html', cats=cats, cat_id=cat_id, wrong=wrong)
+
+
+@app.route('/sending_diplomas/<send_type>/<w_c_id>')
+def sending_diplomas(send_type, w_c_id):
+    if send_type == 'cat':
+        cat_id = int(w_c_id)
+        works = [w.work_id for w in Works.query
+        .join(WorkCategories, Works.work_id == WorkCategories.work_id).filter(WorkCategories.cat_id == cat_id)
+        .filter(Works.reported == 1).all()]
+    else:
+        work_id = int(w_c_id)
+        works = [w.work_id for w in Works.query.filter(Works.work_id == work_id)
+        .filter(Works.reported == 1).all()]
+        cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+
+    dir = 'static/files/uploaded_files/diplomas_2023/'
+    for w_id in works:
+        # try:
+        files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
+        if files:
+            mails = [m.email for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
+            .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
+            if mails:
+                attachments = []
+                for f in files:
+                    fi = dir + '/' + f
+                    with app.open_resource(fi) as file:
+                        attachments.append(Attachment(filename=os.path.basename(fi),
+                                                      content_type=mimetypes.guess_type(fi)[0], data=file.read()))
+
+                msg = Message(subject='Наградные документы ' + str(w_id),
+                              html=render_template('diplomas_mail.html', work_id=w_id),
+                              attachments=attachments,
+                              sender=('Команда Конкурса', 'team@vernadsky.info'),
+                              recipients=mails)
+                mail.send(msg)
+                a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
+                for b in a:
+                    db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(WorkMail.mail_id == b)\
+                        .update({WorkMail.sent: True})
+                    db.session.commit()
+                if w_id in [w.work_id for w in Diplomas.query.all()]:
+                    to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
+                    db.session.delete(to_del)
+                    db.session.commit()
+        else:
+            if w_id not in [w.work_id for w in Diplomas.query.all()]:
+                a = Diplomas(w_id, False)
+                db.session.add(a)
+                db.session.commit()
+            elif Diplomas.query.filter(Diplomas.work_id == w_id).first().diplomas:
+                db.session.query(Diplomas).filter(Diplomas.work_id == w_id).update({Diplomas.diplomas: False})
+                db.session.commit()
+        # except Exception:
+        #     return redirect(url_for('.send_diplomas', cat_id=cat_id, wrong=True))
+    return redirect(url_for('.send_diplomas', cat_id=cat_id, wrong=False))
 
 
 # БАЗА ЗНАНИЙ
@@ -5521,7 +5686,7 @@ def secretary_knowledge():
     return render_template('secretary_knowledge.html')
 
 
-#ЯИССЛЕДОВАТЕЛЬ
+# ЯИССЛЕДОВАТЕЛЬ
 @app.route('/yais_main')
 def yais_main():
     return render_template('ya_issledovatel/yais_main.html')
@@ -5553,7 +5718,7 @@ def yais_add_category():
     if 'cat_id' in request.form.keys():
         cat_id = int(request.form['cat_id'])
         if category not in YaisCategories.query.filter(YaisCategories.cat_id == cat_id).all():
-            db.session.query(YaisCategories).filter(YaisCategories.cat_id == cat_id)\
+            db.session.query(YaisCategories).filter(YaisCategories.cat_id == cat_id) \
                 .update({YaisCategories.cat_name: cat_name,
                          YaisCategories.cat_short_name: cat_short_name,
                          YaisCategories.year: year})
@@ -5629,7 +5794,7 @@ def add_registration():
                 db.session.commit()
                 author_id = a.author_id
             elif first_name not in [a.first_name for a in YaisAuthors.query
-                        .filter(YaisAuthors.last_name == last_name).all()]:
+                    .filter(YaisAuthors.last_name == last_name).all()]:
                 db.session.add(a)
                 db.session.flush()
                 db.session.commit()
@@ -5648,8 +5813,8 @@ def add_registration():
                 db.session.commit()
                 author_id = a.author_id
             else:
-                author_id = YaisAuthors.query.filter(YaisAuthors.last_name == last_name)\
-                    .filter(YaisAuthors.first_name == first_name)\
+                author_id = YaisAuthors.query.filter(YaisAuthors.last_name == last_name) \
+                    .filter(YaisAuthors.first_name == first_name) \
                     .filter(YaisAuthors.patronymic == patronymic).first().author_id
 
             name = reg['Руководитель'].split()
@@ -5674,7 +5839,7 @@ def add_registration():
                 db.session.commit()
                 supervisor_id = s.supervisor_id
             elif first_name not in [s.first_name for s in YaisSupervisors.query
-                        .filter(YaisSupervisors.last_name == last_name).all()]:
+                    .filter(YaisSupervisors.last_name == last_name).all()]:
                 db.session.add(s)
                 db.session.flush()
                 db.session.commit()
@@ -5694,8 +5859,8 @@ def add_registration():
                 db.session.commit()
                 supervisor_id = s.supervisor_id
             else:
-                supervisor_id = YaisSupervisors.query.filter(YaisSupervisors.last_name == last_name)\
-                    .filter(YaisSupervisors.first_name == first_name)\
+                supervisor_id = YaisSupervisors.query.filter(YaisSupervisors.last_name == last_name) \
+                    .filter(YaisSupervisors.first_name == first_name) \
                     .filter(YaisSupervisors.patronymic == patronymic).first().supervisor_id
 
             cl = reg['Класс'].split()
@@ -5711,7 +5876,7 @@ def add_registration():
                 db.session.commit()
                 class_id = cl.class_id
             else:
-                class_id = YaisClasses.query.filter(YaisClasses.class_digit == class_digit)\
+                class_id = YaisClasses.query.filter(YaisClasses.class_digit == class_digit) \
                     .filter(YaisClasses.age == age).first().class_id
 
             cat_id = YaisCategories.query.filter(YaisCategories.cat_short_name == reg['Секция']).first().cat_id
@@ -5741,7 +5906,7 @@ def add_registration():
                 db.session.commit()
                 organisation_id = org.organisation_id
             else:
-                organisation_id = YaisCities.query\
+                organisation_id = YaisCities.query \
                     .filter(YaisCities.organisation_name == organisation).first().organisation_id
 
             if city_id not in [c.city_id for c in YaisRegionCities.query.all()]:
@@ -5757,8 +5922,8 @@ def add_registration():
                 db.session.add(supervisor_organisation)
                 db.session.commit()
             else:
-                db.session.query(YaisSupervisorOrganisation)\
-                    .filter(YaisSupervisorOrganisation.supervisor_id == supervisor_id)\
+                db.session.query(YaisSupervisorOrganisation) \
+                    .filter(YaisSupervisorOrganisation.supervisor_id == supervisor_id) \
                     .update({YaisSupervisorOrganisation.organisation_id: organisation_id})
             if work_id not in [w.work_id for w in YaisWorkOrganisation.query.all()]:
                 work_org = YaisWorkOrganisation(work_id, organisation_id)
@@ -5783,9 +5948,9 @@ def add_registration():
                 db.session.add(work_author_supervisor)
                 db.session.commit()
             elif author_id not in [w.author_id for w
-                                       in YaisWorkAuthorSupervisor.query
-                                               .filter(YaisWorkAuthorSupervisor.work_id == work_id)
-                                               .filter(YaisWorkAuthorSupervisor.supervisor_id == supervisor_id).all()]:
+                                   in YaisWorkAuthorSupervisor.query
+                                           .filter(YaisWorkAuthorSupervisor.work_id == work_id)
+                                           .filter(YaisWorkAuthorSupervisor.supervisor_id == supervisor_id).all()]:
                 work_author_supervisor = YaisWorkAuthorSupervisor(work_id, author_id, supervisor_id)
                 db.session.add(work_author_supervisor)
                 db.session.commit()
@@ -5827,17 +5992,17 @@ def yais_set_payee(payment_id, payee):
                       if payee.lower() in u.patronymic.lower()])
         p = []
         for part in parts:
-            w_db = db.session.query(YaisWorks)\
-                .join(YaisWorkAuthorSupervisor, YaisWorks.work_id == YaisWorkAuthorSupervisor.work_id)\
+            w_db = db.session.query(YaisWorks) \
+                .join(YaisWorkAuthorSupervisor, YaisWorks.work_id == YaisWorkAuthorSupervisor.work_id) \
                 .filter(YaisWorkAuthorSupervisor.author_id == part).all()
             for w in w_db:
                 org = YaisOrganisations.query.join(YaisWorkOrganisation,
                                                    YaisOrganisations.organisation_id ==
-                                                   YaisWorkOrganisation.organisation_id)\
+                                                   YaisWorkOrganisation.organisation_id) \
                     .filter(YaisWorkOrganisation.work_id == w.work_id).first()
                 if w.work_id in [wp.work_id for wp in YaisWorkPayment.query.all()]:
                     payed = True
-                    payment_id = YaisWorkPayment.query.filter(YaisWorkPayment.work_id == w.work_id)\
+                    payment_id = YaisWorkPayment.query.filter(YaisWorkPayment.work_id == w.work_id) \
                         .first().payment_id
                 else:
                     payed = False
@@ -5859,7 +6024,7 @@ def yais_set_payee(payment_id, payee):
                                       == YaisWorkAuthorSupervisor.supervisor_id)
                                 .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
             for a in w['authors']:
-                cl_db = YaisClasses.query.join(YaisAuthorClass, YaisClasses.class_id == YaisClasses.class_id)\
+                cl_db = YaisClasses.query.join(YaisAuthorClass, YaisClasses.class_id == YaisClasses.class_id) \
                     .filter(YaisAuthorClass.author_id == a['author_id']).first()
                 a_class = str(cl_db.class_digit)
                 if cl_db.age:
@@ -5890,7 +6055,7 @@ def yais_set_payment(payment_id, payee):
     participant = int(payee)
     if str(participant) not in request.form.keys():
         if participant in [p.work_id for p in YaisWorkPayment.query.all()]:
-            if YaisWorkPayment.query.filter(YaisWorkPayment.work_id == participant)\
+            if YaisWorkPayment.query.filter(YaisWorkPayment.work_id == participant) \
                     .first().payment_id == int(payment_id):
                 YaisWorkPayment.query.filter(YaisWorkPayment.work_id == participant).delete()
                 db.session.commit()
@@ -5944,8 +6109,8 @@ def yais_find_participant(query):
                     else:
                         payed = False
                         payment_id = None
-                    cat = YaisCategories.query\
-                        .join(YaisWorkCategories, YaisCategories.cat_id == YaisWorkCategories.cat_id)\
+                    cat = YaisCategories.query \
+                        .join(YaisWorkCategories, YaisCategories.cat_id == YaisWorkCategories.cat_id) \
                         .filter(YaisWorkCategories.work_id == w.work_id).first()
                     p.append({'work': w.title, 'work_id': w.work_id,
                               'cat_id': cat.cat_id, 'cat_name': cat.cat_name,
@@ -5956,7 +6121,8 @@ def yais_find_participant(query):
                                  'author_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic,
                                  'city': a.city}
                                 for a in YaisAuthors.query
-                                .join(YaisWorkAuthorSupervisor, YaisAuthors.author_id == YaisWorkAuthorSupervisor.author_id)
+                                .join(YaisWorkAuthorSupervisor,
+                                      YaisAuthors.author_id == YaisWorkAuthorSupervisor.author_id)
                                 .filter(YaisWorkAuthorSupervisor.work_id == w['work_id']).all()]
                 w['supervisors'] = [{'supervisor_id': a.supervisor_id,
                                      'supervisor_name': a.last_name + ' ' + a.first_name + ' ' + a.patronymic}
@@ -6008,8 +6174,8 @@ def yais_check_arrival():
                     'city': a.city}
                    for a in YaisSupervisors.query.order_by(YaisSupervisors.last_name).all()]
     for a in authors:
-        w_db = db.session.query(YaisWorks)\
-            .join(YaisWorkAuthorSupervisor, YaisWorks.work_id == YaisWorkAuthorSupervisor.work_id)\
+        w_db = db.session.query(YaisWorks) \
+            .join(YaisWorkAuthorSupervisor, YaisWorks.work_id == YaisWorkAuthorSupervisor.work_id) \
             .filter(YaisWorkAuthorSupervisor.author_id == a['author_id']).first()
         org = YaisOrganisations.query.join(YaisWorkOrganisation,
                                            YaisOrganisations.organisation_id ==

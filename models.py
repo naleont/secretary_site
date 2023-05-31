@@ -833,6 +833,42 @@ class CatExperts(db.Model):
         self.day_3_finished = day_3_finished
 
 
+class Mails(db.Model):
+    __tablename__ = 'mails'
+
+    mail_id = db.Column('mail_id', db.Integer, primary_key=True)
+    email = db.Column('email', db.Text)
+
+    def __init__(self, email):
+        self.email = email
+
+
+class WorkMail(db.Model):
+    __tablename__ = 'work_mail'
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'mail_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    mail_id = db.Column('mail_id', db.Integer, ForeignKey('mails.mail_id'))
+    sent = db.Column('sent', db.Boolean)
+
+    def __init__(self, work_id, mail_id, sent):
+        self.work_id = work_id
+        self.mail_id = mail_id
+        self.sent = sent
+
+
+class Diplomas(db.Model):
+    __tablename__ = 'diplomas'
+    __table_args__ = (PrimaryKeyConstraint('work_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    diplomas = db.Column('diplomas', db.Boolean)
+
+    def __init__(self, work_id, diplomas):
+        self.work_id = work_id
+        self.diplomas = diplomas
+
+
 #ЯИССЛЕДОВАТЕЛЬ
 class YaisWorks(db.Model):
     __tablename__ = 'yais_works'
