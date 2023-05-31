@@ -49,6 +49,9 @@
             Авторы
         </th>
         <th align="center">
+            Оплата
+        </th>
+        <th align="center">
             email
         </th>
         <th align="center">
@@ -76,6 +79,22 @@
         <td {% if work['mails'] != [] %}
         rowspan="{{ work['mails']|length }}" {% endif %}>
             {{ work['authors'] }}
+        </td>
+        <td align="center" {% if work['mails'] != [] %}
+        rowspan="{{ work['mails']|length }}" {% endif %}>
+            {% if work['payed'] == True %}
+                <span class="green-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                      <circle cx="8" cy="8" r="8"/>
+                    </svg>
+                </span>
+            {% else %}
+                <span class="alarm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                      <circle cx="8" cy="8" r="8"/>
+                    </svg>
+                </span>
+            {% endif %}
         </td>
         {% if work['mails'] != [] %}
     {% for mail in work['mails'] %}
