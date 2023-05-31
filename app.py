@@ -5299,8 +5299,8 @@ def save_emails():
             if work_id in [w.work_id for w in Works.query.all()]:
                 indices = ['email' + str(i) for i in range(1, len(work))]
                 mls = [work[ind] for ind in indices if work[ind] != '' and work[ind] is not None]
-                # work_mail = Works.query.filter(Works.work_id == work_id).first().email
-                # mls.append(work_mail)
+                work_mail = Works.query.filter(Works.work_id == work_id).first().email
+                mls.append(work_mail)
                 mails = set(mls)
                 for mail in mails:
                     if mail in [m.email for m in Mails.query.all()]:
