@@ -5384,28 +5384,29 @@ def sending_diplomas(send_type, w_c_id):
                 .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
                 if mails:
                     for m in mails:
-                        attachments = []
-                        for f in files:
-                            fi = dir + '/' + f
-                            with app.open_resource(fi) as file:
-                                attachments.append(Attachment(filename=os.path.basename(fi),
-                                                              content_type=mimetypes.guess_type(fi)[0], data=file.read()))
+                        if m != 0 and m != '0' and m != '':
+                            attachments = []
+                            for f in files:
+                                fi = dir + '/' + f
+                                with app.open_resource(fi) as file:
+                                    attachments.append(Attachment(filename=os.path.basename(fi),
+                                                                  content_type=mimetypes.guess_type(fi)[0], data=file.read()))
 
-                        msg = Message(subject='Наградные документы ' + str(w_id),
-                                      html=render_template('diplomas_mail.html', work_id=w_id),
-                                      attachments=attachments,
-                                      sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
-                                      recipients=[m])
-                        mail.send(msg)
-                        a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
-                        for b in a:
-                            db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(WorkMail.mail_id == b)\
-                                .update({WorkMail.sent: True})
-                            db.session.commit()
-                        if w_id in [w.work_id for w in Diplomas.query.all()]:
-                            to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
-                            db.session.delete(to_del)
-                            db.session.commit()
+                            msg = Message(subject='Наградные документы ' + str(w_id),
+                                          html=render_template('diplomas_mail.html', work_id=w_id),
+                                          attachments=attachments,
+                                          sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
+                                          recipients=[m])
+                            mail.send(msg)
+                            a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
+                            for b in a:
+                                db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(WorkMail.mail_id == b)\
+                                    .update({WorkMail.sent: True})
+                                db.session.commit()
+                            if w_id in [w.work_id for w in Diplomas.query.all()]:
+                                to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
+                                db.session.delete(to_del)
+                                db.session.commit()
             else:
                 if w_id not in [w.work_id for w in Diplomas.query.all()]:
                     a = Diplomas(w_id, False)
