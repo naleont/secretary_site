@@ -2911,6 +2911,10 @@ def internal_reviews():
             user = db.session.query(Users).filter(Users.user_id == u.reader_id).first()
             reader = {'id': user.user_id, 'name': user.first_name, 'l_name': user.last_name}
             reviewer['reader'] = reader
+        revs = [r.review_id for r in
+                InternalReviews.query.join(InternalAnalysis, InternalReviews.review_id == InternalAnalysis.review_id)
+                .filter(InternalReviews.reviewer_id == reviewer['id']).all()]
+        reviewer['analysed'] = len(revs)
     return render_template('internal_reviews/internal_reviews.html', reviewers=reviewers)
 
 

@@ -13,6 +13,9 @@
             Кто читает
         </b></td>
         <td><b>
+            Прочитано
+        </b></td>
+        <td><b>
             Кто молодец?
         </b></td>
     </tr>
@@ -28,8 +31,19 @@
             {{ reviewer['reader']['name'] }} {{ reviewer['reader']['l_name'] }}
             {% endif %}
         </td>
+        <td align="center">
+            {% if reviewer['analysed'] != 0 %}
+                {{ reviewer['analysed'] }}
+            {% endif %}
+        </td>
         <td>
-
+            {% if reviewer['analysed'] != 0 %}
+                {% if reviewer['reader'] %}
+                    {{ reviewer['reader']['name'] }} {{ reviewer['reader']['l_name'] }} молодец!
+                {% else %}
+                    Неизвестный герой
+                {% endif %}
+            {% endif %}
         </td>
     </tr>
     {% endfor %}
