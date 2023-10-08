@@ -175,8 +175,26 @@
         border-radius: 7px;
         border: inset #67AB60;
       }
+    ul.menu-grid{
+        width: 100%;
+        display: grid;
+        grid-template-columns: 25% 25% 25% 25%;
+        padding: 0;
+    }
+    ul.menu-grid a{
+        text-decoration: none;
+        color: inherit;
+    }
+    ul.menu-grid li{
+        padding: 10% 0;
+        margin: 5%;
+        text-align: center;
+        vertical-align: middle;
+        background-color:#F1F3F3;
+        border-radius: 7px;
+        /*border: black 2px solid;*/
+    }
       .drop {
-        padding: 0px;
         overflow: hidden;
         border: none;
         border-radius: 7px;
@@ -187,9 +205,7 @@
         background-color: white;
         color: #363F5C;
         padding: 1px 5px;
-        margin: 0px;
         border: none;
-        width: 100%;
         vertical-align: middle;
       }
       .dropping:hover {
@@ -199,12 +215,12 @@
         display: none;
         background-color: white;
         color: #363F5C;
-        padding: 1px 0px;
+        /*padding: 1px 0;*/
         border: none;
         border-radius: 7px;
         z-index: 10;
         position:absolute;
-        margin: 0px;
+        margin: 0;
         vertical-align: middle;
       }
       .drop:hover .dropped {
@@ -214,7 +230,7 @@
         background-color: white;
         color: #363F5C;
         padding: 1px 5px;
-        margin: 0px;
+        margin: 0;
         border: none;
         border-radius: 7px;
         display: block;
@@ -264,13 +280,7 @@
       .m a {
           font-size: 120%;
       }
-      .table-menu td {
-          text-align: center;
-      }
-      .table-menu a {
-          text-decoration: none;
-          color: inherit;
-      }
+
       men:hover {
         background-color: #B7D5FF;
       }

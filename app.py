@@ -2972,6 +2972,40 @@ def assign_reviewer(do, reviewer_id, user_id):
     return redirect(url_for('.see_reviews', reviewer_id=reviewer_id))
 
 
+@app.route('/internal_results')
+def internal_results():
+    c, cats = categories_info()
+    for cat in cats:
+        cat['works'] = [{'work_id': w.work_id} for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id']).all()]
+        for work in cat['works']:
+            if WorkReviews.query.filter(WorkReviews.work_id == work['work_id']).first() is not None:
+                work['review_id'] = WorkReviews.query.filter(WorkReviews.work_id == work['work_id']).first().review_id
+                work['reviewer'] = {'reviewer_id': InternalReviews.query
+                .filter(InternalReviews.review_id == work['review_id']).first().reviewer_id}
+                if work['review_id'] in [r.review_id for r in InternalAnalysis.query.all()]:
+                    work['analysed'] = True
+                else:
+                    work['analysed'] = False
+            else:
+                work['review_id'] = None
+                work['reviewer'] = None
+                work['analysed'] = False
+            if work['analysed'] is True:
+
+                cat['reviews'] = len(set([w['review_id'] for w in cat['works'] if w['review_id'] is not None]))
+                cat['reviewers'] = len(set([w['reviewer']['reviewer_id'] for w in cat['works'] if w['reviewer'] is not None]))
+                cat['reviews_analysed'] = len(set([w['review_id'] for w in cat['works'] if w['analysed'] is True]))
+                cat['reviewers_analysed'] = len(set([w['reviewer']['reviewer_id'] for w in cat['works'] if w['analysed'] is True]))
+    cats_all = {'works': sum([len(c['works']) for c in cats]),
+                'reviews': sum([len([w['review_id'] for w in c['works'] if w['review_id'] is not None]) for c in cats]),
+                'reviews_analysed': sum([len([w['review_id'] for w in c['works'] if w['analysed'] is True]) for c in cats]),
+                'reviewers': sum([len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['reviewer'] is not None)) for c in cats]),
+                'reviewers_analysed': sum([len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['analysed'] is True)) for c in cats])}
+    print(cats_all)
+    print(cats[0])
+    return render_template('internal_reviews/internal_results.html', cats=cats, cats_all=cats_all)
+
+
 @app.route('/add_works', defaults={'works_added': None, 'works_edited': None})
 @app.route('/add_works/<works_added>/<works_edited>')
 def add_works(works_added, works_edited):
