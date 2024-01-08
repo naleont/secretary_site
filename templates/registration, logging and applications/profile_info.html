@@ -38,7 +38,7 @@ year
 <br>
 <table class="profile" cellspacing="5px">
     <tr>
-        <td align="left" valign="bottom">
+        <td align="left" valign="bottom" width="35%">
             {% if session['application'] != True %}
             <a href="/team_application"><button>Подать заявку в команду<br>(секретари и волонтеры)</button></a>
             {% endif %}
@@ -57,7 +57,7 @@ year
         </td><td>
         {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
         </td>
-        <td rowspan="4" align="right" width="30%">
+        <td rowspan="3" align="right" width="30%">
             <a href="/edit_user/{{ session['user_id'] }}"><button class="blue">Редактировать основную информацию</button></a>
         </td>
     </tr>
@@ -84,6 +84,9 @@ year
         {{ profile['born'] }}
         {% endif %}
         </td>
+        <td rowspan="8" align="right">
+            <a href="/edit_profile/{{ session['user_id'] }}"><button class="blue">Редактировать дополнительную информацию</button></a>
+        </td>
     </tr>
     <tr>
         <td>
@@ -92,9 +95,6 @@ year
         {% if profile['vk'] %}
         <a href="https://vk.com/{{ profile['vk'] }}">vk.com/{{ profile['vk'] }}</a>
         {% endif %}
-        </td>
-        <td rowspan="7" align="right">
-            <a href="/edit_profile/{{ session['user_id'] }}"><button class="blue">Редактировать дополнительную информацию</button></a>
         </td>
     </tr>
     <tr>

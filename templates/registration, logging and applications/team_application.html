@@ -6,7 +6,8 @@
 
 <form action="/application_process" method = 'POST'>
     <fieldset>
-        <legend><h2><b>Заявка в команду</b></h2><span align="right">Полный список секций можно посмотреть в низу страницы</span></legend>
+        <legend><h2><b>Заявка в команду</b></h2>
+            <span class="comment">Полный список секций можно посмотреть в низу страницы</span></legend>
                 <span class="required">Хочу в команду в роли</span><br>
                     <input type="radio" name="role" value="secretary" {% if application['role'] == "secretary" %} checked
                             {% endif %}> Секретаря<br>
@@ -17,8 +18,8 @@
                     <input type="radio" name="role" value="not_sure" {% if application['role'] == "not_sure" %} checked
                             {% endif %}> Пока не знаю<br><br>
                 <span>Хочу быть секретарем секции (только для секретарей)</span><br>
-                    <span class="comment">Первый приоритет</span>
-                <p><select name="category_1">
+                    <p><span class="comment">Первый приоритет</span>
+                    <select name="category_1">
                     <option class="container-fluid bg-2" {% if not application['category_1_id'] or
                     application['category_1_id'] == None %} selected="true" {% endif %}
                             value="None">Выберите секцию</option>
@@ -27,8 +28,8 @@
                             selected="true" {% endif %} value={{ cat['id'] }}>{{ cat['name'] }}</option>
                     {% endfor %}
                 </select></p>
-                    <span class="comment">Второй приоритет</span>
-                <p><select name="category_2">
+                    <p><span class="comment">Второй приоритет</span>
+                <select name="category_2">
                     <option class="container-fluid bg-2" {% if not application['category_2_id'] or
                     application['category_2_id'] == None %}
                             selected="true" {% endif %} value="None">Выберите секцию</option>
@@ -37,8 +38,8 @@
                             value={{ cat['id'] }}>{{ cat['name'] }}</option>
                     {% endfor %}
                 </select></p>
-                    <span class="comment">Третий приоритет</span>
-                <p><select name="category_3">
+                    <p><span class="comment">Третий приоритет</span>
+                <select name="category_3">
                     <option class="container-fluid bg-2" {% if not application['category_3_id'] or
                     application['category_3_id'] == None %} selected="true"
                             {% endif %} value="None">Выберите секцию</option>
@@ -51,18 +52,19 @@
                         checked {% endif %}> Годится любая секция<br>
                 <span class="comment">Отметьте, если вы согласны "спасти" любую секцию, если три выбранные
                     очень нужно будет отдать кому-нибудь другому.</span><br><br>
-                <span class="required">Я уже работал на чтениях</span><br>
-                <span class="comment">Если вы уже работали и волонтером, и секретарем, отмечайте "секретарем"</span>
-                    <p><select name="taken_part" required>
-                    <option class="container-fluid bg-2" {% if application['taken_part'] == None %} selected="true" {% endif %}
+                <p><span class="required">Я уже работал на чтениях</span><br>
+                    <select name="taken_part" required>
+                    <option {% if application['taken_part'] == None %} selected="true" {% endif %}
                             disabled>Выберите вариант</option>
-                    <option class="container-fluid bg-2" {% if application['taken_part'] == "not" %} selected="true" {% endif %}
+                    <option {% if application['taken_part'] == "not" %} selected="true" {% endif %}
                             value="not">Нет</option>
-                    <option class="container-fluid bg-2" {% if application['taken_part'] == "secretary" %} selected="true" {% endif %}
+                    <option {% if application['taken_part'] == "secretary" %} selected="true" {% endif %}
                             value="secretary">Был секретарем</option>
-                    <option class="container-fluid bg-2" {% if application['taken_part'] == "volunteer" %} selected="true" {% endif %}
+                    <option {% if application['taken_part'] == "volunteer" %} selected="true" {% endif %}
                             value="volunteer">Был волонтером</option>
-                    </select></p><br>
+                    </select>
+                <br><span class="comment">Если вы уже работали и волонтером, и секретарем, отмечайте "секретарем"</span>
+                </p>
             <input class="button" type="submit" value="Сохранить">
     </fieldset>
 </form>
