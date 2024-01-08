@@ -3154,7 +3154,7 @@ def many_works():
 def button_works(cat_id):
     url = request.referrer.replace(request.url_root, '').strip('/').split('/')
 
-    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
+    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/" + str(curr_year) + "/",
                                         headers=mail_data.headers).text)
     works_added = 0
     works_edited = 0
