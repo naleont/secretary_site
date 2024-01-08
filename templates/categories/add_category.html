@@ -23,14 +23,14 @@
 
     <span class="required">Направление</span><br>
         {% for key in directions %}
-        <input size="30" name="direction" type="radio" value={{ directions[key]['id'] }}
-        {% if category['dir_id'] == directions[key]['id'] %} checked {% endif %}> {{ directions[key]['name'] }}<br>
+        <label><input size="30" name="direction" type="radio" value={{ directions[key]['id'] }}
+        {% if category['dir_id'] == directions[key]['id'] %} checked {% endif %}> {{ directions[key]['name'] }}</label><br>
         {% endfor %}<br>
 
     <span class="required">Конкурс</span><br>
         {% for key in contests %}
-        <input size="30" name="contest" type="radio" value={{ contests[key]['id'] }} {% if category['cont_id'] ==
-        contests[key]['id'] %} checked {% endif %}> {{ contests[key]['name'] }}<br>
+        <label><input size="30" name="contest" type="radio" value={{ contests[key]['id'] }} {% if category['cont_id'] ==
+        contests[key]['id'] %} checked {% endif %}> {{ contests[key]['name'] }}</label><br>
         {% endfor %}<br>
 
     <span>Руководитель секции</span><br>
