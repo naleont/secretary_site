@@ -3171,6 +3171,12 @@ def button_works(cat_id):
     else:
         cats = [Categories.query.filter(Categories.cat_id == int(cat_id)).first().cat_site_id]
 
+    work_id_list = [w.work_id for w in Works.query.all()]
+    status_id_list = [s.status_id for s in ParticipationStatuses.query.all()]
+    work_statuses_list = [s.work_id for s in WorkStatuses.query.all()]
+    work_categories_list = [w.work_id for w in WorkCategories.query.all()]
+    applications_2_tour_list = [w.work_id for w in Applications2Tour.query.all()]
+
     for n in response:
         if int(n['section']['id']) in cats:
             edited = False
@@ -3227,7 +3233,7 @@ def button_works(cat_id):
             status_id = int(n['status']['id'])
             status_name = n['status']['value']
             reg_tour = n['regional_tour']
-            if work_id in [w.work_id for w in Works.query.all()]:
+            if work_id in work_id_list:
                 rep = Works.query.filter(Works.work_id == work_id).first().reported
             else:
                 rep = False
@@ -3236,7 +3242,7 @@ def button_works(cat_id):
                       author_2_name=author_2_name, author_2_age=author_2_age, author_2_class=author_2_class,
                       author_3_name=author_3_name, author_3_age=author_3_age, author_3_class=author_3_class,
                       teacher_name=teacher_name, reg_tour=reg_tour, msk_time_shift=timeshift, reported=rep)
-            if work_id in [w.work_id for w in Works.query.all()]:
+            if work_id in work_id_list:
                 if Works.query.filter(Works.work_id == work_id).first() != d:
                     db.session.query(Works).filter(Works.work_id == work_id).update({Works.work_name: work_name,
                                                                                      Works.work_site_id: work_site_id,
@@ -3259,23 +3265,23 @@ def button_works(cat_id):
                 db.session.add(d)
                 works_added += 1
                 db.session.commit()
-            if status_id not in [s.status_id for s in ParticipationStatuses.query.all()]:
+            if status_id not in status_id_list:
                 part_status = ParticipationStatuses(status_id, status_name)
                 db.session.add(part_status)
                 db.session.commit()
-            s = WorkStatuses(work_id, status_id)
-            if s not in WorkStatuses.query.all():
-                if work_id in [s.work_id for s in WorkStatuses.query.all()]:
+            if work_id in work_statuses_list:
+                if WorkStatuses.query.filter(WorkStatuses.work_id == work_id).first().status_id != status_id:
                     db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
                                                           ).update({WorkStatuses.status_id: status_id})
                     db.session.commit()
                     edited = True
             else:
+                s = WorkStatuses(work_id, status_id)
                 db.session.add(s)
                 db.session.commit()
             w_cat = WorkCategories(work_id, cat_id)
             if w_cat not in WorkCategories.query.all():
-                if work_id in [w.work_id for w in WorkCategories.query.all()]:
+                if work_id in work_categories_list:
                     if not cat_id:
                         work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
                         db.session.delete(work_cat)
@@ -3293,7 +3299,7 @@ def button_works(cat_id):
             if edited:
                 works_edited += 1
 
-            if work_id not in [w.work_id for w in Applications2Tour.query.all()]:
+            if work_id not in applications_2_tour_list:
                 w = Applications2Tour(work_id, None, False)
                 db.session.add(w)
                 db.session.commit()
