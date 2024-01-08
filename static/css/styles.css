@@ -1,0 +1,556 @@
+*{
+    overflow-x: auto;
+}
+html{
+    font-family:sans-serif;
+    -ms-text-size-adjust:100%;
+    -webkit-text-size-adjust:100%
+}
+body{
+    margin: 0;
+    width: 100%;
+    font-family: Arial, serif;
+    accent-color: #519F60;
+}
+.page-container{
+    display: flex;
+}
+
+/* text-formatting */
+.alarm{
+    color: #C80B00;
+}
+.green-text{
+    color: #00AC27;
+}
+.comment{
+    color: dimgrey;
+    font-size: small;
+}
+footer {
+    background-color: #323F5C;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+a{
+    color: #2D5935;
+}
+
+.comment {
+    font-size: small;
+    color: dimgrey;
+    padding-left: 15px;
+}
+.required::after {
+      content: "*";
+      color: red;
+}
+.success {
+    color:green;
+}
+.profile {
+    border: 10px #f1f1f1;
+    width: 750px;
+}
+button {
+    background-color: #67AB60;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: inset #67AB60;
+    font-size: medium;
+}
+.button {
+    background-color: #67AB60;
+    color: white;
+    padding: 3px 7px;
+    border-radius: 7px;
+    border: inset #67AB60;
+    font-size: medium;
+}
+button:hover {
+    background-color: #89C57A;
+}
+.red-button{
+    background-color: #B80000;
+    color: white;
+    padding: 3px 7px;
+    border-radius: 7px;
+    border: inset #B80000;
+    font-size: medium;
+}
+.red-button:hover {
+  background-color: #F00207;
+}
+.dark-blue {
+    background-color: #363F5C;
+}
+.medium-blue {
+    background-color: #4962A4;
+}
+.light-blue {
+    background-color: #C5E3F3;
+}
+.green{
+    background-color: #67AB60;
+}
+.text-blue {
+    color: #C5E3F3;
+}
+td{
+    padding: 3px 7px;
+}
+.blue {
+    background-color: white;
+    border: inset #363F5C;
+    color: #363F5C;
+}
+div.blue {
+    padding: 3px 7px;
+    border-radius: 7px;
+    background-color: white;
+    border: inset #363F5C;
+    color: #363F5C;
+}
+.blue-border {
+    background-color: white;
+    border: inset #363F5C;
+}
+.blue_no_border {
+    background-color: white;
+    border: solid white;
+    color: #363F5C;
+}
+.blue:hover {
+    background-color: #B7D5FF;
+}
+.comment{
+font-size: 90%;
+}
+.full-height{
+margin:0;
+position: relative;
+height: 100%;
+overflow: hidden;
+}
+.centered{
+ align: center;
+}
+.green-text{
+color: #55944E;
+}
+.yellow-text{
+color: #D2CD00;
+}
+.dark-text{
+color: #363F5C;
+}
+.white-text{
+color: white;
+}
+.big-button{
+    padding: 0 17px;
+    vertical-align: middle;
+    font-size: larger;
+}
+.large-text{
+font-size: large;
+}
+.small-text{
+font-size: large;
+}
+.small-ident{
+margin-bottom: -3px;
+}
+.news-date{
+color: #4962A4;
+font-size: smaller;
+font-weight: 500;
+padding-left: 10px;
+}
+.news-content{
+padding-left: 20px;
+}
+.circle-ul{
+  type: circle;
+}
+label {
+  font-weight: normal;
+}
+div.green-button{
+background-color: #67AB60;
+color: white;
+padding: 3px 7px;
+border-radius: 7px;
+border: inset #67AB60;
+}
+ul.menu-grid{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+    padding: 0;
+}
+ul.menu-grid a{
+    text-decoration: none;
+    color: inherit;
+}
+ul.menu-grid li{
+    padding: 10% 0;
+    margin: 5%;
+    text-align: center;
+    vertical-align: middle;
+    background-color:#F1F3F3;
+    border-radius: 7px;
+    /*border: black 2px solid;*/
+}
+  .drop {
+    overflow: hidden;
+    border: none;
+    border-radius: 7px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .dropping {
+    background-color: white;
+    color: #363F5C;
+    padding: 1px 5px;
+    border: none;
+    vertical-align: middle;
+  }
+  .dropping:hover {
+    background-color: #DFDFE2;
+  }
+  .dropped {
+    display: none;
+    background-color: white;
+    color: #363F5C;
+    /*padding: 1px 0;*/
+    border: none;
+    border-radius: 7px;
+    z-index: 10;
+    position:absolute;
+    margin: 0;
+    vertical-align: middle;
+  }
+  .drop:hover .dropped {
+      display: block;
+  }
+  .dropped a {
+    background-color: white;
+    color: #363F5C;
+    padding: 1px 5px;
+    margin: 0;
+    border: none;
+    border-radius: 7px;
+    display: block;
+    vertical-align: middle;
+      text-align: left;
+  }
+  .dropped a:hover {
+    background-color: #B7D5FF;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+  .nice-links a {
+    background-color: white;
+    color: #363F5C;
+    padding: 1px 5px;
+    margin: 0px;
+    border: none;
+    border-radius: 7px;
+    vertical-align: middle;
+  }
+  .nice-links a:hover {
+    background-color: #B7D5FF;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+  .delimiter {
+    padding: 0px 0px;
+    margin: -8px;
+  }
+  .bigger {
+      font-size: 110%;
+  }
+  .chosen-link {
+    background-color: #B7D5FF;
+  }
+  .men {
+    padding:15px;
+    margin-bottom:20px;
+    background-color:#f5f5f5;
+    -webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.05);
+    box-shadow:inset 0 1px 1px rgba(0,0,0,.05);
+    overflow: hidden;
+    border-radius: 7px;
+    vertical-align: middle;
+      font-size: 120%;
+  }
+  .m a {
+      font-size: 120%;
+  }
+
+  men:hover {
+    background-color: #B7D5FF;
+  }
+  .fill {
+      width: 100%;
+      height: 100%;
+  }
+  th {
+      text-align: center;
+      font-weight: bold;
+  }
+
+.top-nav{
+    display: flex;
+    font-size: larger;
+    align-self: stretch;
+    width: 100%;
+    margin: 0;
+    background-color: #323F5C;
+}
+/* ul делает отступ дочерних элементов слева */
+.top-nav ul li{
+    list-style-type: none;
+    display: inline-block;
+    align-self: center;
+    width: auto;
+    height: auto;
+    padding: 7px 5px;
+    color: #CBE2FF;
+    border-radius: 5px;
+    margin: 3px;
+    /*border: solid 1px red;*/
+}
+.top-nav ul a{
+    color: white;
+    text-decoration: none;
+}
+.top-nav ul li a{
+    color: #C3DDFF;
+    text-decoration: none;
+}
+.top-nav ul li a:hover{
+    color: #829AC7;
+}
+.top-nav div:hover{
+    color: blue;
+}
+.navbar-nav{
+    margin: 7.5px -15px
+}
+.navbar-right{
+    margin-right: 0;
+    margin-left: auto;
+}
+
+/* side menu */
+.sidenav-l{
+    background-color: #CBE2FF;
+    width: 18%;
+    height: 100vh;
+    color: #323F5C;
+    margin: 0 10px 0 0;
+    padding: 3px 7px;
+    font-size: large;
+    float: left;
+}
+.sidenav-r{
+    background-color: #CBE2FF;
+    width: 14%;
+    height: 100vh;
+    color: #323F5C;
+    margin: 0 0 0 10px;
+    padding: 3px 7px;
+    font-size: large;
+    float: right;
+}
+.sidenav-l a{
+    color: #323F5C;
+    text-decoration: none;
+}
+.sidenav-r a{
+    color: #323F5C;
+    text-decoration: none;
+}
+.sidenav-l a:hover{
+    color: #6885C3;
+}
+.sidenav-r a:hover{
+    color: #6885C3;
+}
+.sidenav-l ul{
+    /*border: solid blue 1px;*/
+    align-content: center;
+    vertical-align: middle;
+}
+.sidenav-l ul li{
+    margin-left: -40px;
+    list-style-type: none;
+    width: 115%;
+    /*border:1px solid #e3e3e3;*/
+    padding: 10px 10px;
+}
+.sidenav-r ul{
+    /*border: solid blue 1px;*/
+    align-content: center;
+    vertical-align: middle;
+}
+.sidenav-r ul li{
+    margin-left: -40px;
+    list-style-type: none;
+    width: 100%;
+    min-height:20px;
+    padding:24px;
+    margin-bottom:20px;
+    background-color:#f5f5f5;
+    border:1px solid #e3e3e3;
+    border-radius:4px;
+    text-align: center;
+}
+.support{
+    font-size: medium;
+    text-align: center;
+}
+.left{
+    float: left;
+    /*border: solid 1px white;*/
+    margin: 7px auto 3px -30px;
+}
+.right{
+    float: right;
+    /*border: solid 1px white;*/
+    margin: 7px 3px 3px auto;
+}
+
+.page-content{
+    display: inline-block;
+    float: left;
+    width: 78%;
+}
+
+input{
+    border: inset #1156a3 1px;
+    border-radius: 5px;
+    margin: 7px 0;
+    font-size: large;
+    padding: 5px;
+}
+textarea{
+    border: inset #1156a3 1px;
+    border-radius: 5px;
+    margin: 5px 0;
+    font-size: large;
+}
+input:hover{
+    border: outset #1156a3 1px;
+}
+input[type="checkbox"] {
+    border: 1px solid #1156a3;
+    clip: rect(0 0 0 0);
+    height: 20px;
+    margin: 5px;
+    /*overflow: hidden;*/
+    /*padding: 0;*/
+    /*!*position: absolute;*!*/
+    width: 20px;
+
+    /*stroke: $brand;*/
+    /*stroke-width: 2px;*/
+    /*height: 0; //Firefox fix*/
+    /*width: 24px;*/
+    /*position: absolute;*/
+    /*left: -48px;*/
+    /*top: -4px;*/
+    /*stroke-dasharray: 33; //Firefox fix*/
+
+    /*input:checked + label > svg {*/
+    /*// Firefox doesn't render svg's that is loading with the use tag if its been set to display: none and then toggled to display: block, so you have to use tricks like this to get it to render again:*/
+    /*height: 24px;*/
+    /*animation: draw-checkbox ease-in-out 0.2s forwards;*/
+  /*}*/
+}
+.mode-select{
+    display: inline-block;
+    padding: 7px 10px;
+    font-size: large;
+    border: inset #1156a3;
+    border-radius: 5px;
+    width: auto;
+    margin: 0 10px;
+    background-color: #D6E0FF;
+    color: #1156a3;
+    flex-flow: row nowrap;
+}
+.mode-select input{
+    position: fixed;
+    opacity: 0;
+    pointer-events: none;
+}
+.mode-select input[type="radio"]:checked + label{
+    /*background-color: #99B2EB;*/
+    /*border-radius: 5px;*/
+    text-decoration: underline overline;
+}
+.mode-select:hover{
+    border: inset #1156a3;
+    background-color: #B6CCEB;
+    color: #1156a3;
+}
+input[type="radio"]{
+    margin: 5px;
+}
+input[type="checkbox"].subcheck{
+    border: 1px solid #1156a3;
+    clip: rect(0 0 0 0);
+    height: 12px;
+    margin: 3px 3px 3px -5px;
+    /*overflow: hidden;*/
+    /*padding: 0;*/
+    /*!*position: absolute;*!*/
+    width: 12px;
+}
+.subcheck span {
+    font-size: 20%;
+}
+/*input[type=radio] {*/
+/*         appearance: none;*/
+/*         -webkit-appearance: none;*/
+/*         -moz-appearance: none;*/
+/*         padding: 10px;*/
+/*         background-color: orange;*/
+/*         border-radius:50%;*/
+/*      }*/
+/*input[type=radio]:checked {*/
+/*         background-color: magenta;*/
+/*      }*/
+select{
+    font-size: large;
+}
+td{
+    padding: 5px 10px;
+}
+
+/* forms */
+fieldset{
+    border: none;
+    padding: 0;
+}
+.form-field{
+    margin: 9px 0;
+}
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+.green-table {
+    background-color: #CBE2FF;
+    border-style: hidden;
+}
+.green-table td {
+    border: 1px solid #4962A4;
+}
+
+
