@@ -869,212 +869,212 @@ class Diplomas(db.Model):
         self.diplomas = diplomas
 
 
-#ЯИССЛЕДОВАТЕЛЬ
-class YaisWorks(db.Model):
-    __tablename__ = 'yais_works'
-
-    work_id = db.Column('work_id', db.Integer, primary_key=True)
-    title = db.Column('title', db.Text)
-
-    def __init__(self, title):
-        self.title = title
-
-
-class YaisAuthors(db.Model):
-    __tablename__ = 'yais_authors'
-
-    author_id = db.Column('author_id', db.Integer, primary_key=True)
-    last_name = db.Column('last_name', db.Text)
-    first_name = db.Column('first_name', db.Text)
-    patronymic = db.Column('patronymic', db.Text)
-    city = db.Column('city', db.Text)
-
-    def __init__(self, last_name, first_name, patronymic, city):
-        self.last_name = last_name
-        self.first_name = first_name
-        self.patronymic = patronymic
-        self.city = city
-
-
-class YaisSupervisors(db.Model):
-    __tablename__ = 'yais_supervisors'
-
-    supervisor_id = db.Column('supervisor_id', db.Integer, primary_key=True)
-    last_name = db.Column('last_name', db.Text)
-    first_name = db.Column('first_name', db.Text)
-    patronymic = db.Column('patronymic', db.Text)
-    city = db.Column('city', db.Text)
-
-    def __init__(self, last_name, first_name, patronymic, city):
-        self.last_name = last_name
-        self.first_name = first_name
-        self.patronymic = patronymic
-        self.city = city
-
-
-class YaisCategories(db.Model):
-    __tablename__ = 'yais_categories'
-
-    cat_id = db.Column('cat_id', db.Integer, primary_key=True)
-    cat_name = db.Column('cat_name', db.Text)
-    cat_short_name = db.Column('cat_short_name', db.Text)
-    year = db.Column('year', db.Text)
-
-    def __init__(self, cat_name, cat_short_name, year):
-        self.cat_name = cat_name
-        self.cat_short_name = cat_short_name
-        self.year = year
-
-
-class YaisClasses(db.Model):
-    __tablename__ = 'yais_classes'
-
-    class_id = db.Column('class_id', db.Integer, primary_key=True)
-    class_digit = db.Column('class_digit', db.Integer)
-    age = db.Column('age', db.Boolean)
-
-    def __init__(self, class_digit, age):
-        self.class_digit = class_digit
-        self.age = age
-
-
-class YaisRegions(db.Model):
-    __tablename__ = 'yais_regions'
-
-    region_id = db.Column('region_id', db.Integer, primary_key=True)
-    region_name = db.Column('region_name', db.Text)
-
-    def __init__(self, region_name):
-        self.region_name = region_name
-
-
-class YaisCities(db.Model):
-    __tablename__ = 'yais_cities'
-
-    city_id = db.Column('city_id', db.Integer, primary_key=True)
-    city_name = db.Column('city_name', db.Text)
-
-    def __init__(self, city_name):
-        self.city_name = city_name
-
-
-class YaisOrganisations(db.Model):
-    __tablename__ = 'yais_organisations'
-
-    organisation_id = db.Column('organisation_id', db.Integer, primary_key=True)
-    organisation_name = db.Column('organisation_name', db.Text)
-
-    def __init__(self, organisation_name):
-        self.organisation_name = organisation_name
-
-
-class YaisRegionCities(db.Model):
-    __tablename__ = 'yais_region_cities'
-    __table_args__ = (PrimaryKeyConstraint('city_id', 'region_id'),)
-
-    city_id = db.Column('city_id', db.Integer, ForeignKey('yais_cities.city_id'))
-    region_id = db.Column('region_id', db.Integer, ForeignKey('yais_regions.region_id'))
-
-    def __init__(self, city_id, region_id):
-        self.city_id = city_id
-        self.region_id = region_id
-
-
-class YaisCityOrganisations(db.Model):
-    __tablename__ = 'yais_city_organisations'
-    __table_args__ = (PrimaryKeyConstraint('organisation_id', 'city_id'),)
-
-    organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('yais_organisations.organisation_id'))
-    city_id = db.Column('city_id', db.Integer, ForeignKey('yais_cities.city_id'))
-
-    def __init__(self, organisation_id, city_id):
-        self.organisation_id = organisation_id
-        self.city_id = city_id
-
-
-class YaisSupervisorOrganisation(db.Model):
-    __tablename__ = 'yais_supervisor_organisation'
-    __table_args__ = (PrimaryKeyConstraint('supervisor_id', 'organisation_id'),)
-
-    supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('yais_supervisors.supervisor_id'))
-    organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('yais_organisations.organisation_id'))
-
-    def __init__(self, supervisor_id, organisation_id):
-        self.supervisor_id = supervisor_id
-        self.organisation_id = organisation_id
-
-
-class YaisWorkOrganisation(db.Model):
-    __tablename__ = 'yais_work_organisation'
-    __table_args__ = (PrimaryKeyConstraint('work_id', 'organisation_id'),)
-
-    work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
-    organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('yais_organisations.organisation_id'))
-
-    def __init__(self, work_id, organisation_id):
-        self.work_id = work_id
-        self.organisation_id = organisation_id
-
-
-class YaisWorkAuthorSupervisor(db.Model):
-    __tablename__ = 'yais_work_author_supervisor'
-    __table_args__ = (PrimaryKeyConstraint('work_id', 'author_id', 'supervisor_id'),)
-
-    work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
-    author_id = db.Column('author_id', db.Integer, ForeignKey('yais_authors.author_id'))
-    supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('yais_supervisors.supervisor_id'))
-
-    def __init__(self, work_id, author_id, supervisor_id):
-        self.work_id = work_id
-        self.author_id = author_id
-        self.supervisor_id = supervisor_id
-
-
-class YaisAuthorClass(db.Model):
-    __tablename__ = 'yais_author_class'
-    __table_args__ = (PrimaryKeyConstraint('author_id', 'class_id'),)
-
-    author_id = db.Column('author_id', db.Integer, ForeignKey('yais_authors.author_id'))
-    class_id = db.Column('class_id', db.Integer, ForeignKey('yais_classes.class_id'))
-
-    def __init__(self, author_id, class_id):
-        self.author_id = author_id
-        self.class_id = class_id
-
-
-class YaisWorkCategories(db.Model):
-    __tablename__ = 'yais_work_categories'
-    __table_args__ = (PrimaryKeyConstraint('work_id', 'cat_id'),)
-
-    work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
-    cat_id = db.Column('cat_id', db.Integer, ForeignKey('yais_categories.cat_id'))
-
-    def __init__(self, work_id, cat_id):
-        self.work_id = work_id
-        self.cat_id = cat_id
-
-
-class YaisWorkPayment(db.Model):
-    __tablename__ = 'yais_work_payment'
-    __table_args__ = (PrimaryKeyConstraint('work_id', 'payment_id'),)
-
-    work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
-    payment_id = db.Column('payment_id', db.Integer, ForeignKey('bank_statement.payment_id'))
-
-    def __init__(self, work_id, payment_id):
-        self.work_id = work_id
-        self.payment_id = payment_id
-
-
-class YaisArrival(db.Model):
-    __tablename__ = 'yais_arrival'
-    __table_args__ = (PrimaryKeyConstraint('author_id', 'supervisor_id'),)
-
-    author_id = db.Column('author_id', db.Integer, ForeignKey('yais_authors.author_id'), nullable=True)
-    supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('yais_supervisors.supervisor_id'), nullable=True)
-    arrived = db.Column('arrived', db.Boolean)
-
-    def __init__(self, author_id, supervisor_id, arrived):
-        self.author_id = author_id
-        self.supervisor_id = supervisor_id
-        self.arrived = arrived
+# #ЯИССЛЕДОВАТЕЛЬ
+# class YaisWorks(db.Model):
+#     __tablename__ = 'yais_works'
+#
+#     work_id = db.Column('work_id', db.Integer, primary_key=True)
+#     title = db.Column('title', db.Text)
+#
+#     def __init__(self, title):
+#         self.title = title
+#
+#
+# class YaisAuthors(db.Model):
+#     __tablename__ = 'yais_authors'
+#
+#     author_id = db.Column('author_id', db.Integer, primary_key=True)
+#     last_name = db.Column('last_name', db.Text)
+#     first_name = db.Column('first_name', db.Text)
+#     patronymic = db.Column('patronymic', db.Text)
+#     city = db.Column('city', db.Text)
+#
+#     def __init__(self, last_name, first_name, patronymic, city):
+#         self.last_name = last_name
+#         self.first_name = first_name
+#         self.patronymic = patronymic
+#         self.city = city
+#
+#
+# class YaisSupervisors(db.Model):
+#     __tablename__ = 'yais_supervisors'
+#
+#     supervisor_id = db.Column('supervisor_id', db.Integer, primary_key=True)
+#     last_name = db.Column('last_name', db.Text)
+#     first_name = db.Column('first_name', db.Text)
+#     patronymic = db.Column('patronymic', db.Text)
+#     city = db.Column('city', db.Text)
+#
+#     def __init__(self, last_name, first_name, patronymic, city):
+#         self.last_name = last_name
+#         self.first_name = first_name
+#         self.patronymic = patronymic
+#         self.city = city
+#
+#
+# class YaisCategories(db.Model):
+#     __tablename__ = 'yais_categories'
+#
+#     cat_id = db.Column('cat_id', db.Integer, primary_key=True)
+#     cat_name = db.Column('cat_name', db.Text)
+#     cat_short_name = db.Column('cat_short_name', db.Text)
+#     year = db.Column('year', db.Text)
+#
+#     def __init__(self, cat_name, cat_short_name, year):
+#         self.cat_name = cat_name
+#         self.cat_short_name = cat_short_name
+#         self.year = year
+#
+#
+# class YaisClasses(db.Model):
+#     __tablename__ = 'yais_classes'
+#
+#     class_id = db.Column('class_id', db.Integer, primary_key=True)
+#     class_digit = db.Column('class_digit', db.Integer)
+#     age = db.Column('age', db.Boolean)
+#
+#     def __init__(self, class_digit, age):
+#         self.class_digit = class_digit
+#         self.age = age
+#
+#
+# class YaisRegions(db.Model):
+#     __tablename__ = 'yais_regions'
+#
+#     region_id = db.Column('region_id', db.Integer, primary_key=True)
+#     region_name = db.Column('region_name', db.Text)
+#
+#     def __init__(self, region_name):
+#         self.region_name = region_name
+#
+#
+# class YaisCities(db.Model):
+#     __tablename__ = 'yais_cities'
+#
+#     city_id = db.Column('city_id', db.Integer, primary_key=True)
+#     city_name = db.Column('city_name', db.Text)
+#
+#     def __init__(self, city_name):
+#         self.city_name = city_name
+#
+#
+# class YaisOrganisations(db.Model):
+#     __tablename__ = 'yais_organisations'
+#
+#     organisation_id = db.Column('organisation_id', db.Integer, primary_key=True)
+#     organisation_name = db.Column('organisation_name', db.Text)
+#
+#     def __init__(self, organisation_name):
+#         self.organisation_name = organisation_name
+#
+#
+# class YaisRegionCities(db.Model):
+#     __tablename__ = 'yais_region_cities'
+#     __table_args__ = (PrimaryKeyConstraint('city_id', 'region_id'),)
+#
+#     city_id = db.Column('city_id', db.Integer, ForeignKey('yais_cities.city_id'))
+#     region_id = db.Column('region_id', db.Integer, ForeignKey('yais_regions.region_id'))
+#
+#     def __init__(self, city_id, region_id):
+#         self.city_id = city_id
+#         self.region_id = region_id
+#
+#
+# class YaisCityOrganisations(db.Model):
+#     __tablename__ = 'yais_city_organisations'
+#     __table_args__ = (PrimaryKeyConstraint('organisation_id', 'city_id'),)
+#
+#     organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('yais_organisations.organisation_id'))
+#     city_id = db.Column('city_id', db.Integer, ForeignKey('yais_cities.city_id'))
+#
+#     def __init__(self, organisation_id, city_id):
+#         self.organisation_id = organisation_id
+#         self.city_id = city_id
+#
+#
+# class YaisSupervisorOrganisation(db.Model):
+#     __tablename__ = 'yais_supervisor_organisation'
+#     __table_args__ = (PrimaryKeyConstraint('supervisor_id', 'organisation_id'),)
+#
+#     supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('yais_supervisors.supervisor_id'))
+#     organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('yais_organisations.organisation_id'))
+#
+#     def __init__(self, supervisor_id, organisation_id):
+#         self.supervisor_id = supervisor_id
+#         self.organisation_id = organisation_id
+#
+#
+# class YaisWorkOrganisation(db.Model):
+#     __tablename__ = 'yais_work_organisation'
+#     __table_args__ = (PrimaryKeyConstraint('work_id', 'organisation_id'),)
+#
+#     work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
+#     organisation_id = db.Column('organisation_id', db.Integer, ForeignKey('yais_organisations.organisation_id'))
+#
+#     def __init__(self, work_id, organisation_id):
+#         self.work_id = work_id
+#         self.organisation_id = organisation_id
+#
+#
+# class YaisWorkAuthorSupervisor(db.Model):
+#     __tablename__ = 'yais_work_author_supervisor'
+#     __table_args__ = (PrimaryKeyConstraint('work_id', 'author_id', 'supervisor_id'),)
+#
+#     work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
+#     author_id = db.Column('author_id', db.Integer, ForeignKey('yais_authors.author_id'))
+#     supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('yais_supervisors.supervisor_id'))
+#
+#     def __init__(self, work_id, author_id, supervisor_id):
+#         self.work_id = work_id
+#         self.author_id = author_id
+#         self.supervisor_id = supervisor_id
+#
+#
+# class YaisAuthorClass(db.Model):
+#     __tablename__ = 'yais_author_class'
+#     __table_args__ = (PrimaryKeyConstraint('author_id', 'class_id'),)
+#
+#     author_id = db.Column('author_id', db.Integer, ForeignKey('yais_authors.author_id'))
+#     class_id = db.Column('class_id', db.Integer, ForeignKey('yais_classes.class_id'))
+#
+#     def __init__(self, author_id, class_id):
+#         self.author_id = author_id
+#         self.class_id = class_id
+#
+#
+# class YaisWorkCategories(db.Model):
+#     __tablename__ = 'yais_work_categories'
+#     __table_args__ = (PrimaryKeyConstraint('work_id', 'cat_id'),)
+#
+#     work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
+#     cat_id = db.Column('cat_id', db.Integer, ForeignKey('yais_categories.cat_id'))
+#
+#     def __init__(self, work_id, cat_id):
+#         self.work_id = work_id
+#         self.cat_id = cat_id
+#
+#
+# class YaisWorkPayment(db.Model):
+#     __tablename__ = 'yais_work_payment'
+#     __table_args__ = (PrimaryKeyConstraint('work_id', 'payment_id'),)
+#
+#     work_id = db.Column('work_id', db.Integer, ForeignKey('yais_works.work_id'))
+#     payment_id = db.Column('payment_id', db.Integer, ForeignKey('bank_statement.payment_id'))
+#
+#     def __init__(self, work_id, payment_id):
+#         self.work_id = work_id
+#         self.payment_id = payment_id
+#
+#
+# class YaisArrival(db.Model):
+#     __tablename__ = 'yais_arrival'
+#     __table_args__ = (PrimaryKeyConstraint('author_id', 'supervisor_id'),)
+#
+#     author_id = db.Column('author_id', db.Integer, ForeignKey('yais_authors.author_id'), nullable=True)
+#     supervisor_id = db.Column('supervisor_id', db.Integer, ForeignKey('yais_supervisors.supervisor_id'), nullable=True)
+#     arrived = db.Column('arrived', db.Boolean)
+#
+#     def __init__(self, author_id, supervisor_id, arrived):
+#         self.author_id = author_id
+#         self.supervisor_id = supervisor_id
+#         self.arrived = arrived
