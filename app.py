@@ -45,8 +45,8 @@ app.config['MAIL_USE_SSL'] = mail_data.mail['MAIL_USE_SSL']
 mail = Mail(app)
 
 tel_unneeded = '-() '
-curr_year = 2023
-fee = 4800
+curr_year = 2024
+fee = 5000
 tour_fee = 3900
 
 days = {'1': 'Пн', '2': 'Вт', '3': 'Ср', '4': 'Чт', '5': 'Пт', '6': 'Сб', '0': 'Вс'}
