@@ -190,6 +190,7 @@ ul.menu-grid{
     display: grid;
     grid-template-columns: 25% 25% 25% 25%;
     padding: 0;
+    font-size: medium;
 }
 ul.menu-grid a{
     text-decoration: none;
@@ -202,6 +203,7 @@ ul.menu-grid li{
     vertical-align: middle;
     background-color:#F1F3F3;
     border-radius: 7px;
+    font-size: medium;
     /*border: black 2px solid;*/
 }
   .drop {
@@ -239,7 +241,7 @@ ul.menu-grid li{
   .dropped a {
     background-color: white;
     color: #363F5C;
-    padding: 1px 5px;
+    padding: 5px 5px;
     margin: 0;
     border: none;
     border-radius: 7px;
