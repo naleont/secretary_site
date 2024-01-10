@@ -258,7 +258,7 @@ ul.menu-grid li{
     background-color: white;
     color: #363F5C;
     padding: 1px 5px;
-    margin: 0px;
+    margin: 0;
     border: none;
     border-radius: 7px;
     vertical-align: middle;
@@ -269,7 +269,7 @@ ul.menu-grid li{
     vertical-align: middle;
   }
   .delimiter {
-    padding: 0px 0px;
+    padding: 0 0;
     margin: -8px;
   }
   .bigger {
