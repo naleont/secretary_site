@@ -27,6 +27,7 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.app_context().push()
 db.app = app
@@ -46,6 +47,7 @@ mail = Mail(app)
 
 tel_unneeded = '-() '
 curr_year = 2024
+# curr_year = 2023
 fee = 5000
 tour_fee = 3900
 
@@ -248,7 +250,10 @@ def get_user_info(user):
 def get_org_info(user_id):
     org = get_user_info(user_id)
     resps = [r.responsibility_id for r
-             in ResponsibilityAssignment.query.filter(ResponsibilityAssignment.user_id == org['user_id']).all()]
+             in ResponsibilityAssignment.query.join(Responsibilities, ResponsibilityAssignment.responsibility_id ==
+                                                    Responsibilities.responsibility_id)
+             .filter(ResponsibilityAssignment.user_id == org['user_id']).filter(Responsibilities.year == curr_year)
+             .all()]
     responsibilities = []
     for resp in resps:
         resp_db = db.session.query(Responsibilities).filter(Responsibilities.responsibility_id == resp).first()
