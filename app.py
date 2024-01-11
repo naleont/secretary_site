@@ -297,7 +297,9 @@ def get_profile_info(user):
 
 # Запись исправленной информации пользователя в БД
 def write_user(user_info):
-    if 'user_id' not in user_info.keys():
+    print(user_info)
+    print(session)
+    if 'user_id' not in user_info.keys() and 'user_id' in session.keys():
         user_id = int(session['user_id'])
     elif 'user_id' in session.keys():
         user_id = int(user_info['user_id'])
