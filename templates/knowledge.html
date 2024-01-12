@@ -2,23 +2,33 @@
 
 {% block template %}
 
-<div class="sidenav-l">
-  <ul>
+<div class="col-sm-2 sidenav light-blue">
+<!--<div class="sidenav-l">-->
+<!--  <ul>-->
 {% if session['supervisor'] == True or session['secretary'] == True or
     session['type'] in ['org', 'manager', 'admin'] %}
+<!--  <p><a href="">Анализ рецензий</a></p>-->
+<!--  <p><a href="">Лучшие работы</a></p>-->
+<!--  <p><a href="">Квитанции и договоры</a></p>-->
 <!--  <li><a href="">Анализ рецензий</a></li>-->
 <!--  <li><a href="">Лучшие работы</a></li>-->
 <!--  <li><a href="">Квитанции и договоры</a></li>-->
 {% endif %}
 {% if session['type'] in ['org', 'manager', 'admin'] %}
-  <li><a href="/knowledge_main">БЗ - Оргкомитет</a></li>
-  <li><a href="/secretary_knowledge">БЗ - Секретари</a></li>
-  <li><a href="/invoice">Квитанции и договоры</a></li>
+    <p><a href="/knowledge_main">БЗ - Оргкомитет</a></p>
+  <p><a href="/secretary_knowledge">БЗ - Секретари</a></p>
+  <p><a href="/invoice">Квитанции и договоры</a></p>
+<!--  <li><a href="/knowledge_main">БЗ - Оргкомитет</a></li>-->
+<!--  <li><a href="/secretary_knowledge">БЗ - Секретари</a></li>-->
+<!--  <li><a href="/invoice">Квитанции и договоры</a></li>-->
 {% endif %}
-  <li><a href="/contact">Контакты оргкомитета</a></li>
-  </ul>
+    <p><a href="/contact">Контакты оргкомитета</a></p>
+<!--  <li><a href="/contact">Контакты оргкомитета</a></li>-->
+<!--  </ul>-->
 </div>
-<div class="page-content">
+
+<div class="col-sm-8 text-left">
+<!--<div class="page-content">-->
   {% block content %} {% endblock %}
 </div>
 

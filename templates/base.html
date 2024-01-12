@@ -2,14 +2,21 @@
 
 {% block template %}
 
-<div class="sidenav-l">
-    <ul>
-    <li><a href="/secretary_job">Что такое работа секретаря секции?</a></li>
-    <li><a href="/search_participant">Найти работу или заявку</a></li>
+<div class="col-sm-2 sidenav light-blue" margin="0px">
+<p><a href="/secretary_job">Что такое работа секретаря секции?</a></p>
+<p><a href="/search_participant">Найти работу или заявку</a></p>
+<!--<div class="sidenav-l">-->
+<!--    <ul>-->
+<!--    <li><a href="/secretary_job">Что такое работа секретаря секции?</a></li>-->
+<!--    <li><a href="/search_participant">Найти работу или заявку</a></li>-->
 {% if session['supervisor'] == True or session['secretary'] == True or
     session['type'] in ['org', 'manager', 'admin'] %}
-  <li><a href="/analysis_state">Анализ рецензий</a></li>
-  <li><a href="/top_100">Лучшие работы</a></li>
+      <p><a href="/analysis_state">Анализ рецензий</a></p>
+  <p><a href="/top_100">Лучшие работы</a></p>
+    <p><a href="/set_report_dates">Назначить даты заседаний секций</a></p>
+    <p><a href="/online_participants_applications">Участники онлайна - по организациям</a></p>
+<!--  <li><a href="/analysis_state">Анализ рецензий</a></li>-->
+<!--  <li><a href="/top_100">Лучшие работы</a></li>-->
 <!--    <li><a href="/set_report_dates">Назначить даты заседаний секций</a></li>-->
 <!--    <li><a href="/online_participants_applications">Участники онлайна - по организациям</a></li>-->
 {% endif %}
@@ -17,13 +24,18 @@
 
 <!--      <p><a href="#">Меню-3</a></p>-->
 {% if session['type'] in ['org', 'manager', 'admin'] %}
-    <li><a href="/users_list">Пользователи</a></li>
-    <li><a href="/view_applications">Заявки в команду</a></li>
-    <li><a href="/internal_reviews">Читать рецензии</a></li>
+        <p><a href="/users_list">Пользователи</a></p>
+    <p><a href="/view_applications">Заявки в команду</a></p>
+    <p><a href="/internal_reviews">Читать рецензии</a></p>
+<!--    <li><a href="/users_list">Пользователи</a></li>-->
+<!--    <li><a href="/view_applications">Заявки в команду</a></li>-->
+<!--    <li><a href="/internal_reviews">Читать рецензии</a></li>-->
 {% endif %}
-</ul>
+<!--</ul>-->
 </div>
-<div class="page-content">
+
+<div class="col-sm-8 text-left">
+<!--<div class="page-content">-->
   {% block content %} {% endblock %}
 </div>
 

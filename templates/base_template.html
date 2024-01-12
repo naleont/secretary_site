@@ -5,314 +5,327 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon">
-<!--  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">-->
-  <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+<!--  <link rel="stylesheet" type="text/css" href="/static/css/styles.css">-->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <!--  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-xUj+30JU5yExlq6JSYGSHk7tPXikynS7ogEvDej/m4="-->
 <!--          crossorigin="anonymous"></script>-->
-<!--  <style>-->
-<!--    /* Remove the navbar's default margin-bottom and rounded borders */-->
-<!--    .navbar {-->
-<!--      margin-bottom: 0;-->
-<!--      border-radius: 0;-->
-<!--    }-->
+  <style>
+    /* Remove the navbar's default margin-bottom and rounded borders */
+    .navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
 
-<!--    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */-->
-<!--    .row.content {height: 500px}-->
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 88vh}
 
-<!--    /* Set gray background color and 100% height */-->
-<!--    .sidenav {-->
-<!--      padding-top: 20px;-->
-<!--      background-color: #f1f1f1;-->
-<!--      height: 100%;-->
-<!--    }-->
+    /* Set gray background color and 100% height */
+    .sidenav {
+      padding-top: 20px;
+      background-color: #f1f1f1;
+      height: 100%;
+    }
 
-<!--    /* Set black background color, white text and some padding */-->
-<!--    footer {-->
-<!--      background-color: #555;-->
-<!--      color: white;-->
-<!--      padding: 15px;-->
-<!--    }-->
-<!--    .comment {-->
-<!--        font-size: 16px;-->
-<!--        color: dimgrey;-->
-<!--      }-->
-<!--    .required::after {-->
-<!--          content: "*";-->
-<!--          color: red;-->
-<!--        }-->
-<!--      .alarm {color:red;}-->
-<!--      .success {color:green;}-->
-<!--      .profile {-->
-<!--        border: 10px #f1f1f1;-->
-<!--        width: 750px;-->
-<!--      }-->
-<!--      button {-->
-<!--        background-color: #67AB60;-->
-<!--        color: white;-->
-<!--        padding: 3px 7px;-->
-<!--        border-radius: 7px;-->
-<!--        border: inset #67AB60;-->
-<!--      }-->
-<!--      .button {-->
-<!--        background-color: #67AB60;-->
-<!--        color: white;-->
-<!--        padding: 3px 7px;-->
-<!--        border-radius: 7px;-->
-<!--        border: inset #67AB60;-->
-<!--      }-->
-<!--      button:hover {-->
-<!--          background-color: #89C57A;-->
-<!--      }-->
-<!--      .red-button{-->
-<!--        background-color: #B80000;-->
-<!--        color: white;-->
-<!--        padding: 3px 7px;-->
-<!--        border-radius: 7px;-->
-<!--        border: inset #B80000;-->
-<!--      }-->
-<!--      .red-button:hover {-->
-<!--          background-color: #F00207;-->
-<!--      }-->
-<!--      .dark-blue {-->
-<!--        background-color: #363F5C;-->
-<!--      }-->
-<!--      .medium-blue {-->
-<!--        background-color: #4962A4;-->
-<!--      }-->
-<!--      .light-blue {-->
-<!--        background-color: #C5E3F3;-->
-<!--      }-->
-<!--      .green{-->
-<!--        background-color: #67AB60;-->
-<!--      }-->
-<!--      .text-blue {-->
-<!--        color: #C5E3F3;-->
-<!--      }-->
-<!--      td{-->
-<!--        padding: 3px 7px;-->
-<!--      }-->
-<!--      .blue {-->
-<!--        background-color: white;-->
-<!--        border: inset #363F5C;-->
-<!--        color: #363F5C;-->
-<!--      }-->
-<!--      div.blue {-->
-<!--        padding: 3px 7px;-->
-<!--        border-radius: 7px;-->
-<!--        background-color: white;-->
-<!--        border: inset #363F5C;-->
-<!--        color: #363F5C;-->
-<!--      }-->
-<!--      .blue-border {-->
-<!--        background-color: white;-->
-<!--        border: inset #363F5C;-->
-<!--      }-->
-<!--      .blue_no_border {-->
-<!--        background-color: white;-->
-<!--        border: solid white;-->
-<!--        color: #363F5C;-->
-<!--      }-->
-<!--      .blue:hover {-->
-<!--          background-color: #B7D5FF;-->
-<!--      }-->
-<!--      .comment{-->
-<!--        font-size: 90%;-->
-<!--      }-->
-<!--      .full-height{-->
-<!--        margin:0;-->
-<!--        position: relative;-->
-<!--        height: 100%;-->
-<!--        overflow: hidden;-->
-<!--      }-->
-<!--      .centered{-->
-<!--         align: center;-->
-<!--      }-->
-<!--      .green-text{-->
-<!--        color: #55944E;-->
-<!--      }-->
-<!--      .yellow-text{-->
-<!--        color: #D2CD00;-->
-<!--      }-->
-<!--      .dark-text{-->
-<!--        color: #363F5C;-->
-<!--      }-->
-<!--      .white-text{-->
-<!--        color: white;-->
-<!--      }-->
-<!--      .big-button{-->
-<!--        padding: 0px 17px;-->
-<!--        vertical-align: middle;-->
-<!--      }-->
-<!--      .large-text{-->
-<!--        font-size: large;-->
-<!--      }-->
-<!--      .small-text{-->
-<!--        font-size: large;-->
-<!--      }-->
-<!--      .small-ident{-->
-<!--        margin-bottom: -3px;-->
-<!--      }-->
-<!--      .news-date{-->
-<!--        color: #4962A4;-->
-<!--        font-size: smaller;-->
-<!--        font-weight: 500;-->
-<!--        padding-left: 10px;-->
-<!--      }-->
-<!--      .news-content{-->
-<!--        padding-left: 20px;-->
-<!--      }-->
-<!--      .circle-ul{-->
-<!--          type: circle;-->
-<!--      }-->
-<!--      label {-->
-<!--          font-weight: normal;-->
-<!--      }-->
-<!--      div.green-button{-->
-<!--        background-color: #67AB60;-->
-<!--        color: white;-->
-<!--        padding: 3px 7px;-->
-<!--        border-radius: 7px;-->
-<!--        border: inset #67AB60;-->
-<!--      }-->
-<!--    ul.menu-grid{-->
-<!--        width: 100%;-->
-<!--        display: grid;-->
-<!--        grid-template-columns: 25% 25% 25% 25%;-->
-<!--        padding: 0;-->
-<!--    }-->
-<!--    ul.menu-grid a{-->
-<!--        text-decoration: none;-->
-<!--        color: inherit;-->
-<!--    }-->
-<!--    ul.menu-grid li{-->
-<!--        padding: 10% 0;-->
-<!--        margin: 5%;-->
-<!--        text-align: center;-->
-<!--        vertical-align: middle;-->
-<!--        background-color:#F1F3F3;-->
-<!--        border-radius: 7px;-->
-<!--        /*border: black 2px solid;*/-->
-<!--    }-->
-<!--      .drop {-->
-<!--        overflow: hidden;-->
-<!--        border: none;-->
-<!--        border-radius: 7px;-->
-<!--        display: inline-block;-->
-<!--        vertical-align: middle;-->
-<!--      }-->
-<!--      .dropping {-->
-<!--        background-color: white;-->
-<!--        color: #363F5C;-->
-<!--        padding: 1px 5px;-->
-<!--        border: none;-->
-<!--        vertical-align: middle;-->
-<!--      }-->
-<!--      .dropping:hover {-->
-<!--        background-color: #DFDFE2;-->
-<!--      }-->
-<!--      .dropped {-->
-<!--        display: none;-->
-<!--        background-color: white;-->
-<!--        color: #363F5C;-->
-<!--        /*padding: 1px 0;*/-->
-<!--        border: none;-->
-<!--        border-radius: 7px;-->
-<!--        z-index: 10;-->
-<!--        position:absolute;-->
-<!--        margin: 0;-->
-<!--        vertical-align: middle;-->
-<!--      }-->
-<!--      .drop:hover .dropped {-->
-<!--          display: block;-->
-<!--      }-->
-<!--      .dropped a {-->
-<!--        background-color: white;-->
-<!--        color: #363F5C;-->
-<!--        padding: 1px 5px;-->
-<!--        margin: 0;-->
-<!--        border: none;-->
-<!--        border-radius: 7px;-->
-<!--        display: block;-->
-<!--        vertical-align: middle;-->
-<!--          text-align: left;-->
-<!--      }-->
-<!--      .dropped a:hover {-->
-<!--        background-color: #B7D5FF;-->
-<!--        text-decoration: none;-->
-<!--        vertical-align: middle;-->
-<!--      }-->
-<!--      .nice-links a {-->
-<!--        background-color: white;-->
-<!--        color: #363F5C;-->
-<!--        padding: 1px 5px;-->
-<!--        margin: 0px;-->
-<!--        border: none;-->
-<!--        border-radius: 7px;-->
-<!--        vertical-align: middle;-->
-<!--      }-->
-<!--      .nice-links a:hover {-->
-<!--        background-color: #B7D5FF;-->
-<!--        text-decoration: none;-->
-<!--        vertical-align: middle;-->
-<!--      }-->
-<!--      .delimiter {-->
-<!--        padding: 0px 0px;-->
-<!--        margin: -8px;-->
-<!--      }-->
-<!--      .bigger {-->
-<!--          font-size: 110%;-->
-<!--      }-->
-<!--      .chosen-link {-->
-<!--        background-color: #B7D5FF;-->
-<!--      }-->
-<!--      .men {-->
-<!--        padding:15px;-->
-<!--        margin-bottom:20px;-->
-<!--        background-color:#f5f5f5;-->
-<!--        -webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.05);-->
-<!--        box-shadow:inset 0 1px 1px rgba(0,0,0,.05)-->
-<!--        overflow: hidden;-->
-<!--        border-radius: 7px;-->
-<!--        vertical-align: middle;-->
-<!--          font-size: 120%;-->
-<!--      }-->
-<!--      .m a {-->
-<!--          font-size: 120%;-->
-<!--      }-->
+    /* Set black background color, white text and some padding */
+    footer {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+    .comment {
+        font-size: 16px;
+        color: dimgrey;
+      }
+    .required::after {
+          content: "*";
+          color: red;
+        }
+      .alarm {color:red;}
+      .success {color:green;}
+      .profile {
+        border: 10px #f1f1f1;
+        width: 750px;
+      }
+      button {
+        background-color: #67AB60;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #67AB60;
+      }
+      .button {
+        background-color: #67AB60;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #67AB60;
+      }
+      button:hover {
+          background-color: #89C57A;
+      }
+      .red-button{
+        background-color: #B80000;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #B80000;
+      }
+      .red-button:hover {
+          background-color: #F00207;
+      }
+      .dark-blue {
+        background-color: #363F5C;
+      }
+      .medium-blue {
+        background-color: #4962A4;
+      }
+      .light-blue {
+        background-color: #C5E3F3;
+      }
+      .green{
+        background-color: #67AB60;
+      }
+      .text-blue {
+        color: #C5E3F3;
+      }
+      td{
+        padding: 3px 7px;
+      }
+      .blue {
+        background-color: white;
+        border: inset #363F5C;
+        color: #363F5C;
+      }
+      div.blue {
+        padding: 3px 7px;
+        border-radius: 7px;
+        background-color: white;
+        border: inset #363F5C;
+        color: #363F5C;
+      }
+      .blue-border {
+        background-color: white;
+        border: inset #363F5C;
+      }
+      .blue_no_border {
+        background-color: white;
+        border: solid white;
+        color: #363F5C;
+      }
+      .blue:hover {
+          background-color: #B7D5FF;
+      }
+      .comment{
+        font-size: 90%;
+      }
+      .full-height{
+        margin:0;
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+      }
+      .centered{
+         align: center;
+      }
+      .green-text{
+        color: #55944E;
+      }
+      .yellow-text{
+        color: #D2CD00;
+      }
+      .dark-text{
+        color: #363F5C;
+      }
+      .white-text{
+        color: white;
+      }
+      .big-button{
+        padding: 0px 17px;
+        vertical-align: middle;
+      }
+      .large-text{
+        font-size: large;
+      }
+      .small-text{
+        font-size: large;
+      }
+      .small-ident{
+        margin-bottom: -3px;
+      }
+      .news-date{
+        color: #4962A4;
+        font-size: smaller;
+        font-weight: 500;
+        padding-left: 10px;
+      }
+      .news-content{
+        padding-left: 20px;
+      }
+      .circle-ul{
+          type: circle;
+      }
+      label {
+          font-weight: normal;
+      }
+      div.green-button{
+        background-color: #67AB60;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 7px;
+        border: inset #67AB60;
+      }
+    ul.menu-grid{
+        width: 100%;
+        display: grid;
+        grid-template-columns: 25% 25% 25% 25%;
+        padding: 0;
+    }
+    ul.menu-grid a{
+        text-decoration: none;
+        color: inherit;
+    }
+    ul.menu-grid li{
+        padding: 10% 0;
+        margin: 5%;
+        text-align: center;
+        vertical-align: middle;
+        background-color:#F1F3F3;
+        border-radius: 7px;
+        /*border: black 2px solid;*/
+    }
+      .drop {
+        overflow: hidden;
+        border: none;
+        border-radius: 7px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .dropping {
+        background-color: white;
+        color: #363F5C;
+        padding: 1px 5px;
+        border: none;
+        vertical-align: middle;
+      }
+      .dropping:hover {
+        background-color: #DFDFE2;
+      }
+      .dropped {
+        display: none;
+        background-color: white;
+        color: #363F5C;
+        /*padding: 1px 0;*/
+        border: none;
+        border-radius: 7px;
+        z-index: 10;
+        position:absolute;
+        margin: 0;
+        vertical-align: middle;
+      }
+      .drop:hover .dropped {
+          display: block;
+      }
+      .dropped a {
+        background-color: white;
+        color: #363F5C;
+        padding: 1px 5px;
+        margin: 0;
+        border: none;
+        border-radius: 7px;
+        display: block;
+        vertical-align: middle;
+          text-align: left;
+      }
+      .dropped a:hover {
+        background-color: #B7D5FF;
+        text-decoration: none;
+        vertical-align: middle;
+      }
+      .nice-links a {
+        background-color: white;
+        color: #363F5C;
+        padding: 1px 5px;
+        margin: 0px;
+        border: none;
+        border-radius: 7px;
+        vertical-align: middle;
+      }
+      .nice-links a:hover {
+        background-color: #B7D5FF;
+        text-decoration: none;
+        vertical-align: middle;
+      }
+      .delimiter {
+        padding: 0 0;
+        margin: -8px;
+      }
+      .bigger {
+          font-size: 110%;
+      }
+      .chosen-link {
+        background-color: #B7D5FF;
+      }
+      .men {
+        padding:15px;
+        margin-bottom:20px;
+        background-color:#f5f5f5;
+        -webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,.05);
+        box-shadow:inset 0 1px 1px rgba(0,0,0,.05)
+        overflow: hidden;
+        border-radius: 7px;
+        vertical-align: middle;
+          font-size: 120%;
+      }
+      .m a {
+          font-size: 120%;
+      }
 
-<!--      men:hover {-->
-<!--        background-color: #B7D5FF;-->
-<!--      }-->
-<!--      .fill {-->
-<!--          width: 100%;-->
-<!--          height: 100%;-->
-<!--      }-->
-<!--      th {-->
-<!--          text-align: center;-->
-<!--          font-weight: bold;-->
-<!--      }-->
+      men:hover {
+        background-color: #B7D5FF;
+      }
+      .fill {
+          width: 100%;
+          height: 100%;
+      }
+      th {
+          text-align: center;
+          font-weight: bold;
+      }
 
-<!--    /* On small screens, set height to 'auto' for sidenav and grid */-->
-<!--    @media screen and (max-width: 767px) {-->
-<!--      .sidenav {-->
-<!--        height: auto;-->
-<!--        padding: 15px;-->
-<!--      }-->
-<!--      .row.content {height:auto;}-->
-<!--      table {-->
-<!--        width: 50%;-->
-<!--      }-->
-<!--    }-->
-<!--  </style>-->
+    /* On small screens, set height to 'auto' for sidenav and grid */
+    @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        padding: 15px;
+      }
+      .row.content {height:auto;}
+      table {
+        width: 50%;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<nav class="top-nav">
-  <ul class="left">
-      <li><a href="/">Главная</a></li>
-        <li><a href="/categories">Секции</a></li>
+<nav class="navbar navbar-inverse dark-blue">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand active" href="/">Главная</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="menu"><a href="/categories">Секции</a></li>
+<!--<nav class="top-nav">-->
+<!--  <ul class="left">-->
+<!--      <li><a href="/">Главная</a></li>-->
+<!--        <li><a href="/categories">Секции</a></li>-->
         <li><a href="/supervisors">Руководители секций</a></li>
         <li><a href="/organising_committee">Оргкомитет</a></li>
         {% if session['type'] in ['manager', 'org', 'admin'] %}
@@ -323,31 +336,58 @@
         {% endif %}
 <!--        <li><a href="#">Меню-4</a></li>-->
       </ul>
-      <ul class="right">
+        <ul class="nav navbar-nav navbar-right">
+<!--      <ul class="right">-->
         {% if not session['user_id'] %}
         <li><a href="/login">Войти</a></li>
         {% else %}
-        <li><a href="/profile_info">Профиль</a></li></li>
+        <li><a href="/profile_info">Профиль</a></li>
         {% if session['type'] in ['manager', 'org', 'admin'] %}
         <li><a href="/admin">Админка</a></li>
         {% endif %}
         <li><a href="/logout">Выйти</a></li>
         {% endif %}
       </ul>
+          </div>
+  </div>
 </nav>
 
-<div class="page-container">
+<div class="container-fluid text-center full-height">
+  <div class="row content">
+<!--<div class="page-container">-->
 
       {% block template %} {% endblock %}
 
-    <div class="sidenav-r">
-      <div>
-      <ul>
-        <li><a href="https://vernadsky.info/" target="_blank">Сайт Конкурса</a></li>
-<!--        <li><a href="https://gymnasium.msu.ru/courses/294" target="_blank">Canvas</a></li>-->
-        <li><a href="https://vk.com/vernadsky_org_news" target="_blank">Группа VK</a></li>
+
+        <div class="col-sm-2 sidenav light-blue">
+      <a href="https://vernadsky.info/" target="_blank">
+          <div class="well">
+            <p>Сайт Конкурса</p>
+          </div>
+      </a>
+        <a href="https://gymnasium.msu.ru/courses/294" target="_blank">
+          <div class="well">
+            <p>Canvas</p>
+          </div>
+        </a>
+        <a href="https://vk.com/vernadsky_org_news" target="_blank">
+          <div class="well">
+            <p>Группа VK</p>
+          </div>
+        </a>
+<!--          <div class="sidenav-r">-->
+<!--      <div>-->
+<!--      <ul>-->
+<!--        <li><a href="https://vernadsky.info/" target="_blank">Сайт Конкурса</a></li>-->
+<!--&lt;!&ndash;        <li><a href="https://gymnasium.msu.ru/courses/294" target="_blank">Canvas</a></li>&ndash;&gt;-->
+<!--        <li><a href="https://vk.com/vernadsky_org_news" target="_blank">Группа VK</a></li>-->
       {% if session['secretary'] == True or session['type'] in ['manager', 'org', 'admin'] %}
-      <li><a href="https://t.me/+lGe828iUZhdkM2Ey" target="_blank">Чат секретарей</a></li>
+                <a href="https://t.me/+lGe828iUZhdkM2Ey" target="_blank">
+        <div class="well">
+            <p>Чат секретарей</p>
+        </div>
+      </a>
+<!--      <li><a href="https://t.me/+lGe828iUZhdkM2Ey" target="_blank">Чат секретарей</a></li>-->
       {% endif %}
       </ul>
 <!--        <a href="/yais_main">-->
@@ -356,13 +396,16 @@
 <!--          </div>-->
 <!--        </a>-->
         {% if session['type'] %}
-        <p class="support"><a href="mailto:team@vernadsky.info" target="_blank">Поддержка</a></p>
+           <p><a href="mailto:team@vernadsky.info" target="_blank">Поддержка</a></p>
+<!--        <p class="support"><a href="mailto:team@vernadsky.info" target="_blank">Поддержка</a></p>-->
         {% endif %}
         </div>
     </div>
+
 </div>
 
-  <footer>
+  <footer class="container-fluid text-center medium-blue">
+<!--  <footer>-->
   <p>Москва, 2021</p>
 </footer>
 
