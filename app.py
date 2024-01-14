@@ -1453,9 +1453,9 @@ def edit_profile(user_id):
 @app.route('/write_profile', methods=['POST'])
 def write_profile():
     if 'user_id' in request.form.keys():
-        user_id = request.form['user_id']
+        user_id = int(request.form['user_id'])
     else:
-        user_id = session['user_id']
+        user_id = int(session['user_id'])
     if 'occupation' in request.form:
         occupation = request.form['occupation']
     else:
