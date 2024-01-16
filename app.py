@@ -1904,7 +1904,7 @@ def team_application():
     if access is not True:
         return access
     if 'profile' not in session.keys():
-        return redirect(url_for('.edit_profile'))
+        return redirect(url_for('.edit_profile', user_id=session['user_id']))
     cats_count, categs = categories_info()
     if session['user_id'] in [a.user_id for a in Application.query.filter(Application.year == curr_year).all()]:
         application = application_info('user-year', user=session['user_id'])
