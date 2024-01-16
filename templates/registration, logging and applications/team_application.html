@@ -5,9 +5,9 @@
 {% block content %}
 
 <form action="/application_process" method = 'POST'>
+    <legend><h2><b>Заявка в команду</b></h2>
+        <span class="comment">Полный список секций можно посмотреть в низу страницы</span></legend>
     <fieldset>
-        <legend><h2><b>Заявка в команду</b></h2>
-            <span class="comment">Полный список секций можно посмотреть в низу страницы</span></legend>
                 <span class="required">Хочу в команду в роли</span><br>
                     <input type="radio" name="role" value="secretary" {% if application['role'] == "secretary" %} checked
                             {% endif %}> Секретаря<br>

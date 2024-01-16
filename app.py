@@ -104,6 +104,10 @@ def renew_session():
             user = session['user_id']
             session['type'] = user_db.user_type
             session['approved'] = user_db.approved
+            if session['approved'] is True:
+                session['access'] = 2
+            else:
+                session['access'] = 1
             if user in [u.secretary_id for u in CatSecretaries.query.all()]:
                 session['secretary'] = True
                 session['access'] = 5
