@@ -457,7 +457,6 @@ def one_category(categ):
 
 
 def categories_info(cat_id='all'):
-    cats_count = 0
     if cat_id == 'all':
         categories = db.session.query(Categories
                                       ).filter(Categories.year == curr_year
@@ -466,14 +465,66 @@ def categories_info(cat_id='all'):
                                                                               ).order_by(CatDirs.dir_id,
                                                                                          CatDirs.contest_id,
                                                                                          Categories.cat_name).all()
+
+        dirs = {d.direction_id: {'dir_id': d.direction_id, 'dir_name': d.dir_name} for d in Directions.query.all()}
+        conts = {cont.contest_id: {'cont_id': cont.contest_id, 'cont_name': cont.contest_name} for cont in
+                 Contests.query.all()}
+        cat_dir = {cd.cat_id: {'c_id': cd.cat_id, 'd_id': cd.dir_id, 'dir_name': dirs[cd.dir_id]['dir_name'],
+                               'cont_id': cd.contest_id, 'cont_name': conts[cd.contest_id]['cont_name']} for cd in
+                   CatDirs.query.all()}
+
+        cat_sup = [c.cat_id for c in CatSupervisors.query.all()]
+        cat_sec = [c.cat_id for c in CatSecretaries.query.all()]
+        cat_rep = [cat.cat_id for cat in ReportDates.query.all()]
         cats = []
-        for cat in categories:
-            if cat.year == curr_year:
-                cats_count += 1
-                cats.append(one_category(cat))
+        for categ in categories:
+
+            cat = {}
+            cat_id = categ.cat_id
+            cat['id'] = cat_id
+            cat['year'] = categ.year
+            cat['name'] = categ.cat_name
+            cat['short_name'] = categ.short_name
+            cat['tg_channel'] = categ.tg_channel
+            cat['direction'] = cat_dir[cat_id]['dir_name']
+            cat['dir_id'] = cat_dir[cat_id]['d_id']
+            cat['contest'] = cat_dir[cat_id]['cont_name']
+            cat['cont_id'] = cat_dir[cat_id]['cont_id']
+            cat['drive_link'] = categ.drive_link
+            cat['cat_site_id'] = categ.cat_site_id
+            if cat_id in cat_sup:
+                sup = db.session.query(Supervisors).join(CatSupervisors).filter(
+                    CatSupervisors.cat_id == cat_id).first()  # check
+                cat['supervisor_id'] = sup.supervisor_id
+                cat['supervisor'] = sup.last_name + ' ' + sup.first_name + ' ' + sup.patronymic
+                cat['supervisor_email'] = sup.email
+                cat['supervisor_tel'] = sup.tel
+            if cat_id in cat_sec:
+                user = db.session.query(Users).join(CatSecretaries).filter(CatSecretaries.cat_id == cat_id).first()  # check
+                cat['secretary_id'] = user.user_id
+                cat['secretary'] = user.last_name + ' ' + user.first_name
+                cat['secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
+                cat['secretary_email'] = user.email
+                cat['secretary_tel'] = user.tel
+            if cat_id in cat_rep:
+                dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()  # check
+                dates = []
+                if dates_db.day_1:
+                    dates.append(days[dates_db.day_1.strftime('%w')] + ' ' + dates_db.day_1.strftime('%d') + ' ' +
+                                 months_full[dates_db.day_1.strftime('%m')])
+                if dates_db.day_2:
+                    dates.append(days[dates_db.day_2.strftime('%w')] + ' ' + dates_db.day_2.strftime('%d') + ' ' +
+                                 months_full[dates_db.day_2.strftime('%m')])
+                if dates_db.day_3:
+                    dates.append(days[dates_db.day_3.strftime('%w')] + ' ' + dates_db.day_3.strftime('%d') + ' ' +
+                                 months_full[dates_db.day_3.strftime('%m')])
+                cat['dates'] = ', '.join(dates)
+
+            cats.append(cat)
     else:
         category = db.session.query(Categories).filter(Categories.cat_id == cat_id).first()
         cats = one_category(category)
+    cats_count = len(cats)
     return cats_count, cats
 
 
@@ -954,21 +1005,23 @@ def analysis_results():
 def analysis_nums():
     c, cats = categories_info()
     ana_nums = []
+    all_stats = {'regionals': 0,
+                 'analysed': 0}
+    works_db = WorkCategories.query.join(Works, WorkCategories.work_id == Works.work_id)\
+        .join(WorkStatuses, WorkCategories.work_id == WorkStatuses.work_id)\
+        .filter(Works.reg_tour != 0).filter(WorkStatuses.status_id >= 2)
     for cat in cats:
-        cat_reg = [w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id'])
-                   if Works.query.filter(Works.work_id == w.work_id).first().reg_tour is not None]
-        works_passed = [w.work_id for w in WorkStatuses.query.all() if w.status_id >= 2]
-        to_analyse = [w for w in cat_reg if w in works_passed]
-        analysed = set(w.work_id for w in RevAnalysis.query.all() if w.work_id in to_analyse)
+        cat_works = works_db.filter(WorkCategories.cat_id == cat['id']).all()
+        analysed = set(w.work_id for w in RevAnalysis.query.all() if w.work_id in cat_works)
         analysed.update(w.work_id for w in PreAnalysis.query.filter(PreAnalysis.has_review == 0).all()
-                        if w.work_id in to_analyse)
+                        if w.work_id in cat_works)
         cat_ana = {'cat_id': cat['id'], 'cat_name': cat['name'], 'analysed': len(analysed),
-                   'regional_applied': len(to_analyse)}
+                   'regional_applied': len(cat_works)}
         cat_ana['left'] = cat_ana['regional_applied'] - cat_ana['analysed']
         ana_nums.append(cat_ana)
-    all_stats = {'regionals': sum([cat['regional_applied'] for cat in ana_nums]),
-                 'analysed': sum([cat['analysed'] for cat in ana_nums]),
-                 'regions': len(set(w.reg_tour for w in Works.query.all()))}
+        all_stats['regionals'] += cat_ana['regional_applied']
+        all_stats['analysed'] += cat_ana['analysed']
+    all_stats['regions'] = len(set(w.reg_tour for w in Works.query.all()))
     all_stats['left'] = all_stats['regionals'] - all_stats['analysed']
     return ana_nums, all_stats
 
