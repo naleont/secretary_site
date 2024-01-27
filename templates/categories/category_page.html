@@ -74,6 +74,9 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
     {{ errors }}<br>
     {% endif %}
 </div>
+<br>
+<div>Если работа видна на вашей секции на основном сайте (<a href="https://vernadsky.info">vernadsky.info</a>),
+    но возникает ошибка "Работа не найдена", <a href="/button_works/{{ category['id'] }}">обновите работы секции</a>.</div><br>
 <form action="/works_for_free/{{ category['id'] }}" method="post">
     <fieldset>
         <span class="comment">Для добавления работ, с которых не будет взиматься оргвзнос,

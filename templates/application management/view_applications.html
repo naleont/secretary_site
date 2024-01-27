@@ -4,6 +4,11 @@
 
 {% block content %}
 <h2>Заявки в команду</h2>
+
+<p>Всего: {{ applications|length }}</p>
+<p>На секретарство: {{ secretaries|length }}</p>
+<p>На волонтерство: {{ volunteers|length }}</p>
+
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
         <td rowspan="2" align="center" width="20%"></td>
@@ -44,6 +49,14 @@
             Не знаю
             {% elif applications[key]['role'] == None %}
             {% endif %}
+
+            {% for cat_id in users[applications[key]['user_id']]['cat_id'] %}
+            <sup class="green-text above">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+            </svg>
+            </sup>
+            {% endfor %}
         </td>
         <td {% if applications[key]['category_1_id'] in users[applications[key]['user_id']]['cat_id']
                 and applications[key]['category_1_id'] %} bgcolor="#BBDAB8" {% endif %}>

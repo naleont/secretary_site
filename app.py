@@ -2020,8 +2020,10 @@ def view_applications():
     appl = application_info('year', user=session['user_id'])
     users = all_users()
     renew_session()
+    secretaries = [a['user_id'] for a in appl.values() if a['role'] == 'secretary']
+    volunteers = [a['user_id'] for a in appl.values() if a['role'] == 'volunteer']
     return render_template('application management/view_applications.html', applications=appl, year=curr_year,
-                           users=users)
+                           users=users, secretaries=secretaries, volunteers=volunteers)
 
 
 @app.route('/one_application/<year>/<user>')
@@ -2719,7 +2721,6 @@ def write_pre_analysis():
     else:
         research = None
     if 'has_review' in request.form.keys():
-        print(request.form['has_review'])
         if request.form['has_review'] == 'True':
             has_review = True
             rev_type = None
@@ -3068,8 +3069,6 @@ def internal_results():
                 'reviews_analysed': sum([len([w['review_id'] for w in c['works'] if w['analysed'] is True]) for c in cats]),
                 'reviewers': sum([len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['reviewer'] is not None)) for c in cats]),
                 'reviewers_analysed': sum([len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['analysed'] is True)) for c in cats])}
-    print(cats_all)
-    print(cats[0])
     return render_template('internal_reviews/internal_results.html', cats=cats, cats_all=cats_all)
 
 
