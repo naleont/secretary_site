@@ -2219,8 +2219,12 @@ def category_page(cat_id, errors):
     need_analysis = check_analysis(cat_id=cat_id)
     works_no_fee = get_works_no_fee(cat_id)
     show_top_100 = True
+    # works_1_tour = [work_info(w.work_id) for w in Works.query
+    # .join(WorkCategories, Works.work_id == WorkCategories.work_id)
+    # .filter(WorkCategories.cat_id == cat_id).all()]
     return render_template('categories/category_page.html', category=category, need_analysis=need_analysis,
                            errors=errors, works_no_fee=works_no_fee, show_top_100=show_top_100)
+    # , works_1_tour=works_1_tour)
 
 
 @app.route('/news_list')
@@ -2715,6 +2719,7 @@ def write_pre_analysis():
     else:
         research = None
     if 'has_review' in request.form.keys():
+        print(request.form['has_review'])
         if request.form['has_review'] == 'True':
             has_review = True
             rev_type = None
@@ -4553,6 +4558,23 @@ def online_participants(length, page):
                    .join(Works, AppliedForOnline.work_id == Works.work_id).filter(Works.reported == 1).all()])
     return render_template('online_reports/online_participants.html', works=works, pages=n, page=page,
                            length=length, link='online_participants', applied=applied, reported=reported)
+
+
+@app.route('/download_online_participants')
+def download_online_participants():
+    works = [work_info(w.work_id, reports_info=True, w_payment_info=True, cat_info=True)
+             for w in AppliedForOnline.query.all()
+             if str(w.work_id)[:2] == str(curr_year)[-2:]]
+    file = [{'Номер работы': w['work_id'], 'Название работы': w['work_name'], 'Авторы': w['authors'],
+             'Название секции': w['cat_name'], 'Оргвзнос оплачен': w['payed'], 'Выступил': w['reported']}
+            for w in works]
+
+    df = pd.DataFrame(data=file)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/online_participants.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Участники онлайна')
+    return send_file('static/files/generated_files/online_participants.xlsx', as_attachment=True)
 
 
 @app.route('/delete_online_participant/<work_id>')

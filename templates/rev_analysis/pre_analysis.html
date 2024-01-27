@@ -10,10 +10,10 @@
         <input type="hidden" name="work_id" value="{{ work['work_id'] }}">
         <span class="required">Была бы работа допущена до 2 тура, если бы проходила через рецензирование экспертами
         вашей секции?</span><br>
-        <input type="radio" name="good_work" value="True" required {% if pre_ana['good_work'] == True %} checked {% endif %}>
-        Да<br>
-        <input type="radio" name="good_work" value="False" required {% if pre_ana['good_work'] == False %} checked {% endif %}>
-        Нет<br><br>
+        <label><input type="radio" name="good_work" value="True" required {% if pre_ana['good_work'] == True %} checked {% endif %}>
+        Да</label><br>
+        <label><input type="radio" name="good_work" value="False" required {% if pre_ana['good_work'] == False %} checked {% endif %}>
+        Нет<br></label><br>
         <span class="required">Работа соответствует формату Конкурса?</span><br>
             <p><select name="research" required>
                 <option class="container-fluid bg-2" value="" {% if pre_ana == None %} selected="true"
@@ -31,19 +31,19 @@
             </select></p>
         <span class="required">У работы есть рецензия от регионального тура?</span><br>
         <span class="comment">Рецензия должна быть среди файлов работы</span><br>
-        <input type="radio" name="has_review" value='True' required {% if pre_ana['has_review'] == True %} checked {% endif %}>
-        Да, полноценная рецензия<br>
-        <input type="radio" name="has_review" value='points' required {% if pre_ana['has_review'] == False %} checked {% endif %}>
-        Только файл с проставленными баллами по критериям<br>
-        <input type="radio" name="has_review" value='False' required {% if pre_ana['has_review'] == False %} checked {% endif %}>
-        Нет<br><br>
+        <label><input type="radio" name="has_review" value='True' required {% if pre_ana['has_review'] == True %} checked {% endif %}>
+        Да, полноценная рецензия</label><br>
+        <label><input type="radio" name="has_review" value='points' required {% if pre_ana['has_review'] == False %} checked {% endif %}>
+        Только файл с проставленными баллами по критериям</label><br>
+        <label><input type="radio" name="has_review" value='False' required {% if pre_ana['has_review'] == False %} checked {% endif %}>
+        Нет</label><br><br>
 
         <span class="required">Допуск работы до 2 тура "продавили"</span><br>
         <span class="comment">То есть, работа была допущена без вашего согласия (и против вашей оценки)</span><br>
-        <input type="radio" name="pushed" value='True' required {% if pre_ana['pushed'] == True %} checked {% endif %}>
-        Да<br>
-        <input type="radio" name="pushed" value='False' required {% if pre_ana['pushed'] == False %} checked {% endif %}>
-        Нет<br><br>
+        <label><input type="radio" name="pushed" value='True' required {% if pre_ana['pushed'] == True %} checked {% endif %}>
+        Да</label><br>
+        <label><input type="radio" name="pushed" value='False' required {% if pre_ana['pushed'] == False %} checked {% endif %}>
+        Нет</label><br><br>
 
         <span>Комментарий к работе</span><br>
         <textarea cols="120" rows="2" name="work_comment">{{ work_comment }}</textarea><br><br>
