@@ -870,6 +870,68 @@ class Diplomas(db.Model):
         self.diplomas = diplomas
 
 
+class VolunteerTasks(db.Model):
+    __tablename__ = 'volunteer_tasks'
+
+    task_id = db.Column('task_id', db.Integer, primary_key=True)
+    task_name = db.Column('task_name', db.Text)
+    start_time = db.Column('start_time', db.DateTime)
+    end_time = db.Column('end_time', db.DateTime)
+    volunteers_required = db.Column('volunteers_required', db.Integer)
+    year = db.Column('year', db.Integer)
+
+    def __init__(self, task_name, start_time, end_time, volunteers_required, year):
+        self.task_name = task_name
+        self.start_time = start_time
+        self.end_time = end_time
+        self.volunteers_required = volunteers_required
+        self.year = year
+
+
+class SchoolClasses(db.Model):
+    __tablename__ = 'school_classes'
+
+    class_id = db.Column('class_id', db.Integer, primary_key=True)
+    school = db.Column('school', db.Text)
+    class_name = db.Column('class_name', db.Text)
+    year = db.Column('year', db.Integer)
+
+    def __init__(self, school, class_name, year):
+        self.school = school
+        self.class_name = class_name
+        self.year = year
+
+
+class StudentClass(db.Model):
+    __tablename__ = 'student_class'
+    __table_args__ = (PrimaryKeyConstraint('user_id', 'class_id'),)
+
+    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'))
+    class_id = db.Column('class_id', db.Integer, ForeignKey('school_classes.class_id'))
+    year = db.Column('year', db.Integer)
+
+    def __init__(self, user_id, class_id, year):
+        self.user_id = user_id
+        self.class_id = class_id
+        self.year = year
+
+
+class VolunteerAssignment(db.Model):
+    __tablename__ = 'volunteer_assignment'
+    __table_args__ = (PrimaryKeyConstraint('user_id', 'task_id', 'permitter_id'),)
+
+    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'))
+    task_id = db.Column('task_id', db.Integer, ForeignKey('volunteer_tasks.task_id'))
+    permitted = db.Column('permitted', db.Text)
+    permitter_id = db.Column('permitter_id', db.Integer, ForeignKey('users.user_id'), nullable=True)
+
+    def __init__(self, user_id, task_id, permitted, permitter_id):
+        self.user_id = user_id
+        self.task_id = task_id
+        self.permitted = permitted
+        self.permitter_id = permitter_id
+
+
 # #ЯИССЛЕДОВАТЕЛЬ
 # class YaisWorks(db.Model):
 #     __tablename__ = 'yais_works'

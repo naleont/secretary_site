@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Классы наших школ</h1>
+
+<form action="/add_classes" method="post">
+    <fieldset>
+        <input type="hidden" name="class_id" value="{{ to_edit['class_id'] }}">
+        <span class="required">Школа</span><br>
+        <label><input type="radio" name="school" value="1553" {% if to_edit['school'] == '1553'%} checked {% endif %} required>
+            Школа №1553 им. В. И. Вернадского</label><br>
+        <label><input type="radio" name="school" value="MSU_School" {% if to_edit['school'] == 'MSU_School'%}
+            checked {% endif %} required> Университетская гимназия МГУ</label><br><br>
+        <span>Класс </span>
+        <input type="text" name="class_name" size="5" value="{{ to_edit['class_name'] }}" required><br><br>
+        <input class="button" type="submit" value="Сохранить">
+    </fieldset>
+</form><br>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td><b>
+        </b></td>
+        <td><b>
+            Школа
+        </b></td>
+        <td><b>
+            Класс
+        </b></td>
+        <td><b>
+            Тьютор / Кл. рук.
+        </b></td>
+        <td><b>
+        </b></td>
+    </tr>
+    {% for cl in sch_classes %}
+    <tr>
+        <td>
+            <a href="/school_classes/{{ cl['class_id'] }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                </svg>
+            </a>
+        </td>
+        <td>
+            {% if cl['school'] == '1553' %}
+            Школа №1553 им. В. И. Вернадского
+            {% elif cl['school'] == 'MSU_School' %}
+            Университетская гимназия МГУ
+            {% endif %}
+        </td>
+        <td>
+            {{ cl['class_name'] }}
+        </td>
+        <td>
+        </td>
+        <td>
+            <a href="/delete_class/{{ cl['class_id'] }}" class="alarm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock %}

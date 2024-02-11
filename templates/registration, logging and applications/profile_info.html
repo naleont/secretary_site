@@ -29,7 +29,7 @@ year
 {% endif %}
 
 {% if session['secretary'] == True or session['type'] in ['manager', 'org', 'admin'] %}
-<b><a href="https://vk.me/join/Fxb4PJ6/87Crw4RuDDOwK2cPn_doRnU3x8I=" target="_blank">Вступить в беседу секретарей VK</a></b>
+<!--<b><a href="https://vk.me/join/Fxb4PJ6/87Crw4RuDDOwK2cPn_doRnU3x8I=" target="_blank">Вступить в беседу секретарей VK</a></b>-->
 {% endif %}
 
 <!--{% if session['type'] == 'team' %}-->
@@ -41,6 +41,8 @@ year
         <td align="left" valign="bottom" width="35%">
             {% if session['application'] != True %}
             <a href="/team_application"><button>Подать заявку в команду<br>(секретари и волонтеры)</button></a>
+            {% else %}
+            <a href="/my_volunteer_tasks"><button>Выбрать волонтерские задачи</button></a>
             {% endif %}
         </td><td align="left" valign="bottom">
             <a href="/my_applications"><button>Мои заявки в команду</button></a>

@@ -59,30 +59,30 @@ days_full = {'1': 'Понедельник',
              '5': 'Пятница',
              '6': 'Суббота',
              '0': 'Воскресенье'}
-months = {'01': 'Янв',
-          '02': 'Фев',
-          '03': 'Мар',
-          '04': 'Апр',
-          '05': 'Май',
-          '06': 'Июн',
-          '07': 'Июл',
-          '08': 'Авг',
-          '09': 'Сен',
-          '10': 'Окт',
-          '11': 'Ноя',
-          '12': 'Дек'}
-months_full = {'01': 'Января',
-               '02': 'Февраля',
-               '03': 'Марта',
-               '04': 'Апреля',
-               '05': 'Мая',
-               '06': 'Июня',
-               '07': 'Июля',
-               '08': 'Августа',
-               '09': 'Сентября',
-               '10': 'Октября',
-               '11': 'Ноября',
-               '12': 'Декабря'}
+months = {'01': 'янв',
+          '02': 'фев',
+          '03': 'мар',
+          '04': 'апр',
+          '05': 'май',
+          '06': 'июн',
+          '07': 'июл',
+          '08': 'авг',
+          '09': 'сен',
+          '10': 'окт',
+          '11': 'ноя',
+          '12': 'дек'}
+months_full = {'01': 'января',
+               '02': 'февраля',
+               '03': 'марта',
+               '04': 'апреля',
+               '05': 'мая',
+               '06': 'июня',
+               '07': 'июля',
+               '08': 'августа',
+               '09': 'сентября',
+               '10': 'октября',
+               '11': 'ноября',
+               '12': 'декабря'}
 
 access_types = {'guest': 0,
                 'user': 1,
@@ -500,7 +500,8 @@ def categories_info(cat_id='all'):
                 cat['supervisor_email'] = sup.email
                 cat['supervisor_tel'] = sup.tel
             if cat_id in cat_sec:
-                user = db.session.query(Users).join(CatSecretaries).filter(CatSecretaries.cat_id == cat_id).first()  # check
+                user = db.session.query(Users).join(CatSecretaries).filter(
+                    CatSecretaries.cat_id == cat_id).first()  # check
                 cat['secretary_id'] = user.user_id
                 cat['secretary'] = user.last_name + ' ' + user.first_name
                 cat['secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
@@ -809,7 +810,7 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
                          in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id) \
                              .filter(WorkMail.work_id == work_id).all()]
         for a in work['mails']:
-            a['sent'] = WorkMail.query.filter(WorkMail.work_id == work_id)\
+            a['sent'] = WorkMail.query.filter(WorkMail.work_id == work_id) \
                 .filter(WorkMail.mail_id == a['mail_id']).first().sent
             if work_id in [w.work_id for w in Diplomas.query.all()]:
                 c = Diplomas.query.filter(Diplomas.work_id == work_id).first().diplomas
@@ -1007,8 +1008,8 @@ def analysis_nums():
     ana_nums = []
     all_stats = {'regionals': 0,
                  'analysed': 0}
-    works_db = WorkCategories.query.join(Works, WorkCategories.work_id == Works.work_id)\
-        .join(WorkStatuses, WorkCategories.work_id == WorkStatuses.work_id)\
+    works_db = WorkCategories.query.join(Works, WorkCategories.work_id == Works.work_id) \
+        .join(WorkStatuses, WorkCategories.work_id == WorkStatuses.work_id) \
         .filter(Works.reg_tour != 0).filter(WorkStatuses.status_id >= 2)
     for cat in cats:
         cat_works = works_db.filter(WorkCategories.cat_id == cat['id']).all()
@@ -3044,7 +3045,8 @@ def assign_reviewer(do, reviewer_id, user_id):
 def internal_results():
     c, cats = categories_info()
     for cat in cats:
-        cat['works'] = [{'work_id': w.work_id} for w in WorkCategories.query.filter(WorkCategories.cat_id == cat['id']).all()]
+        cat['works'] = [{'work_id': w.work_id} for w in
+                        WorkCategories.query.filter(WorkCategories.cat_id == cat['id']).all()]
         for work in cat['works']:
             if WorkReviews.query.filter(WorkReviews.work_id == work['work_id']).first() is not None:
                 work['review_id'] = WorkReviews.query.filter(WorkReviews.work_id == work['work_id']).first().review_id
@@ -3059,16 +3061,22 @@ def internal_results():
                 work['reviewer'] = None
                 work['analysed'] = False
             if work['analysed'] is True:
-
                 cat['reviews'] = len(set([w['review_id'] for w in cat['works'] if w['review_id'] is not None]))
-                cat['reviewers'] = len(set([w['reviewer']['reviewer_id'] for w in cat['works'] if w['reviewer'] is not None]))
+                cat['reviewers'] = len(
+                    set([w['reviewer']['reviewer_id'] for w in cat['works'] if w['reviewer'] is not None]))
                 cat['reviews_analysed'] = len(set([w['review_id'] for w in cat['works'] if w['analysed'] is True]))
-                cat['reviewers_analysed'] = len(set([w['reviewer']['reviewer_id'] for w in cat['works'] if w['analysed'] is True]))
+                cat['reviewers_analysed'] = len(
+                    set([w['reviewer']['reviewer_id'] for w in cat['works'] if w['analysed'] is True]))
     cats_all = {'works': sum([len(c['works']) for c in cats]),
                 'reviews': sum([len([w['review_id'] for w in c['works'] if w['review_id'] is not None]) for c in cats]),
-                'reviews_analysed': sum([len([w['review_id'] for w in c['works'] if w['analysed'] is True]) for c in cats]),
-                'reviewers': sum([len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['reviewer'] is not None)) for c in cats]),
-                'reviewers_analysed': sum([len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['analysed'] is True)) for c in cats])}
+                'reviews_analysed': sum(
+                    [len([w['review_id'] for w in c['works'] if w['analysed'] is True]) for c in cats]),
+                'reviewers': sum(
+                    [len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['reviewer'] is not None)) for c in
+                     cats]),
+                'reviewers_analysed': sum(
+                    [len(set(w['reviewer']['reviewer_id'] for w in c['works'] if w['analysed'] is True)) for c in
+                     cats])}
     return render_template('internal_reviews/internal_results.html', cats=cats, cats_all=cats_all)
 
 
@@ -5517,7 +5525,8 @@ def sending_diplomas(send_type, w_c_id):
                                 fi = dir + '/' + f
                                 with app.open_resource(fi) as file:
                                     attachments.append(Attachment(filename=os.path.basename(fi),
-                                                                  content_type=mimetypes.guess_type(fi)[0], data=file.read()))
+                                                                  content_type=mimetypes.guess_type(fi)[0],
+                                                                  data=file.read()))
 
                             msg = Message(subject='Наградные документы ' + str(w_id),
                                           html=render_template('diplomas_mail.html', work_id=w_id),
@@ -5527,7 +5536,8 @@ def sending_diplomas(send_type, w_c_id):
                             mail.send(msg)
                             a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
                             for b in a:
-                                db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(WorkMail.mail_id == b)\
+                                db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
+                                    WorkMail.mail_id == b) \
                                     .update({WorkMail.sent: True})
                                 db.session.commit()
                             if w_id in [w.work_id for w in Diplomas.query.all()]:
@@ -5545,6 +5555,186 @@ def sending_diplomas(send_type, w_c_id):
         # except Exception:
         #     return redirect(url_for('.send_diplomas', cat_id=cat_id, wrong=True))
     return redirect(url_for('.send_diplomas', cat_id=cat_id, wrong=False))
+
+
+@app.route('/volunteer_tasks/', defaults={'task_id': ''})
+@app.route('/volunteer_tasks/<task_id>')
+def volunteer_tasks(task_id):
+    tasks = [{'id': t.task_id,
+              'task_name': t.task_name,
+              'task_date': days[t.start_time.strftime('%w')] + ', ' + t.start_time.strftime('%d') + ' ' +
+                           months_full[t.start_time.strftime('%m')],
+              'start_time': datetime.datetime.strftime(t.start_time, '%H:%M'),
+              'end_time': datetime.datetime.strftime(t.end_time, '%H:%M'),
+              'volunteers_required': t.volunteers_required}
+             for t in VolunteerTasks.query.filter(VolunteerTasks.year == curr_year)
+             .order_by(VolunteerTasks.start_time).all()]
+    if task_id != '':
+        t = VolunteerTasks.query.filter(VolunteerTasks.task_id == task_id).first()
+        to_edit = {'id': t.task_id,
+                   'task_name': t.task_name,
+                   'task_date': t.start_time.strftime('%Y-%m-%d'),
+                   'start_time': datetime.datetime.strftime(t.start_time, '%H:%M'),
+                   'end_time': datetime.datetime.strftime(t.end_time, '%H:%M'),
+                   'volunteers_required': t.volunteers_required}
+    else:
+        to_edit = {}
+    return render_template('application management/volunteer_tasks.html', tasks=tasks, to_edit=to_edit)
+
+
+@app.route('/save_volunteer_task', methods=['POST'])
+def save_volunteer_task():
+    if 'task_id' in request.form.keys() and request.form['task_id']:
+        task_id = request.form['task_id']
+    else:
+        task_id = None
+    task_name = request.form['task_name']
+    task_date = request.form['task_date']
+    start_time = request.form['start_time']
+    end_time = request.form['end_time']
+    volunteers_required = request.form['volunteers_required']
+    start = datetime.datetime.strptime(task_date + ' ' + start_time, '%Y-%m-%d %H:%M')
+    end = datetime.datetime.strptime(task_date + ' ' + end_time, '%Y-%m-%d %H:%M')
+    if task_id:
+        db.session.query(VolunteerTasks).filter(VolunteerTasks.task_id == int(task_id)) \
+            .update({VolunteerTasks.task_name: task_name,
+                     VolunteerTasks.start_time: start,
+                     VolunteerTasks.end_time: end,
+                     VolunteerTasks.volunteers_required: volunteers_required})
+    else:
+        task = VolunteerTasks(task_name, start, end, volunteers_required, curr_year)
+        db.session.add(task)
+    db.session.commit()
+    return redirect(url_for('.volunteer_tasks'))
+
+
+@app.route('/school_classes', defaults={'class_id': ''})
+@app.route('/school_classes/<class_id>')
+def school_classes(class_id):
+    sch_classes = [{'class_id': c.class_id,
+                    'class_name': c.class_name,
+                    'school': c.school} for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year).all()]
+    s_cl = sorted(sch_classes, key=lambda x: x['class_name'])
+    sch_classes = sorted(s_cl, key=lambda x: x['school'])
+    if class_id != '':
+        c = SchoolClasses.query.filter(SchoolClasses.class_id == int(class_id)).first()
+        to_edit = {'class_id': c.class_id, 'class_name': c.class_name, 'school': c.school}
+    else:
+        to_edit = {}
+    return render_template('application management/school_classes.html', sch_classes=sch_classes, to_edit=to_edit)
+
+
+@app.route('/add_classes', methods=['POST'])
+def add_classes():
+    if 'class_id' in request.form.keys() and request.form['class_id']:
+        class_id = request.form['class_id']
+    else:
+        class_id = None
+    school = request.form['school']
+    class_name = request.form['class_name']
+    if class_id:
+        db.session.query(SchoolClasses).filter(SchoolClasses.class_id == int(class_id)) \
+            .update({SchoolClasses.school: school,
+                     SchoolClasses.class_name: class_name})
+    else:
+        school_class = SchoolClasses(school, class_name, curr_year)
+        db.session.add(school_class)
+    db.session.commit()
+    return redirect(url_for('.school_classes'))
+
+
+@app.route('/my_volunteer_tasks')
+def my_volunteer_tasks():
+    user_id = int(session['user_id'])
+    profile = Profile.query.filter(Profile.user_id == user_id).first()
+    involved = profile.involved
+    if user_id in [u.user_id for u in StudentClass.query.filter(StudentClass.year == curr_year).all()]:
+        class_id = StudentClass.query.filter(StudentClass.year == curr_year) \
+            .filter(StudentClass.user_id == user_id).first().class_id
+    else:
+        class_id = None
+    if involved == 1553:
+        sch_class = profile.grade
+    elif involved == 'MSU_School':
+        s_cl = [{'class_id': c.class_id, 'class_name': c.class_name, 'school': c.school}
+                for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
+                .filter(SchoolClasses.school == 'MSU_School').all()]
+        sch_class = sorted(s_cl, key=lambda x: x['class_name'])
+    else:
+        sch_class = None
+
+    my_tasks_db = db.session.query(VolunteerAssignment).filter(
+        VolunteerAssignment.user_id == int(session['user_id'])).all()
+    permitted = []
+    prohibited = []
+    unresolved = []
+    for task in my_tasks_db:
+        if task.permitted == 'permitted':
+            permitted.append(task.task_id)
+        elif task.permitted == 'prohibited':
+            prohibited.append(task.task_id)
+        else:
+            unresolved.append(task.task_id)
+    tasks = [{'id': t.task_id,
+              'task_name': t.task_name,
+              'real_date': t.start_time,
+              'task_date': days[t.start_time.strftime('%w')] + ', ' + t.start_time.strftime('%d') + ' ' +
+                           months_full[t.start_time.strftime('%m')],
+              'start_time': datetime.datetime.strftime(t.start_time, '%H:%M'),
+              'end_time': datetime.datetime.strftime(t.end_time, '%H:%M'),
+              'volunteers_required': t.volunteers_required}
+             for t in VolunteerTasks.query.filter(VolunteerTasks.year == curr_year)
+             .order_by(VolunteerTasks.start_time).all()]
+    task_days = [task['real_date'] for task in tasks]
+    day_tasks = {day.date(): [] for day in sorted(list(set(task_days)))}
+    for task in tasks:
+        if task['id'] in permitted:
+            task['applied'] = True
+            task['permitted'] = True
+        elif task['id'] in prohibited:
+            task['applied'] = True
+            task['permitted'] = False
+        elif task['id'] in unresolved:
+            task['applied'] = True
+            task['permitted'] = None
+        else:
+            task['applied'] = False
+        day_tasks[task['real_date'].date()].append(task)
+    return render_template('application management/my_volunteer_tasks.html', involved=involved, sch_class=sch_class,
+                           class_id=class_id, tasks=day_tasks)
+
+
+@app.route('/set_class', methods=['POST'])
+def set_class():
+    class_id = int(request.form['class_id'])
+    user_id = int(session['user_id'])
+    if user_id in [u.user_id for u in StudentClass.query.filter(StudentClass.year == curr_year).all()]:
+        db.session.query(StudentClass).filter(StudentClass.year == curr_year).filter(StudentClass.user_id == user_id) \
+            .update({StudentClass.class_id: class_id})
+    else:
+        u_c = StudentClass(user_id, class_id, curr_year)
+        db.session.add(u_c)
+    db.session.commit()
+    return redirect(url_for('.my_volunteer_tasks'))
+
+
+@app.route('/pick_task/<task_id>/<action>')
+def pick_task(task_id, action):
+    task_id = int(task_id)
+    user_id = int(session['user_id'])
+    assignments = [(a.user_id, a.task_id) for a in VolunteerAssignment.query.all()]
+    to_assign = (user_id, task_id)
+    if to_assign not in assignments and action == 'pick':
+        ass = VolunteerAssignment(user_id, task_id, None, None)
+        db.session.add(ass)
+        db.session.commit()
+    elif to_assign in assignments and action == 'delete':
+        db.session.query(VolunteerAssignment).filter(VolunteerAssignment.user_id == user_id)\
+            .filter(VolunteerAssignment.task_id == task_id).delete()
+        db.session.commit()
+    else:
+        pass
+    return redirect(url_for('.my_volunteer_tasks'))
 
 
 # БАЗА ЗНАНИЙ
