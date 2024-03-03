@@ -5,9 +5,23 @@
 {% block content %}
 <h2>Заявки в команду</h2>
 
-<p>Всего: {{ applications|length }}</p>
-<p>На секретарство: {{ secretaries|length }}</p>
-<p>На волонтерство: {{ volunteers|length }}</p>
+<table>
+    <tr>
+        <td>
+            <p>Всего: {{ applications|length }}</p>
+            <p>На секретарство: {{ secretaries|length }}</p>
+            <p>На волонтерство: {{ volunteers|length }}</p>
+        </td>
+        <td>
+            <p>Гимназисты: {{ msu_school|length }}</p>
+            <p>Лицеисты: {{ lyceum|length }}</p>
+            <p>Студенты: {{ graduates|length }}</p>
+        </td>
+        <td>
+<!--            <a href="/download_team_applicants"><button>Скачать список</button></a>-->
+        </td>
+    </tr>
+</table>
 
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>

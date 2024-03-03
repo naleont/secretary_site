@@ -365,6 +365,8 @@ def write_category(cat_info):
                 db_cat = db.session.query(Categories).filter(Categories.cat_id == cat_info['cat_id']).first()
                 cat = CatSupervisors(db_cat.cat_id, sup.supervisor_id)
                 db.session.add(cat)
+        else:
+            db.session.query(CatSupervisors).filter(CatSupervisors.cat_id == cat_info['cat_id']).delete()
     else:
         cat = Categories(curr_year, cat_info['cat_name'], cat_info['short_name'], cat_info['tg_channel'],
                          cat_info['cat_site_id'], cat_info['drive_link'])
@@ -2023,8 +2025,14 @@ def view_applications():
     renew_session()
     secretaries = [a['user_id'] for a in appl.values() if a['role'] == 'secretary']
     volunteers = [a['user_id'] for a in appl.values() if a['role'] == 'volunteer']
+    source = [{'user_id': u.user_id, 'involved': u.involved, 'occupation': u.occupation} for u in Profile.query
+    .join(Application, Profile.user_id == Application.user_id).filter(Application.year == curr_year).all()]
+    msu_school = [a['user_id'] for a in source if a['involved'] == 'MSU_School' and a['occupation'] == 'scholar']
+    lyceum = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'scholar']
+    graduates = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'student']
     return render_template('application management/view_applications.html', applications=appl, year=curr_year,
-                           users=users, secretaries=secretaries, volunteers=volunteers)
+                           users=users, secretaries=secretaries, volunteers=volunteers, msu_school=msu_school,
+                           lyceum=lyceum, graduates=graduates)
 
 
 @app.route('/one_application/<year>/<user>')
@@ -5671,7 +5679,6 @@ def my_volunteer_tasks():
                 for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
                 .filter(SchoolClasses.school == '1553').all()]
         sch_class = sorted(s_cl, key=lambda x: x['class_name'])
-        print(s_cl)
 
     elif involved == 'MSU_School':
         s_cl = [{'class_id': c.class_id, 'class_name': c.class_name, 'school': c.school}

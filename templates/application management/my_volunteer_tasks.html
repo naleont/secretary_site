@@ -57,9 +57,9 @@
         <td align="center"><b>
             Задача
         </b></td>
-        <td align="center"><b>
-            Описание
-        </b></td>
+<!--        <td align="center"><b>-->
+<!--            Описание-->
+<!--        </b></td>-->
         <td align="center"><b>
             Выбрать
         </b></td>
@@ -86,9 +86,9 @@
         <td>
             {{ task['task_name'] }}
         </td>
-        <td>
-            {{ task['description'] }}
-        </td>
+<!--        <td>-->
+<!--            {{ task['description'] }}-->
+<!--        </td>-->
         <td align="center">
             {% if task['applied'] == True %}
             <a href="/pick_task/{{ task['id'] }}/delete" class="green-text">
