@@ -5802,6 +5802,55 @@ def volunteer_applications():
     return render_template('application management/volunteer_applications.html', tasks=tasks, year=curr_year)
 
 
+@app.route('/download_team_applicants')
+def download_team_applicants():
+    prof_info = {p.user_id: {'user_id': p.user_id, 'occupation': p.occupation, 'place_of_work': p.place_of_work,
+                             'involved': p.involved, 'grade': p.grade, 'year': p.year, 'vk': 'vk.com/' + p.vk,
+                             'tg': 'https://t.me/' + p.telegram, 'vernadsky_username': p.vernadsky_username}
+                 for p in Profile.query.join(Application, Profile.user_id == Application.user_id)
+                 .filter(Application.year == curr_year).all()}
+    cats = {c.cat_id: c.short_name for c in Categories.query.filter(Categories.year == curr_year).all()}
+    appl = {}
+    for a in Application.query.filter(Application.year == curr_year):
+        appl[a.user_id] = {'role': a.role, 'any_category': a.any_category}
+        if a.category_1 != 'None':
+            appl[a.user_id]['cat_1'] = cats[a.category_1]
+        else:
+            appl[a.user_id]['cat_1'] = ''
+        if a.category_2 != 'None':
+            appl[a.user_id]['cat_2'] = cats[a.category_2]
+        else:
+            appl[a.user_id]['cat_2'] = ''
+        if a.category_3 != 'None':
+            appl[a.user_id]['cat_3'] = cats[a.category_3]
+        else:
+            appl[a.user_id]['cat_3'] = ''
+    sch_class = {s.class_id: s.class_name for s in SchoolClasses.query.filter(SchoolClasses.year == curr_year)}
+    user_class = {s.user_id: sch_class[s.class_id]
+                  for s in StudentClass.query.filter(StudentClass.year == curr_year).all()}
+    user_class.update({u: '' for u in prof_info.keys() if u not in user_class})
+    applicants = [{'user_id': u.user_id, 'last_name': u.last_name, 'first_name': u.first_name, 'email': u.email,
+                   'tel': u.tel, 'occupation': prof_info[u.user_id]['occupation'],
+                   'place_of_work': prof_info[u.user_id]['place_of_work'], 'involved': prof_info[u.user_id]['involved'],
+                   'grade': prof_info[u.user_id]['grade'], 'year': prof_info[u.user_id]['year'],
+                   'class_name': user_class[u.user_id],
+                   'vk': 'vk.com/' + prof_info[u.user_id]['vk'],
+                   'tg': 'https://t.me/' + prof_info[u.user_id]['tg'],
+                   'vernadsky_username': prof_info[u.user_id]['vernadsky_username'],
+                   'role': appl[u.user_id]['role'], 'cat_1': appl[u.user_id]['cat_1'],
+                   'cat_2': appl[u.user_id]['cat_2'], 'cat_3': appl[u.user_id]['cat_3'],
+                   'any_category': appl[u.user_id]['any_category']} for u in
+                  Users.query.join(Application, Users.user_id == Application.user_id)
+                  .filter(Application.year == curr_year).all()]
+
+    df = pd.DataFrame(data=applicants)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/team_applicants.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Заявки ' + str(curr_year) + ' года')
+    return send_file('static/files/generated_files/team_applicants.xlsx', as_attachment=True)
+
+
 # БАЗА ЗНАНИЙ
 
 @app.route('/knowledge_main')
