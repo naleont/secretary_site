@@ -11,6 +11,7 @@
     <fieldset>
         <span>Класс </span>
         <select name="class_id">
+            <option value="None" {% if class_id == None %} selected="true" {% endif %}>Не выбран</option>
             {% for cl in sch_class %}
                 <option value="{{ cl['class_id'] }}" {% if class_id == cl['class_id'] %} selected="true"
             {% endif %}>{{ cl['class_name'] }}</option>
@@ -25,6 +26,7 @@
     <fieldset>
         <span>Класс </span>
         <select name="class_id">
+            <option value="None" {% if class_id == None %} selected="true" {% endif %}>Не выбран</option>
             {% for cl in sch_class %}
                 <option value="{{ cl['class_id'] }}" {% if class_id == cl['class_id'] %} selected="true"
             {% endif %}>{{ cl['class_name'] }}</option>
