@@ -875,13 +875,19 @@ class VolunteerTasks(db.Model):
 
     task_id = db.Column('task_id', db.Integer, primary_key=True)
     task_name = db.Column('task_name', db.Text)
+    location = db.Column('location', db.Text)
+    address = db.Column('address', db.Text)
+    description = db.Column('description', db.Text)
     start_time = db.Column('start_time', db.DateTime)
     end_time = db.Column('end_time', db.DateTime)
     volunteers_required = db.Column('volunteers_required', db.Integer)
     year = db.Column('year', db.Integer)
 
-    def __init__(self, task_name, start_time, end_time, volunteers_required, year):
+    def __init__(self, task_name, location, address, description, start_time, end_time, volunteers_required, year):
         self.task_name = task_name
+        self.location = location
+        self.address = address
+        self.description = description
         self.start_time = start_time
         self.end_time = end_time
         self.volunteers_required = volunteers_required

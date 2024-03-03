@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Заявки волонтеров</h1>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td><b>
+            Задача
+        </b></td>
+        <td><b>
+            Локация
+        </b></td>
+        <td><b>
+            Надо
+        </b></td>
+        <td><b>
+            Одобрено
+        </b></td>
+        <td><b>
+            Волонтер
+        </b></td>
+        <td><b>
+            Школа, Класс
+        </b></td>
+        <td><b>
+            Одобрено
+        </b></td>
+    </tr>
+    <tr>
+        {% for task in tasks %}
+        <td rowspan="{{ task['volunteers_list']|length }}">
+            {{ task['task_name'] }}
+        </td>
+        <td rowspan="{{ task['volunteers_list']|length }}" align="center">
+            {{ task['location'] }}
+        </td>
+        <td rowspan="{{ task['volunteers_list']|length }}" align="center">
+            {{ task['volunteers_required'] }}
+        </td>
+        <td rowspan="{{ task['volunteers_list']|length }}">
+        </td>
+        {% if task['volunteers_list'] !=[] %}
+        {% for volunteer in task['volunteers_list'] %}
+        <td>
+            <a href="/one_application/{{ year }}/{{ volunteer['user_id'] }}">{{ volunteer['name'] }}</a>
+        </td>
+        <td>
+            {% if volunteer['school'] == 'MSU_School' %}
+            УГ
+            {% elif volunteer['school'] == '1553' %}
+            1553
+            {% endif %},
+            {{ volunteer['class_name'] }}
+        </td>
+        <td>
+        </td>
+        </tr>
+        <tr>
+        {% endfor %}
+        {% else %}
+            <td></td>
+            <td></td>
+            <td></td>
+            </tr>
+            <tr>
+        {% endif %}
+        {% endfor %}
+    </tr>
+</table>
+
+{% endblock %}

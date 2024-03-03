@@ -12,6 +12,12 @@
                     <input type="hidden" size="40" name="task_id" value="{{ to_edit['id'] }}" required>
                     <span class="required">Название задачи</span>
                     <input type="text" size="40" name="task_name" value="{{ to_edit['task_name'] }}" required><br><br>
+                    <span class="required">Локация</span>
+                    <input type="text" size="40" name="location" value="{{ to_edit['location'] }}" required><br><br>
+                    <span>Адрес</span>
+                    <input type="text" size="60" name="address" value="{{ to_edit['address'] }}"><br><br>
+                    <span>Описание</span>
+                    <input type="text" size="60" name="description" value="{{ to_edit['description'] }}"><br><br>
                     <span class="required">Дата </span>
                     <input type="date" name="task_date" value="{{ to_edit['task_date'] }}" required>
                     <span class="required"> с </span>
@@ -49,6 +55,9 @@
             Заявок
         </b></td>
         <td align="center"><b>
+            Одобрено
+        </b></td>
+        <td align="center"><b>
             Список
         </b></td>
         <td><b>
@@ -76,6 +85,8 @@
             {{ task['volunteers_required'] }}
         </td>
         <td align="center">
+        </td>
+        <td>
         </td>
         <td>
         </td>

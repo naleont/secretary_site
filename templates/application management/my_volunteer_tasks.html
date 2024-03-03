@@ -6,8 +6,19 @@
 
 
 {% if involved == '1553' %}
-<p>Я учусь в Школе им. В. И. Вернадского в {{ sch_class }} классе.
-    <a href="/edit_profile/{{ session['user_id'] }}">Исправить</a></p>
+<p>Я учусь в Школе им. В. И. Вернадского. <a href="/edit_profile/{{ session['user_id'] }}">Исправить</a></p>
+<form action="/set_class" method="post">
+    <fieldset>
+        <span>Класс </span>
+        <select name="class_id">
+            {% for cl in sch_class %}
+                <option value="{{ cl['class_id'] }}" {% if class_id == cl['class_id'] %} selected="true"
+            {% endif %}>{{ cl['class_name'] }}</option>
+            {% endfor %}
+        </select>
+        <input class="button" type="submit" value="Сохранить"><br><br>
+    </fieldset>
+</form>
 {% elif involved == 'MSU_School' %}
 <p>Я учусь в Университетской гимназии МГУ. <a href="/edit_profile/{{ session['user_id'] }}">Исправить</a></p>
 <form action="/set_class" method="post">
@@ -39,7 +50,13 @@
             Время
         </b></td>
         <td align="center"><b>
+            Локация
+        </b></td>
+        <td align="center"><b>
             Задача
+        </b></td>
+        <td align="center"><b>
+            Описание
         </b></td>
         <td align="center"><b>
             Выбрать
@@ -60,8 +77,15 @@
         <td align="center">
             {{ task['start_time'] }} – {{ task['end_time'] }}
         </td>
+        <td align="center">
+            {{ task['location'] }}<br>
+            <span class="comment"><i>{{ task['address'] }}</i></span>
+        </td>
         <td>
             {{ task['task_name'] }}
+        </td>
+        <td>
+            {{ task['description'] }}
         </td>
         <td align="center">
             {% if task['applied'] == True %}

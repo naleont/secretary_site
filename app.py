@@ -5562,6 +5562,9 @@ def sending_diplomas(send_type, w_c_id):
 def volunteer_tasks(task_id):
     tasks = [{'id': t.task_id,
               'task_name': t.task_name,
+              'location': t.location,
+              'address': t.address,
+              'description': t.description,
               'task_date': days[t.start_time.strftime('%w')] + ', ' + t.start_time.strftime('%d') + ' ' +
                            months_full[t.start_time.strftime('%m')],
               'start_time': datetime.datetime.strftime(t.start_time, '%H:%M'),
@@ -5573,6 +5576,9 @@ def volunteer_tasks(task_id):
         t = VolunteerTasks.query.filter(VolunteerTasks.task_id == task_id).first()
         to_edit = {'id': t.task_id,
                    'task_name': t.task_name,
+                   'location': t.location,
+                   'address': t.address,
+                   'description': t.description,
                    'task_date': t.start_time.strftime('%Y-%m-%d'),
                    'start_time': datetime.datetime.strftime(t.start_time, '%H:%M'),
                    'end_time': datetime.datetime.strftime(t.end_time, '%H:%M'),
@@ -5589,6 +5595,9 @@ def save_volunteer_task():
     else:
         task_id = None
     task_name = request.form['task_name']
+    location = request.form['location']
+    address = request.form['address']
+    description = request.form['description']
     task_date = request.form['task_date']
     start_time = request.form['start_time']
     end_time = request.form['end_time']
@@ -5598,11 +5607,14 @@ def save_volunteer_task():
     if task_id:
         db.session.query(VolunteerTasks).filter(VolunteerTasks.task_id == int(task_id)) \
             .update({VolunteerTasks.task_name: task_name,
+                     VolunteerTasks.location: location,
+                     VolunteerTasks.address: address,
+                     VolunteerTasks.description: description,
                      VolunteerTasks.start_time: start,
                      VolunteerTasks.end_time: end,
                      VolunteerTasks.volunteers_required: volunteers_required})
     else:
-        task = VolunteerTasks(task_name, start, end, volunteers_required, curr_year)
+        task = VolunteerTasks(task_name, location, address, description, start, end, volunteers_required, curr_year)
         db.session.add(task)
     db.session.commit()
     return redirect(url_for('.volunteer_tasks'))
@@ -5653,8 +5665,14 @@ def my_volunteer_tasks():
             .filter(StudentClass.user_id == user_id).first().class_id
     else:
         class_id = None
-    if involved == 1553:
-        sch_class = profile.grade
+
+    if involved == '1553':
+        s_cl = [{'class_id': c.class_id, 'class_name': c.class_name, 'school': c.school}
+                for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
+                .filter(SchoolClasses.school == '1553').all()]
+        sch_class = sorted(s_cl, key=lambda x: x['class_name'])
+        print(s_cl)
+
     elif involved == 'MSU_School':
         s_cl = [{'class_id': c.class_id, 'class_name': c.class_name, 'school': c.school}
                 for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
@@ -5677,6 +5695,9 @@ def my_volunteer_tasks():
             unresolved.append(task.task_id)
     tasks = [{'id': t.task_id,
               'task_name': t.task_name,
+              'location': t.location,
+              'address': t.address,
+              'description': t.description,
               'real_date': t.start_time,
               'task_date': days[t.start_time.strftime('%w')] + ', ' + t.start_time.strftime('%d') + ' ' +
                            months_full[t.start_time.strftime('%m')],
@@ -5735,6 +5756,43 @@ def pick_task(task_id, action):
     else:
         pass
     return redirect(url_for('.my_volunteer_tasks'))
+
+
+@app.route('/volunteer_applications')
+def volunteer_applications():
+    tasks = [{'id': t.task_id,
+              'task_name': t.task_name,
+              'location': t.location,
+              'address': t.address,
+              'description': t.description,
+              'task_date': days[t.start_time.strftime('%w')] + ', ' + t.start_time.strftime('%d') + ' ' +
+                           months_full[t.start_time.strftime('%m')],
+              'start_time': datetime.datetime.strftime(t.start_time, '%H:%M'),
+              'end_time': datetime.datetime.strftime(t.end_time, '%H:%M'),
+              'volunteers_required': t.volunteers_required}
+             for t in VolunteerTasks.query.filter(VolunteerTasks.year == curr_year)
+             .order_by(VolunteerTasks.start_time).all()]
+    volunteers = [v.user_id for v in VolunteerAssignment.query
+    .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
+    .filter(VolunteerTasks.year == curr_year).all()]
+    sch_classes = {c.class_id: {'school': c.school, 'class_name': c.class_id}
+                      for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year). all()}
+    school_info = {u.user_id: sch_classes[u.user_id] for u in StudentClass.query.all() if u.user_id in volunteers}
+    for u in volunteers:
+        if u not in school_info.keys():
+            school_info[u] = {'school': '', 'class_name': ''}
+    user_info = {u.user_id: {'user_id': u.user_id,
+                             'name': u.last_name + ' ' + u.first_name,
+                             'school': school_info[u.user_id]['school'],
+                             'class_name': school_info[u.user_id]['class_name']}
+                 for u in Users.query.all() if u.user_id in volunteers}
+    t_list = {t['id']: [u.user_id for u in VolunteerAssignment.query.filter(VolunteerAssignment.task_id
+                                                                            == t['id']).all()] for t in tasks}
+    for task in tasks:
+        vols = [user_info[u] for u in t_list[task['id']]]
+        task['volunteers_list'] = sorted(vols, key=lambda x: x['name'])
+        task['vols_got'] = len(task['volunteers_list'])
+    return render_template('application management/volunteer_applications.html', tasks=tasks, year=curr_year)
 
 
 # БАЗА ЗНАНИЙ
