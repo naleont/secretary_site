@@ -5799,7 +5799,12 @@ def volunteer_applications():
         vols = [user_info[u] for u in t_list[task['id']]]
         task['volunteers_list'] = sorted(vols, key=lambda x: x['name'])
         task['vols_got'] = len(task['volunteers_list'])
-    return render_template('application management/volunteer_applications.html', tasks=tasks, year=curr_year)
+    v_t = []
+    for t in tasks:
+        v_t.extend([u['user_id'] for u in t['volunteers_list']])
+    vol_with_tasks = len(set(v_t))
+    return render_template('application management/volunteer_applications.html', tasks=tasks, year=curr_year,
+                           vol_with_tasks=vol_with_tasks)
 
 
 @app.route('/download_team_applicants')

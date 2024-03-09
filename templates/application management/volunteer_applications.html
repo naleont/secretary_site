@@ -4,42 +4,40 @@
 
 <h1>Заявки волонтеров</h1>
 
+<p>Выбрали задачи {{ vol_with_tasks }} волонтеров.</p>
+
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
-        <td><b>
+        <td align="center"><b>
             Задача
         </b></td>
-        <td><b>
+        <td align="center"><b>
             Локация
         </b></td>
-        <td><b>
+        <td align="center"><b>
             Надо
         </b></td>
-        <td><b>
-            Одобрено
-        </b></td>
-        <td><b>
+        <td align="center"><b>
             Волонтер
         </b></td>
-        <td><b>
+        <td align="center"><b>
             Школа, Класс
         </b></td>
-        <td><b>
+        <td align="center"><b>
             Одобрено
         </b></td>
     </tr>
     <tr>
         {% for task in tasks %}
         <td rowspan="{{ task['volunteers_list']|length }}">
-            {{ task['task_name'] }}
+            {{ task['task_name'] }}<br>
+            {{ task['task_date'] }} {{ task['start_time'] }} – {{ task['end_time'] }}
         </td>
         <td rowspan="{{ task['volunteers_list']|length }}" align="center">
             {{ task['location'] }}
         </td>
         <td rowspan="{{ task['volunteers_list']|length }}" align="center">
             {{ task['volunteers_required'] }}
-        </td>
-        <td rowspan="{{ task['volunteers_list']|length }}">
         </td>
         {% if task['volunteers_list'] !=[] %}
         {% for volunteer in task['volunteers_list'] %}
@@ -54,8 +52,7 @@
             {% endif %}
             {{ volunteer['class_name'] }}
         </td>
-        <td>
-        </td>
+        <td></td>
         </tr>
         <tr>
         {% endfor %}
