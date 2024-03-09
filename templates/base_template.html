@@ -298,6 +298,33 @@
           padding: -7px;
       }
 
+      .question {
+        overflow: hidden;
+        border: none;
+        border-radius: 7px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .question:hover{
+          color: #337ab7;
+      }
+      .answer {
+        display: none;
+        background-color: #D6EEFF;
+        color: #363F5C;
+        padding: 5px 5px;
+        border: none;
+        border-radius: 7px;
+        z-index: 10;
+        position:absolute;
+        margin: 0;
+        vertical-align: middle;
+      }
+      .question:hover + .answer {
+          display: block;
+      }
+
+
     /* On small screens, set height to 'auto' for sidenav and grid */
     @media screen and (max-width: 767px) {
       .sidenav {
