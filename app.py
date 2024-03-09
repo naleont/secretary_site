@@ -5782,9 +5782,9 @@ def volunteer_applications():
     volunteers = [v.user_id for v in VolunteerAssignment.query
     .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
     .filter(VolunteerTasks.year == curr_year).all()]
-    sch_classes = {c.class_id: {'school': c.school, 'class_name': c.class_id}
-                      for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year). all()}
-    school_info = {u.user_id: sch_classes[u.user_id] for u in StudentClass.query.all() if u.user_id in volunteers}
+    sch_classes = {c.class_id: {'school': c.school, 'class_name': c.class_name}
+                   for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year). all()}
+    school_info = {u.user_id: sch_classes[u.class_id] for u in StudentClass.query.all() if u.user_id in volunteers}
     for u in volunteers:
         if u not in school_info.keys():
             school_info[u] = {'school': '', 'class_name': ''}
