@@ -265,6 +265,32 @@
                 </form></div>
         </td>
     </tr>
+    <tr>
+        <td>
+            Это тьютор
+        </td>
+        <td colspan="3">
+            <div>
+                <form action="/tutor_user/{{ user['user_id'] }}" method = 'GET'>
+                    <fieldset>
+                        <select name="class_id">
+                            <option class="container-fluid bg-2" value="None"
+                                    {% if not user['class_id'] %} selected="true" {% endif %}>Нет</option>
+                            {% for cl in classes %}
+                                <option class="container-fluid bg-2" value="{{ cl['class_id'] }}"
+                                        {% if cl['class_id'] == user['class_id'] %} selected="true"
+                                        {% endif %}>
+                                {{ cl['class_name'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button class="blue_no_border" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                        </svg></button>
+                    </fieldset>
+                </form></div>
+        </td>
+    </tr>
     {% endif %}
 </table><br>
         </td>

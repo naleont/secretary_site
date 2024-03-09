@@ -26,12 +26,14 @@
 {% if session['type'] in ['org', 'manager', 'admin'] %}
         <p><a href="/users_list">Пользователи</a></p>
     <p><a href="/view_applications">Заявки в команду</a></p>
-    <p><a href="/volunteer_applications">Заявки волонтеров</a></p>
     <p><a href="/internal_reviews">Читать рецензии</a></p>
 <!--    <li><a href="/users_list">Пользователи</a></li>-->
 <!--    <li><a href="/view_applications">Заявки в команду</a></li>-->
 <!--    <li><a href="/internal_reviews">Читать рецензии</a></li>-->
 {% endif %}
+    {% if session['type'] in ['org', 'manager', 'admin'] or session['tutor'] == True%}
+    <p><a href="/volunteer_applications">Заявки волонтеров</a></p>
+    {% endif %}
 <!--</ul>-->
 </div>
 

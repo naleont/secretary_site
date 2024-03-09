@@ -135,6 +135,13 @@ def renew_session():
                             session['access'] = t
                     else:
                         session['access'] = t
+            if user in [u.user_id for u in TutorUser.query
+                    .join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)
+                    .filter(SchoolClasses.year == curr_year).all()]:
+                session['tutor'] = True
+                session['access'] = 7
+                session['class_id'] = TutorUser.query.join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)\
+                    .filter(SchoolClasses.year == curr_year).filter(TutorUser.user_id == user).first().class_id
     return session
 
 
@@ -248,6 +255,13 @@ def get_user_info(user):
         user_info['cat_id'] = []
     if user in [s.user_id for s in SupervisorUser.query.all()]:
         user_info['supervisor_id'] = SupervisorUser.query.filter(SupervisorUser.user_id == user).first().supervisor_id
+
+    if user in [u.user_id for u in TutorUser.query
+            .join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)
+            .filter(SchoolClasses.year == curr_year).all()]:
+        user_info['tutor'] = True
+        user_info['class_id'] = TutorUser.query.join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)\
+            .filter(SchoolClasses.year == curr_year).filter(TutorUser.user_id == user).first().class_id
     return user_info
 
 
@@ -2196,8 +2210,10 @@ def user_page(user, message):
         profile['born'] = profile['born'].strftime('%d.%m.%Y')
     cats_count, cats = categories_info()
     supers = get_supervisors()
+    classes = [{'class_id': c.class_id, 'school': c.school, 'class_name': c.class_name}
+               for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year).all()]
     return render_template('user_management/user_page.html', user=user_info, profile=profile, categories=cats,
-                           message=message, supervisors=supers, curr_year=curr_year)
+                           message=message, supervisors=supers, curr_year=curr_year, classes=classes)
 
 
 @app.route('/assign_user_type/<user>', methods=['GET'])
@@ -2318,6 +2334,30 @@ def supervisor_user(user_id):
             superv = SupervisorUser.query.filter(SupervisorUser.user_id == user_id).first().supervisor_id
             user_sup = SupervisorUser.query.filter(SupervisorUser.user_id == user_id
                                                    ).filter(SupervisorUser.supervisor_id == superv).first()
+            db.session.delete(user_sup)
+            db.session.commit()
+    return redirect(url_for('.user_page', user=user_id))
+
+
+@app.route('/tutor_user/<user_id>', methods=['GET'])
+def tutor_user(user_id):
+    renew_session()
+    class_id = request.values.get('class_id')
+    user_id = int(user_id)
+    if class_id != 'None':
+        class_id = int(class_id)
+        if user_id in [u.user_id for u in TutorUser.query.all()]:
+            user_db = db.session.query(TutorUser).filter(TutorUser.user_id == user_id).first()
+            user_db.class_id = class_id
+            db.session.commit()
+        else:
+            tut_user = TutorUser(user_id, class_id)
+            db.session.add(tut_user)
+            db.session.commit()
+    else:
+        if user_id in [u.user_id for u in TutorUser.query.all()]:
+            user_sup = TutorUser.query.filter(TutorUser.user_id == user_id)\
+                .filter(TutorUser.supervisor_id == user_id).first()
             db.session.delete(user_sup)
             db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
@@ -5568,6 +5608,9 @@ def sending_diplomas(send_type, w_c_id):
 @app.route('/volunteer_tasks/', defaults={'task_id': ''})
 @app.route('/volunteer_tasks/<task_id>')
 def volunteer_tasks(task_id):
+    access = check_access(8)
+    if access is not True:
+        return access
     tasks = [{'id': t.task_id,
               'task_name': t.task_name,
               'location': t.location,
@@ -5631,6 +5674,9 @@ def save_volunteer_task():
 @app.route('/school_classes', defaults={'class_id': ''})
 @app.route('/school_classes/<class_id>')
 def school_classes(class_id):
+    access = check_access(8)
+    if access is not True:
+        return access
     sch_classes = [{'class_id': c.class_id,
                     'class_name': c.class_name,
                     'school': c.school} for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year).all()]
@@ -5665,6 +5711,9 @@ def add_classes():
 
 @app.route('/my_volunteer_tasks')
 def my_volunteer_tasks():
+    access = check_access(2)
+    if access is not True:
+        return access
     user_id = int(session['user_id'])
     profile = Profile.query.filter(Profile.user_id == user_id).first()
     involved = profile.involved
@@ -5765,8 +5814,12 @@ def pick_task(task_id, action):
     return redirect(url_for('.my_volunteer_tasks'))
 
 
-@app.route('/volunteer_applications')
-def volunteer_applications():
+@app.route('/volunteer_applications/', defaults={'view': 'all'})
+@app.route('/volunteer_applications/<view>')
+def volunteer_applications(view):
+    access = check_access(7)
+    if access is not True:
+        return access
     tasks = [{'id': t.task_id,
               'task_name': t.task_name,
               'location': t.location,
@@ -5779,9 +5832,16 @@ def volunteer_applications():
               'volunteers_required': t.volunteers_required}
              for t in VolunteerTasks.query.filter(VolunteerTasks.year == curr_year)
              .order_by(VolunteerTasks.start_time).all()]
-    volunteers = [v.user_id for v in VolunteerAssignment.query
-    .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
-    .filter(VolunteerTasks.year == curr_year).all()]
+    if (session['tutor'] is True and session['type'] not in ['admin', 'org', 'manager']) or view == 'tutor':
+        volunteers = set(v.user_id for v in VolunteerAssignment.query
+                         .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
+                         .join(StudentClass, VolunteerAssignment.user_id == StudentClass.user_id)
+                         .filter(VolunteerTasks.year == curr_year)
+                         .filter(StudentClass.class_id == int(session['class_id'])).all())
+    else:
+        volunteers = set(v.user_id for v in VolunteerAssignment.query
+                         .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
+                         .filter(VolunteerTasks.year == curr_year).all())
     sch_classes = {c.class_id: {'school': c.school, 'class_name': c.class_name}
                    for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year). all()}
     school_info = {u.user_id: sch_classes[u.class_id] for u in StudentClass.query.all() if u.user_id in volunteers}
@@ -5793,8 +5853,14 @@ def volunteer_applications():
                              'school': school_info[u.user_id]['school'],
                              'class_name': school_info[u.user_id]['class_name']}
                  for u in Users.query.all() if u.user_id in volunteers}
-    t_list = {t['id']: [u.user_id for u in VolunteerAssignment.query.filter(VolunteerAssignment.task_id
-                                                                            == t['id']).all()] for t in tasks}
+    if (session['tutor'] is True and session['type'] not in ['admin', 'org', 'manager']) or view == 'tutor':
+        t_list = {t['id']: [u.user_id for u in VolunteerAssignment.query
+        .join(StudentClass, VolunteerAssignment.user_id == StudentClass.user_id)
+        .filter(VolunteerAssignment.task_id == t['id'])
+        .filter(StudentClass.class_id == int(session['class_id'])).all()] for t in tasks}
+    else:
+        t_list = {t['id']: [u.user_id for u in VolunteerAssignment.query
+        .filter(VolunteerAssignment.task_id == t['id']).all()] for t in tasks}
     for task in tasks:
         vols = [user_info[u] for u in t_list[task['id']]]
         task['volunteers_list'] = sorted(vols, key=lambda x: x['name'])
@@ -5804,7 +5870,7 @@ def volunteer_applications():
         v_t.extend([u['user_id'] for u in t['volunteers_list']])
     vol_with_tasks = len(set(v_t))
     return render_template('application management/volunteer_applications.html', tasks=tasks, year=curr_year,
-                           vol_with_tasks=vol_with_tasks)
+                           vol_with_tasks=vol_with_tasks, view=view)
 
 
 @app.route('/download_team_applicants')

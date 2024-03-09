@@ -4,7 +4,17 @@
 
 <h1>Заявки волонтеров</h1>
 
-<p>Выбрали задачи {{ vol_with_tasks }} волонтеров.</p>
+<table>
+    <tr>
+        <td>Выбрали задачи {{ vol_with_tasks }} волонтеров.</td>
+        <td>
+            {% if view == 'all' %}
+            <a href="/volunteer_applications/tutor"><button>Только мой класс</button></a></td>
+        {% else %}
+            <a href="/volunteer_applications/all"><button>Все</button></a></td>
+        {% endif %}
+    </tr>
+</table>
 
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>

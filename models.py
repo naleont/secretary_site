@@ -110,6 +110,18 @@ class SupervisorUser(db.Model):
         self.supervisor_id = supervisor_id
 
 
+class TutorUser(db.Model):
+    __tablename__ = 'tutor_user'
+    __table_args__ = (PrimaryKeyConstraint('user_id', 'class_id'),)
+
+    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'))
+    class_id = db.Column('class_id', db.Integer, ForeignKey('school_classes.class_id'))
+
+    def __init__(self, user_id, class_id):
+        self.user_id = user_id
+        self.class_id = class_id
+
+
 class Directions(db.Model):
     __tablename__ = 'directions'
 
