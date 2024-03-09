@@ -420,7 +420,14 @@
       </a>
 <!--      <li><a href="https://t.me/+lGe828iUZhdkM2Ey" target="_blank">Чат секретарей</a></li>-->
       {% endif %}
-      </ul>
+      {% if session['type'] in ['team', 'admin', 'org', 'manager'] %}
+                <a href="https://t.me/+QR-Z_TW4Ktg1YTQ6" target="_blank">
+        <div class="well">
+            <p>Чат волонтеров</p>
+        </div>
+      </a>
+<!--      <li><a href="https://t.me/+lGe828iUZhdkM2Ey" target="_blank">Чат секретарей</a></li>-->
+      {% endif %}
 <!--        <a href="/yais_main">-->
 <!--          <div class="well">-->
 <!--            <p>Я - Исследователь</p>-->
