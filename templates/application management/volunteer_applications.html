@@ -8,11 +8,13 @@
     <tr>
         <td>Выбрали задачи {{ vol_with_tasks }} волонтеров.</td>
         <td>
-            {% if view == 'all' %}
-            <a href="/volunteer_applications/tutor"><button>Только мой класс</button></a></td>
-        {% else %}
-            <a href="/volunteer_applications/all"><button>Все</button></a></td>
-        {% endif %}
+            {% if session['tutor'] == True %}
+                {% if view == 'all' %}
+                    <a href="/volunteer_applications/tutor"><button>Только мой класс</button></a></td>
+                {% else %}
+                    <a href="/volunteer_applications/all"><button>Все</button></a></td>
+                {% endif %}
+            {% endif %}
     </tr>
 </table>
 
