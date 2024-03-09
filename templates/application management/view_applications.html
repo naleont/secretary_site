@@ -43,7 +43,12 @@
         <td align="center" width="15%"><b>3</b></td>
     </tr>
 {% for key in applications %}
-    <tr>
+    <tr
+            {% if applications[key]['role'] == 'secretary' %}
+            bgcolor="#D6EEFF"
+            {% elif applications[key]['role'] == 'volunteer' %}
+            bgcolor="#D6FFEE"
+            {% endif %}>
         <td>
             <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
         </td>
@@ -73,19 +78,19 @@
             {% endfor %}
         </td>
         <td {% if applications[key]['category_1_id'] in users[applications[key]['user_id']]['cat_id']
-                and applications[key]['category_1_id'] %} bgcolor="#BBDAB8" {% endif %}>
+                and applications[key]['category_1_id'] %} bgcolor="#B0E2FF" {% endif %}>
             {% if applications[key]['category_1'] != None %}
             {{ applications[key]['category_1_short'] }}
             {% endif %}
         </td>
         <td {% if applications[key]['category_2_id'] in users[applications[key]['user_id']]['cat_id']
-                and applications[key]['category_2_id'] %} bgcolor="#BBDAB8" {% endif %}>
+                and applications[key]['category_2_id'] %} bgcolor="#B0E2FF" {% endif %}>
             {% if applications[key]['category_2'] != None %}
             {{ applications[key]['category_2_short'] }}
             {% endif %}
         </td>
         <td {% if applications[key]['category_3_id'] in users[applications[key]['user_id']]['cat_id']
-                and applications[key]['category_3_id'] %} bgcolor="#BBDAB8" {% endif %}>
+                and applications[key]['category_3_id'] %} bgcolor="#B0E2FF" {% endif %}>
             {% if applications[key]['category_3'] != None %}
             {{ applications[key]['category_3_short'] }}
             {% endif %}
