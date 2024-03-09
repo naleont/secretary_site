@@ -142,6 +142,8 @@ def renew_session():
                 session['access'] = 7
                 session['class_id'] = TutorUser.query.join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)\
                     .filter(SchoolClasses.year == curr_year).filter(TutorUser.user_id == user).first().class_id
+            else:
+                session['tutor'] = False
     return session
 
 
