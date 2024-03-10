@@ -243,6 +243,8 @@ def get_user_info(user):
     user_info['last_name'] = user_db.last_name
     user_info['first_name'] = user_db.first_name
     user_info['patronymic'] = user_db.patronymic
+    user_info['name_initials'] = user_info['last_name'] + ' ' + user_info['first_name'][0] + '. ' + \
+                                 user_info['patronymic'][0] + '.'
     user_info['type'] = user_db.user_type
     user_info['approved'] = user_db.approved
     user_info['created_on'] = user_db.created_on.strftime('%d.%m.%Y %H:%M:%S')
@@ -5856,23 +5858,49 @@ def volunteer_applications(view):
                              'class_name': school_info[u.user_id]['class_name']}
                  for u in Users.query.all() if u.user_id in volunteers}
     if (session['tutor'] is True and session['type'] not in ['admin', 'org', 'manager']) or view == 'tutor':
-        t_list = {t['id']: [u.user_id for u in VolunteerAssignment.query
+        t_list = {t['id']: [{'user_id': u.user_id, 'permitted': u.permitted,
+                             'permitter': u.permitter_id} for u in VolunteerAssignment.query
         .join(StudentClass, VolunteerAssignment.user_id == StudentClass.user_id)
         .filter(VolunteerAssignment.task_id == t['id'])
         .filter(StudentClass.class_id == int(session['class_id'])).all()] for t in tasks}
     else:
-        t_list = {t['id']: [u.user_id for u in VolunteerAssignment.query
+        t_list = {t['id']: [{'user_id': u.user_id, 'permitted': u.permitted,
+                             'permitter': u.permitter_id} for u in VolunteerAssignment.query
         .filter(VolunteerAssignment.task_id == t['id']).all()] for t in tasks}
     for task in tasks:
-        vols = [user_info[u] for u in t_list[task['id']]]
+        vols = []
+        for u in t_list[task['id']]:
+            u.update(user_info[u['user_id']])
+            if u['permitter'] is not None:
+                permitter = get_user_info(u['permitter'])
+                u['permitter'] = permitter
+            vols.append(u)
         task['volunteers_list'] = sorted(vols, key=lambda x: x['name'])
         task['vols_got'] = len(task['volunteers_list'])
     v_t = []
     for t in tasks:
         v_t.extend([u['user_id'] for u in t['volunteers_list']])
     vol_with_tasks = len(set(v_t))
+    print(tasks)
     return render_template('application management/volunteer_applications.html', tasks=tasks, year=curr_year,
                            vol_with_tasks=vol_with_tasks, view=view)
+
+
+@app.route('/approve_volunteer/<task_id>/<user_id>/<approval>/<view>')
+def approve_volunteer(task_id, user_id, approval, view):
+    task_id = int(task_id)
+    user_id = int(user_id)
+    permitter_id = int(session['user_id'])
+    try:
+        VolunteerAssignment.query.filter(VolunteerAssignment.user_id == user_id)\
+            .filter(VolunteerAssignment.task_id == task_id).update({VolunteerAssignment.permitted: approval,
+                                                                    VolunteerAssignment.permitter_id: permitter_id})
+        db.session.commit()
+    except BaseException:
+        a = VolunteerAssignment(user_id, task_id, approval, permitter_id)
+        db.session.add(a)
+        db.session.commit()
+    return redirect(url_for('.volunteer_applications', view=view))
 
 
 @app.route('/download_team_applicants')

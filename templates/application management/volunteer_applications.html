@@ -26,9 +26,16 @@
         <td align="center"><b>
             Локация
         </b></td>
+        {% if session['type'] in ['org', 'manager', 'admin'] %}
         <td align="center"><b>
             Надо
         </b></td>
+        {% endif %}
+        {% if session['type'] in ['org', 'manager', 'admin'] or session['tutor'] == True %}
+        <td align="center"><b>
+
+        </b></td>
+        {% endif %}
         <td align="center"><b>
             Волонтер
         </b></td>
@@ -48,11 +55,32 @@
         <td rowspan="{{ task['volunteers_list']|length }}" align="center">
             {{ task['location'] }}
         </td>
+        {% if session['type'] in ['org', 'manager', 'admin'] %}
         <td rowspan="{{ task['volunteers_list']|length }}" align="center">
             {{ task['volunteers_required'] }}
         </td>
+        {% endif %}
         {% if task['volunteers_list'] !=[] %}
         {% for volunteer in task['volunteers_list'] %}
+        {% if session['type'] in ['org', 'manager', 'admin'] or session['tutor'] == True %}
+        <td align="center">
+            <a href="/approve_volunteer/{{ task['id'] }}/{{ volunteer['user_id'] }}/yes/{{ view }}" class="green-text" title="Подтверждено">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                  <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                </svg>
+            </a>
+            <a href="/approve_volunteer/{{ task['id'] }}/{{ volunteer['user_id'] }}/pending/{{ view }}" class="yellow-text" title="На согласовании">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-circle" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                </svg>
+            </a>
+            <a href="/approve_volunteer/{{ task['id'] }}/{{ volunteer['user_id'] }}/no/{{ view }}" class="alarm" title="Отклонено">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                  <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                </svg>
+            </a>
+        </td>
+        {% endif %}
         <td>
             <a href="/one_application/{{ year }}/{{ volunteer['user_id'] }}">{{ volunteer['name'] }}</a>
         </td>
@@ -64,7 +92,15 @@
             {% endif %}
             {{ volunteer['class_name'] }}
         </td>
-        <td></td>
+        <td>
+            {% if volunteer['permitted'] == 'yes' %}
+            Да ({{ volunteer['permitter']['name_initials'] }})
+            {% elif volunteer['permitted'] == 'pending' %}
+            На согласовании ({{ volunteer['permitter']['name_initials'] }})
+            {% elif volunteer['permitted'] == 'no' %}
+            Нет ({{ volunteer['permitter']['name_initials'] }})
+            {% endif %}
+        </td>
         </tr>
         <tr>
         {% endfor %}
