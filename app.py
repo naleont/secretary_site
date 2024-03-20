@@ -1411,6 +1411,8 @@ def logging(url):
             u = '/'.join(url)
     else:
         u = url
+    if 'logging' in url:
+        u = ''
     # Извлечение данных формы
     user_got = request.values.get('user', str)
     pwd = request.values.get('password', str)
