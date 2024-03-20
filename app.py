@@ -1336,6 +1336,8 @@ def login(wrong):
             url = request.referrer.replace(request.url_root, '').strip('/').split('/')
     else:
         url = ''
+    if 'logging' in url:
+        url = ''
     return render_template('registration, logging and applications/login.html', wrong=wrong, url=url)
 
 
