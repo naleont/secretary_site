@@ -1,0 +1,25 @@
+<p>Ниже приведен список работ, получивших наивысшую оценку по результатам рецензирования и освобожденных
+    от уплаты оргвзноса.</p>
+
+<p>Наличие работы в этом списке не означает автоматического участия. Для участия подайте заявку на 2 тур в разделе
+    <a href = "http://vernadsky.info/personal_office/second_tour_request/">"Заявки на второй тур"</a> личного кабинета.</p>
+
+<table frame="void" border="2px" bordercolor="#4962A4">
+    <tr>
+        <td align="center"><b>
+            Секция
+        </b></td>
+        <td align="center"><b>
+            Список работ
+        </b></td>
+    </tr>
+    {% for work in no_fee %}
+    <tr>
+        <td>
+            {{ work['name'] }}
+        </td>
+        <td align="center">
+            {{ work['works'] }}
+        </td>
+    {% endfor %}
+</table>

@@ -3675,6 +3675,16 @@ def top_100():
     return render_template('works/top_100.html', no_fee=no_fee, total=total)
 
 
+@app.route('/top_100_for_site')
+def top_100_for_site():
+    total, no_fee = no_fee_nums()
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with open('static/files/generated_files/top_100_for_site.html', 'w') as writer:
+        writer.write(render_template('works/top_100_for_site.html', no_fee=no_fee, total=total))
+    return send_file('static/files/generated_files/top_100_for_site.html', as_attachment=True)
+
+
 @app.route('/apply_for_online', defaults={'errs_a': None, 'errs_b': None})
 @app.route('/apply_for_online/<errs_a>/<errs_b>')
 def apply_for_online(errs_a, errs_b):
