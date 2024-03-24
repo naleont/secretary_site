@@ -2086,22 +2086,7 @@ def download_team_contacts():
 
         with open('static/files/generated_files/team_vcards.vcf', 'a') as file:
             file.write(vcard.serialize())
-    print(team)
-    # p = team[0]
-    # vcard = vobject.readOne('n': [<N{'TYPE': ['FAMILY']}p['last_name']>, <N{'TYPE': ['GIVEN']}p['first_name']>,
-    # <N{'TYPE': ['FAMILY']}p['first_name']>],
-    #           'fn': p['first_name'], 'tel': p['tel'],
-    #           'email': [<EMAIL{'TYPE': ['INTERNET', 'WORK']}p['email']>])
-
-    # vcard = vobject.readOne('\n'.join([f'{k}:{v}' for k, v in person.items()]))
-    # vcard.name = 'VCARD'
-    # vcard.useBegin = True
-    # vcard.prettyPrint()
-
-    # with open('static/files/generated_files/team.vcf', 'w', newline='') as f:
-    #     f.write(vcard.serialize())
     return send_file('static/files/generated_files/team_vcards.vcf', as_attachment=True)
-    # return redirect(url_for('.view_applications'))
 
 
 @app.route('/one_application/<year>/<user>')
