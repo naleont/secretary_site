@@ -168,7 +168,7 @@
             {{ task['volunteers_required'] }}
         </td>
 
-        <td
+        <td align="center"
         {% if task['applied'] == True %}
         {% if task['permitted'] == 'yes' %}
             bgcolor="#CAF1E2"
@@ -188,7 +188,7 @@
             {% elif task['permitted'] == 'no' %}
             Отклонена
             {% elif task['permitted'] == 'pending' %}
-            На согласовании
+            На согласовании
             {% endif %}
             {% endif %}
         </td>

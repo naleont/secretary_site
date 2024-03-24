@@ -19,6 +19,7 @@ from models import *
 from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+import vobject
 
 import pandas as pd
 import random
@@ -2053,9 +2054,54 @@ def view_applications():
     msu_school = [a['user_id'] for a in source if a['involved'] == 'MSU_School' and a['occupation'] == 'scholar']
     lyceum = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'scholar']
     graduates = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'student']
+    unseen = [a['user_id'] for a in appl.values() if a['considered'] == 'False']
     return render_template('application management/view_applications.html', applications=appl, year=curr_year,
                            users=users, secretaries=secretaries, volunteers=volunteers, msu_school=msu_school,
-                           lyceum=lyceum, graduates=graduates)
+                           lyceum=lyceum, graduates=graduates, unseen=unseen)
+
+
+@app.route('/download_team_contacts')
+def download_team_contacts():
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    team = [get_user_info(u.user_id) for u in Application.query.filter(Application.year == curr_year).all()]
+    for p in team:
+        vcard = vobject.vCard()
+        o = vcard.add('fn')
+        o.value = p['last_name'] + ' ' + p['first_name'] + ' ' + p['patronymic']
+
+        o = vcard.add('n')
+        o.value = vobject.vcard.Name(family=p['last_name'], given=p['first_name'], additional=p['patronymic'])
+
+        o = vcard.add('tel')
+        o.type_param = "cell"
+        o.value = p['tel']
+
+        o = vcard.add('email')
+        o.type_param = "work"
+        o.value = p['email']
+
+        o = vcard.add('url')
+        o.value = 'org.vernadsky.info/user_page/' + str(p['user_id'])
+
+        with open('static/files/generated_files/team_vcards.vcf', 'a') as file:
+            file.write(vcard.serialize())
+    print(team)
+    # p = team[0]
+    # vcard = vobject.readOne('n': [<N{'TYPE': ['FAMILY']}p['last_name']>, <N{'TYPE': ['GIVEN']}p['first_name']>,
+    # <N{'TYPE': ['FAMILY']}p['first_name']>],
+    #           'fn': p['first_name'], 'tel': p['tel'],
+    #           'email': [<EMAIL{'TYPE': ['INTERNET', 'WORK']}p['email']>])
+
+    # vcard = vobject.readOne('\n'.join([f'{k}:{v}' for k, v in person.items()]))
+    # vcard.name = 'VCARD'
+    # vcard.useBegin = True
+    # vcard.prettyPrint()
+
+    # with open('static/files/generated_files/team.vcf', 'w', newline='') as f:
+    #     f.write(vcard.serialize())
+    return send_file('static/files/generated_files/team_vcards.vcf', as_attachment=True)
+    # return redirect(url_for('.view_applications'))
 
 
 @app.route('/one_application/<year>/<user>')
