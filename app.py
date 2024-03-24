@@ -3680,7 +3680,8 @@ def top_100_for_site():
     total, no_fee = no_fee_nums()
     if not os.path.isdir('static/files/generated_files'):
         os.mkdir('static/files/generated_files')
-    with open('static/files/generated_files/top_100_for_site.html', 'w') as writer:
+    with open('static/files/generated_files/top_100_for_site.html', 'w'
+              ) as writer:
         writer.write(render_template('works/top_100_for_site.html', no_fee=no_fee, total=total))
     return send_file('static/files/generated_files/top_100_for_site.html', as_attachment=True)
 
@@ -5760,12 +5761,15 @@ def my_volunteer_tasks():
         VolunteerAssignment.user_id == int(session['user_id'])).all()
     permitted = []
     prohibited = []
+    pending = []
     unresolved = []
     for task in my_tasks_db:
-        if task.permitted == 'permitted':
+        if task.permitted == 'yes':
             permitted.append(task.task_id)
-        elif task.permitted == 'prohibited':
+        elif task.permitted == 'no':
             prohibited.append(task.task_id)
+        elif task.permitted == 'pending':
+            pending.append(task.task_id)
         else:
             unresolved.append(task.task_id)
     tasks = [{'id': t.task_id,
@@ -5786,10 +5790,13 @@ def my_volunteer_tasks():
     for task in tasks:
         if task['id'] in permitted:
             task['applied'] = True
-            task['permitted'] = True
+            task['permitted'] = 'yes'
         elif task['id'] in prohibited:
             task['applied'] = True
-            task['permitted'] = False
+            task['permitted'] = 'no'
+        elif task['id'] in pending:
+            task['applied'] = True
+            task['permitted'] = 'pending'
         elif task['id'] in unresolved:
             task['applied'] = True
             task['permitted'] = None
@@ -5896,7 +5903,6 @@ def volunteer_applications(view):
     for t in tasks:
         v_t.extend([u['user_id'] for u in t['volunteers_list']])
     vol_with_tasks = len(set(v_t))
-    print(tasks)
     return render_template('application management/volunteer_applications.html', tasks=tasks, year=curr_year,
                            vol_with_tasks=vol_with_tasks, view=view)
 

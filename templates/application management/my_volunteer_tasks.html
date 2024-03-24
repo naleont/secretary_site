@@ -75,15 +75,45 @@
         <td rowspan="{{ day|length }}">
             {{ day[0]['task_date'] }}
         </td>
+
         {% for task in day %}
-        <td align="center" width="auto">
+        <td align="center" width="auto"
+        {% if task['applied'] == True %}
+        {% if task['permitted'] == 'yes' %}
+            bgcolor="#CAF1E2"
+        {% elif task['permitted'] == 'pending' %}
+            bgcolor="#F4F5DF"
+        {% elif task['permitted'] == 'no' %}
+            bgcolor="#F6E3E3"
+        {% endif %}
+        {% endif %}>
             {{ task['start_time'] }} – {{ task['end_time'] }}
         </td>
-        <td align="center">
+
+        <td align="center"
+        {% if task['applied'] == True %}
+        {% if task['permitted'] == 'yes' %}
+            bgcolor="#CAF1E2"
+        {% elif task['permitted'] == 'pending' %}
+            bgcolor="#F4F5DF"
+        {% elif task['permitted'] == 'no' %}
+            bgcolor="#F6E3E3"
+        {% endif %}
+        {% endif %}>
             {{ task['location'] }}<br>
             <span class="comment"><i>{{ task['address'] }}</i></span>
         </td>
-        <td>
+
+        <td
+        {% if task['applied'] == True %}
+        {% if task['permitted'] == 'yes' %}
+            bgcolor="#CAF1E2"
+        {% elif task['permitted'] == 'pending' %}
+            bgcolor="#F4F5DF"
+        {% elif task['permitted'] == 'no' %}
+            bgcolor="#F6E3E3"
+        {% endif %}
+        {% endif %}>
             {{ task['task_name'] }}
             {% if task['description'] != '' %}
             <sup class="question">
@@ -95,10 +125,20 @@
             <div class="answer">{{ task['description'] }}</div>
             {% endif %}
         </td>
+
 <!--        <td>-->
 <!--            {{ task['description'] }}-->
 <!--        </td>-->
-        <td align="center">
+        <td align="center"
+        {% if task['applied'] == True %}
+        {% if task['permitted'] == 'yes' %}
+            bgcolor="#CAF1E2"
+        {% elif task['permitted'] == 'pending' %}
+            bgcolor="#F4F5DF"
+        {% elif task['permitted'] == 'no' %}
+            bgcolor="#F6E3E3"
+        {% endif %}
+        {% endif %}>
             {% if task['applied'] == True %}
             <a href="/pick_task/{{ task['id'] }}/delete" class="green-text">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-check2-square" viewBox="0 0 16 16">
@@ -114,19 +154,41 @@
             </a>
             {% endif %}
         </td>
-        <td align="center">
+
+        <td align="center"
+        {% if task['applied'] == True %}
+        {% if task['permitted'] == 'yes' %}
+            bgcolor="#CAF1E2"
+        {% elif task['permitted'] == 'pending' %}
+            bgcolor="#F4F5DF"
+        {% elif task['permitted'] == 'no' %}
+            bgcolor="#F6E3E3"
+        {% endif %}
+        {% endif %}>
             {{ task['volunteers_required'] }}
         </td>
-        <td>
+
+        <td
+        {% if task['applied'] == True %}
+        {% if task['permitted'] == 'yes' %}
+            bgcolor="#CAF1E2"
+        {% elif task['permitted'] == 'pending' %}
+            bgcolor="#F4F5DF"
+        {% elif task['permitted'] == 'no' %}
+            bgcolor="#F6E3E3"
+        {% endif %}
+        {% endif %}>
             {% if task['applied'] == False %}
             Не подана
             {% else %}
-            {% if task['permitted'] == True %}
+            {% if task['permitted'] == 'yes' %}
             Одобрена
             {% elif task['permitted'] == None %}
             Подана
-            {% elif task['permitted'] == False %}
+            {% elif task['permitted'] == 'no' %}
             Отклонена
+            {% elif task['permitted'] == 'pending' %}
+            На согласовании
             {% endif %}
             {% endif %}
         </td>

@@ -53,7 +53,8 @@
             {{ task['task_date'] }} {{ task['start_time'] }} – {{ task['end_time'] }}
         </td>
         <td rowspan="{{ task['volunteers_list']|length }}" align="center">
-            {{ task['location'] }}
+            {{ task['location'] }}<br>
+            <span class="comment"><i>{{ task['address'] }}</i></span>
         </td>
         {% if session['type'] in ['org', 'manager', 'admin'] %}
         <td rowspan="{{ task['volunteers_list']|length }}" align="center">
@@ -63,7 +64,15 @@
         {% if task['volunteers_list'] !=[] %}
         {% for volunteer in task['volunteers_list'] %}
         {% if session['type'] in ['org', 'manager', 'admin'] or session['tutor'] == True %}
-        <td align="center">
+
+        <td align="center"
+            {% if volunteer['permitted'] == 'yes' %}
+                bgcolor="#CAF1E2"
+            {% elif volunteer['permitted'] == 'pending' %}
+                bgcolor="#F4F5DF"
+            {% elif volunteer['permitted'] == 'no' %}
+                bgcolor="#F6E3E3"=
+            {% endif %}>
             <a href="/approve_volunteer/{{ task['id'] }}/{{ volunteer['user_id'] }}/yes/{{ view }}" class="green-text" title="Подтверждено">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
                   <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
@@ -80,11 +89,27 @@
                 </svg>
             </a>
         </td>
+
         {% endif %}
-        <td>
+        <td
+            {% if volunteer['permitted'] == 'yes' %}
+                bgcolor="#CAF1E2"
+            {% elif volunteer['permitted'] == 'pending' %}
+                bgcolor="#F4F5DF"
+            {% elif volunteer['permitted'] == 'no' %}
+                bgcolor="#F6E3E3"=
+            {% endif %}>
             <a href="/one_application/{{ year }}/{{ volunteer['user_id'] }}">{{ volunteer['name'] }}</a>
         </td>
-        <td>
+
+        <td
+            {% if volunteer['permitted'] == 'yes' %}
+                bgcolor="#CAF1E2"
+            {% elif volunteer['permitted'] == 'pending' %}
+                bgcolor="#F4F5DF"
+            {% elif volunteer['permitted'] == 'no' %}
+                bgcolor="#F6E3E3"=
+            {% endif %}>
             {% if volunteer['school'] == 'MSU_School' %}
             УГ,
             {% elif volunteer['school'] == '1553' %}
@@ -92,7 +117,15 @@
             {% endif %}
             {{ volunteer['class_name'] }}
         </td>
-        <td>
+
+        <td
+            {% if volunteer['permitted'] == 'yes' %}
+                bgcolor="#CAF1E2"
+            {% elif volunteer['permitted'] == 'pending' %}
+                bgcolor="#F4F5DF"
+            {% elif volunteer['permitted'] == 'no' %}
+                bgcolor="#F6E3E3"=
+            {% endif %}>
             {% if volunteer['permitted'] == 'yes' %}
             Да ({{ volunteer['permitter']['name_initials'] }})
             {% elif volunteer['permitted'] == 'pending' %}
