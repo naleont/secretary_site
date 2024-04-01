@@ -1035,7 +1035,7 @@ def analysis_nums():
         .filter(Works.reg_tour != 0).filter(WorkStatuses.status_id >= 2)
     for cat in cats:
         cat_works = works_db.filter(WorkCategories.cat_id == cat['id']).all()
-        analysed = set(w.work_id for w in RevAnalysis.query.all() if w.work_id in cat_works)
+        analysed = set(w.work_id for w in RevAnalysis.query.all() if w.work_id in [c.work_id for c in cat_works])
         analysed.update(w.work_id for w in PreAnalysis.query.filter(PreAnalysis.has_review == 0).all()
                         if w.work_id in cat_works)
         cat_ana = {'cat_id': cat['id'], 'cat_name': cat['name'], 'analysed': len(analysed),
@@ -5902,7 +5902,7 @@ def volunteer_applications(view):
                          .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
                          .filter(VolunteerTasks.year == curr_year).all())
     sch_classes = {c.class_id: {'school': c.school, 'class_name': c.class_name}
-                   for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year). all()}
+                   for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year).all()}
     school_info = {u.user_id: sch_classes[u.class_id] for u in StudentClass.query.all() if u.user_id in volunteers}
     for u in volunteers:
         if u not in school_info.keys():
