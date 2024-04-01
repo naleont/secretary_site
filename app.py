@@ -1733,7 +1733,7 @@ def download_categories():
                'e-mail руководителя': c['supervisor_email'], 'Телефон руководиотеля': c['supervisor_tel'],
                'Секретарь': c['secretary_full'], 'e-mail секретаря': c['secretary_email'],
                'Телефон секретаря': c['secretary_tel']}
-        if ['dates'] in c.keys():
+        if 'dates' in c.keys():
             cat['Даты заседаний'] = c['dates']
         categories.append(cat)
     df = pd.DataFrame(data=categories)
