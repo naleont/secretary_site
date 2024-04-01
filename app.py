@@ -1732,7 +1732,9 @@ def download_categories():
                'Telegram-канал': '@' + c['tg_channel'], 'Руководитель': c['supervisor'],
                'e-mail руководителя': c['supervisor_email'], 'Телефон руководиотеля': c['supervisor_tel'],
                'Секретарь': c['secretary_full'], 'e-mail секретаря': c['secretary_email'],
-               'Телефон секретаря': c['secretary_tel'], 'Даты заседаний': c['dates']}
+               'Телефон секретаря': c['secretary_tel']}
+        if ['dates'] in c.keys():
+            cat['Даты заседаний'] = c['dates']
         categories.append(cat)
     df = pd.DataFrame(data=categories)
     if not os.path.isdir('static/files/generated_files'):
@@ -6002,6 +6004,55 @@ def download_team_applicants():
     with pd.ExcelWriter('static/files/generated_files/team_applicants.xlsx') as writer:
         df.to_excel(writer, sheet_name='Заявки ' + str(curr_year) + ' года')
     return send_file('static/files/generated_files/team_applicants.xlsx', as_attachment=True)
+
+
+# @app.route('/download_runner')
+# def download_runner():
+#
+#     user = db.session.query(Users).filter(Users.user_id == int(session['user_id'])).first()
+#     last_name = user.last_name
+#     name = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
+#     cl = db.session.query(SchoolClasses).join(StudentClass, SchoolClasses.class_id == StudentClass.class_id)\
+#         .filter(StudentClass.year == curr_year)\
+#         .filter(StudentClass.user_id == int(session['user_id'])).first().class_name
+#
+#     document = Document()
+#     run = document.add_paragraph().add_run()
+#     font = run.font
+#     font.name = 'Calibri'
+#     font.size = Pt(12)
+#
+#     p = document.add_paragraph('Пропуск уроков обучающимся: ' + name + ' (' + cl + ')').bold = True
+#     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+#     pp = document.add_paragraph('(волонтер Чтений им. В. И. Вернадского)')
+#     pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+#     pp.paragraph_format.space_after = Pt(6)
+#
+#     table = document.add_table(rows=4, cols=len(tasks) + 1)
+#     hdr_cells = table.rows[0].cells
+#     hdr_cells[0].text = 'Место'
+#     hdr_cells[0].width =
+#     hdr_cells[1].text = 'Задача волонтера'
+#     hdr_cells[2].text = 'Время работы/ уроки'
+#     hdr_cells[3].text = 'Выбор задачи'
+#     for loc, task, time in tasks:
+#         row_cells = table.add_row().cells
+#         row_cells[0].text = loc
+#         row_cells[1].text = task
+#         row_cells[2].text = time
+#
+#     document.add_page_break()
+#     document.save('demo.docx')
+#
+#
+#     for day in c_dates:
+#         document.add_heading(day['day_full'], level=1)
+#         for work in day['works']:
+#             document.add_paragraph(str(work['report_order']) + '. ' + str(work['work_id']) + ' – ' + work['work_name'] +
+#                                    ' – ' + work['authors'], style='Normal')
+#
+#     document.save(path)
+#     return
 
 
 # БАЗА ЗНАНИЙ
