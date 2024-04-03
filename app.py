@@ -6270,6 +6270,7 @@ def download_runner():
 
             table = document.add_table(cols=4, rows=1)
             table.style = 'Table Grid'
+            table.alignment = WD_ALIGN_PARAGRAPH.CENTER
             hdr_cells = table.rows[0].cells
 
             hdr_cells[0].paragraphs[0].add_run('Место').bold = True
