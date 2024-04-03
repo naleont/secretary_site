@@ -2,7 +2,18 @@
 
 {% block content %}
 
-<h1>Мои волонтерские задачи</h1>
+<table>
+    <tr>
+        <td>
+            <h1>Мои волонтерские задачи</h1>
+        </td>
+        {% if involved == 'MSU_School' %}
+        <td>
+            <a href="/get_runner"><button>Получить бегунок</button></a>
+        </td>
+        {% endif %}
+    </tr>
+</table>
 
 
 {% if involved == '1553' %}

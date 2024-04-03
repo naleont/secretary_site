@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Получить бегунок</h1>
+
+<p>Мои учебные группы:</p>
+<form action="/my_study_groups" method="post">
+    <fieldset>
+        <table>
+            <tr>
+                <td>
+                    <span>Профиль</span>
+                    <select name="profile">
+                        {% for p in profiles %}
+                        <option value="{{ p['class_id'] }}" {% if p['class_id'] in user_groups %} selected="true"
+                        {% endif %}>{{ p['class_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <span>Английский язык</span>
+                    <select name="eng">
+                        {% for e in eng %}
+                        <option value="{{ e['class_id'] }}" {% if e['class_id'] in user_groups %} selected="true"
+                        {% endif %}>{{ e['class_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <span>Второй язык</span>
+                    <select name="l2">
+                        {% for l in l2 %}
+                        <option value="{{ l['class_id'] }}" {% if l['class_id'] in user_groups %} selected="true"
+                        {% endif %}>{{ l['class_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input class="button" type="submit" value="Сохранить">
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+</form>
+
+<br>
+{% if user_groups|length < 3 %}
+Чтобы скачать бегунок, укажите ваши учебные группы.
+{% else %}
+<a href="/download_runner"><button>Скачать бегунок</button></a>
+{% endif %}
+
+{% endblock %}

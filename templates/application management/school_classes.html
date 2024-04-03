@@ -4,19 +4,28 @@
 
 <h1>Классы наших школ</h1>
 
-<form action="/add_classes" method="post">
-    <fieldset>
-        <input type="hidden" name="class_id" value="{{ to_edit['class_id'] }}">
-        <span class="required">Школа</span><br>
-        <label><input type="radio" name="school" value="1553" {% if to_edit['school'] == '1553'%} checked {% endif %} required>
-            Школа №1553 им. В. И. Вернадского</label><br>
-        <label><input type="radio" name="school" value="MSU_School" {% if to_edit['school'] == 'MSU_School'%}
-            checked {% endif %} required> Университетская гимназия МГУ</label><br><br>
-        <span>Класс </span>
-        <input type="text" name="class_name" size="5" value="{{ to_edit['class_name'] }}" required><br><br>
-        <input class="button" type="submit" value="Сохранить">
-    </fieldset>
-</form><br>
+<table>
+    <tr>
+        <td>
+            <form action="/add_classes" method="post">
+                <fieldset>
+                    <input type="hidden" name="class_id" value="{{ to_edit['class_id'] }}">
+                    <span class="required">Школа</span><br>
+                    <label><input type="radio" name="school" value="1553" {% if to_edit['school'] == '1553'%} checked {% endif %} required>
+                        Школа №1553 им. В. И. Вернадского</label><br>
+                    <label><input type="radio" name="school" value="MSU_School" {% if to_edit['school'] == 'MSU_School'%}
+                        checked {% endif %} required> Университетская гимназия МГУ</label><br><br>
+                    <span>Класс </span>
+                    <input type="text" name="class_name" size="5" value="{{ to_edit['class_name'] }}" required><br><br>
+                    <input class="button" type="submit" value="Сохранить">
+                </fieldset>
+            </form><br>
+    </td>
+        <td>
+            <a href="/upload_school_schedule"><button>Загрузить расписание</button></a>
+        </td>
+    </tr>
+</table>
 
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>

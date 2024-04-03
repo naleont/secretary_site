@@ -913,11 +913,13 @@ class SchoolClasses(db.Model):
     school = db.Column('school', db.Text)
     class_name = db.Column('class_name', db.Text)
     year = db.Column('year', db.Integer)
+    class_type = db.Column('class_type', db.Text)
 
-    def __init__(self, school, class_name, year):
+    def __init__(self, school, class_name, year, class_type):
         self.school = school
         self.class_name = class_name
         self.year = year
+        self.class_type = class_type
 
 
 class StudentClass(db.Model):
@@ -948,6 +950,49 @@ class VolunteerAssignment(db.Model):
         self.task_id = task_id
         self.permitted = permitted
         self.permitter_id = permitter_id
+
+
+class LessonSchedule(db.Model):
+    __tablename__ = 'lesson_schedule'
+
+    lesson_id = db.Column('lesson_id', db.Integer, primary_key=True)
+    weekday = db.Column('weekday', db.Integer)
+    lesson_no = db.Column('lesson_no', db.Integer)
+    lesson_name = db.Column('lesson_name', db.Text)
+    year = db.Column('year', db.Integer)
+
+    def __init__(self, weekday, lesson_no, lesson_name, year):
+        self.weekday = weekday
+        self.lesson_no = lesson_no
+        self.lesson_name = lesson_name
+        self.year = year
+
+
+class LessonGroup(db.Model):
+    __tablename__ = 'lesson_group'
+    __table_args__ = (PrimaryKeyConstraint('lesson_id', 'class_id'),)
+
+    lesson_id = db.Column('lesson_id', db.Integer, ForeignKey('lesson_schedule.lesson_id'))
+    class_id = db.Column('class_id', db.Integer, ForeignKey('school_classes.class_id'))
+
+    def __init__(self, lesson_id, class_id):
+        self.lesson_id = lesson_id
+        self.class_id = class_id
+
+
+class StudentGroup(db.Model):
+    __tablename__ = 'student_group'
+    __table_args__ = (PrimaryKeyConstraint('user_id', 'class_id'),)
+
+    user_id = db.Column('user_id', db.Integer, ForeignKey('users.user_id'))
+    class_id = db.Column('class_id', db.Integer, ForeignKey('school_classes.class_id'))
+    group_type = db.Column('group_type', db.Text)
+
+    def __init__(self, user_id, class_id, group_type):
+        self.user_id = user_id
+        self.class_id = class_id
+        self.group_type = group_type
+
 
 
 # #ЯИССЛЕДОВАТЕЛЬ

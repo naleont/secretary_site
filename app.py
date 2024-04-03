@@ -18,7 +18,10 @@ from models import *
 
 from docx import Document
 from docx.shared import Pt, RGBColor
+from docx.shared import Inches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_ALIGN_VERTICAL
+
 import vobject
 
 import pandas as pd
@@ -95,6 +98,40 @@ access_types = {'guest': 0,
                 'org': 8,
                 'manager': 9,
                 'admin': 10}
+
+MSU_lessons = {1: {'start': datetime.datetime.strptime('08:30', '%H:%M'),
+                   'end': datetime.datetime.strptime('09:15', '%H:%M')},
+               2: {'start': datetime.datetime.strptime('09:25', '%H:%M'),
+                   'end': datetime.datetime.strptime('10:10', '%H:%M')},
+               3: {'start': datetime.datetime.strptime('10:30', '%H:%M'),
+                   'end': datetime.datetime.strptime('11:15', '%H:%M')},
+               4: {'start': datetime.datetime.strptime('11:25', '%H:%M'),
+                   'end': datetime.datetime.strptime('12:10', '%H:%M')},
+               5: {'start': datetime.datetime.strptime('13:10', '%H:%M'),
+                   'end': datetime.datetime.strptime('13:55', '%H:%M')},
+               6: {'start': datetime.datetime.strptime('14:05', '%H:%M'),
+                   'end': datetime.datetime.strptime('14:50', '%H:%M')},
+               7: {'start': datetime.datetime.strptime('15:05', '%H:%M'),
+                   'end': datetime.datetime.strptime('15:50', '%H:%M')},
+               8: {'start': datetime.datetime.strptime('16:05', '%H:%M'),
+                   'end': datetime.datetime.strptime('16:50', '%H:%M')}}
+
+MSU_lessons_10 = {1: {'start': datetime.datetime.strptime('08:30', '%H:%M'),
+                      'end': datetime.datetime.strptime('09:15', '%H:%M')},
+                  2: {'start': datetime.datetime.strptime('09:25', '%H:%M'),
+                      'end': datetime.datetime.strptime('10:10', '%H:%M')},
+                  3: {'start': datetime.datetime.strptime('10:30', '%H:%M'),
+                      'end': datetime.datetime.strptime('11:15', '%H:%M')},
+                  4: {'start': datetime.datetime.strptime('11:25', '%H:%M'),
+                      'end': datetime.datetime.strptime('12:10', '%H:%M')},
+                  5: {'start': datetime.datetime.strptime('12:20', '%H:%M'),
+                      'end': datetime.datetime.strptime('13:05', '%H:%M')},
+                  6: {'start': datetime.datetime.strptime('14:05', '%H:%M'),
+                      'end': datetime.datetime.strptime('14:50', '%H:%M')},
+                  7: {'start': datetime.datetime.strptime('15:05', '%H:%M'),
+                      'end': datetime.datetime.strptime('15:50', '%H:%M')},
+                  8: {'start': datetime.datetime.strptime('16:05', '%H:%M'),
+                      'end': datetime.datetime.strptime('16:50', '%H:%M')}}
 
 
 def renew_session():
@@ -1160,9 +1197,9 @@ def statement_info(payment_list):
                 else:
                     payed = fee
                 remainder -= payed
-        elif payment.payment_id in [p.payment_id for p in YaisWorkPayment.query.all()]:
-            payed = 4940 * len(YaisWorkPayment.query.filter(YaisWorkPayment.payment_id == payment.payment_id).all())
-            remainder = payment.debit - payed
+        # elif payment.payment_id in [p.payment_id for p in YaisWorkPayment.query.all()]:
+        #     payed = 4940 * len(YaisWorkPayment.query.filter(YaisWorkPayment.payment_id == payment.payment_id).all())
+        #     remainder = payment.debit - payed
         if payment.payment_id in [p.payment_id for p in PaymentTypes.query.all()]:
             payment_type = PaymentTypes.query.filter(PaymentTypes.payment_id == payment.payment_id) \
                 .first().payment_type
@@ -5732,7 +5769,8 @@ def school_classes(class_id):
         return access
     sch_classes = [{'class_id': c.class_id,
                     'class_name': c.class_name,
-                    'school': c.school} for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year).all()]
+                    'school': c.school} for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
+    .filter(SchoolClasses.class_type == 'class').all()]
     s_cl = sorted(sch_classes, key=lambda x: x['class_name'])
     sch_classes = sorted(s_cl, key=lambda x: x['school'])
     if class_id != '':
@@ -5754,9 +5792,10 @@ def add_classes():
     if class_id:
         db.session.query(SchoolClasses).filter(SchoolClasses.class_id == int(class_id)) \
             .update({SchoolClasses.school: school,
-                     SchoolClasses.class_name: class_name})
+                     SchoolClasses.class_name: class_name,
+                     SchoolClasses.class_type: 'class'})
     else:
-        school_class = SchoolClasses(school, class_name, curr_year)
+        school_class = SchoolClasses(school, class_name, curr_year, 'class')
         db.session.add(school_class)
     db.session.commit()
     return redirect(url_for('.school_classes'))
@@ -5779,13 +5818,13 @@ def my_volunteer_tasks():
     if involved == '1553':
         s_cl = [{'class_id': c.class_id, 'class_name': c.class_name, 'school': c.school}
                 for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
-                .filter(SchoolClasses.school == '1553').all()]
+                .filter(SchoolClasses.school == '1553').filter(SchoolClasses.class_type == 'class').all()]
         sch_class = sorted(s_cl, key=lambda x: x['class_name'])
 
     elif involved == 'MSU_School':
         s_cl = [{'class_id': c.class_id, 'class_name': c.class_name, 'school': c.school}
                 for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
-                .filter(SchoolClasses.school == 'MSU_School').all()]
+                .filter(SchoolClasses.school == 'MSU_School').filter(SchoolClasses.class_type == 'class').all()]
         sch_class = sorted(s_cl, key=lambda x: x['class_name'])
     else:
         sch_class = None
@@ -5902,7 +5941,8 @@ def volunteer_applications(view):
                          .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
                          .filter(VolunteerTasks.year == curr_year).all())
     sch_classes = {c.class_id: {'school': c.school, 'class_name': c.class_name}
-                   for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year).all()}
+                   for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
+                   .filter(SchoolClasses.class_type == 'class').all()}
     school_info = {u.user_id: sch_classes[u.class_id] for u in StudentClass.query.all() if u.user_id in volunteers}
     for u in volunteers:
         if u not in school_info.keys():
@@ -6006,53 +6046,305 @@ def download_team_applicants():
     return send_file('static/files/generated_files/team_applicants.xlsx', as_attachment=True)
 
 
-# @app.route('/download_runner')
-# def download_runner():
-#
-#     user = db.session.query(Users).filter(Users.user_id == int(session['user_id'])).first()
-#     last_name = user.last_name
-#     name = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
-#     cl = db.session.query(SchoolClasses).join(StudentClass, SchoolClasses.class_id == StudentClass.class_id)\
-#         .filter(StudentClass.year == curr_year)\
-#         .filter(StudentClass.user_id == int(session['user_id'])).first().class_name
-#
-#     document = Document()
-#     run = document.add_paragraph().add_run()
-#     font = run.font
-#     font.name = 'Calibri'
-#     font.size = Pt(12)
-#
-#     p = document.add_paragraph('Пропуск уроков обучающимся: ' + name + ' (' + cl + ')').bold = True
-#     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-#     pp = document.add_paragraph('(волонтер Чтений им. В. И. Вернадского)')
-#     pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-#     pp.paragraph_format.space_after = Pt(6)
-#
-#     table = document.add_table(rows=4, cols=len(tasks) + 1)
-#     hdr_cells = table.rows[0].cells
-#     hdr_cells[0].text = 'Место'
-#     hdr_cells[0].width =
-#     hdr_cells[1].text = 'Задача волонтера'
-#     hdr_cells[2].text = 'Время работы/ уроки'
-#     hdr_cells[3].text = 'Выбор задачи'
-#     for loc, task, time in tasks:
-#         row_cells = table.add_row().cells
-#         row_cells[0].text = loc
-#         row_cells[1].text = task
-#         row_cells[2].text = time
-#
-#     document.add_page_break()
-#     document.save('demo.docx')
-#
-#
-#     for day in c_dates:
-#         document.add_heading(day['day_full'], level=1)
-#         for work in day['works']:
-#             document.add_paragraph(str(work['report_order']) + '. ' + str(work['work_id']) + ' – ' + work['work_name'] +
-#                                    ' – ' + work['authors'], style='Normal')
-#
-#     document.save(path)
-#     return
+@app.route('/upload_school_schedule')
+def upload_school_schedule():
+    return render_template('application management/upload_school_schedule.html')
+
+
+@app.route('/save_schedule', methods=['POST'])
+def save_schedule():
+    data = request.files['file'].read().decode('mac_cyrillic').replace('\r', '')
+    lines = data.split('\n')
+    study_groups = {g.class_name: g.class_id for g in SchoolClasses.query.filter(SchoolClasses.year == curr_year).all()}
+    schedule = []
+    for line in lines[2:]:
+        if line != '':
+            sta = {name: value for name, value in zip(lines[0].split('\t'), line.split('\t'))}
+            if sta['group'] in study_groups:
+                group_id = study_groups[sta['group']]
+            else:
+                if 'Английский язык' in sta['group']:
+                    group_type = 'eng'
+                elif 'язык' in sta['group']:
+                    group_type = '2l'
+                else:
+                    group_type = 'profile'
+                cl = SchoolClasses('MSU_School', sta['group'], curr_year, group_type)
+                db.session.add(cl)
+                db.session.commit()
+                db.session.flush()
+                group_id = cl.class_id
+                study_groups[cl.class_name] = group_id
+            less = LessonSchedule(int(sta['day']), int(sta['lesson']), sta['name'], curr_year)
+            db.session.add(less)
+            db.session.commit()
+            db.session.flush()
+            lesson_id = less.lesson_id
+            less_gr = LessonGroup(lesson_id, group_id)
+            db.session.add(less_gr)
+            db.session.commit()
+            schedule.append(sta)
+    return redirect(url_for('.upload_school_schedule'))
+
+
+@app.route('/get_runner')
+def get_runner():
+    groups = [{'type': p.class_type, 'class_id': p.class_id, 'class_name': p.class_name}
+              for p in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
+              .filter(SchoolClasses.school == 'MSU_School').all()]
+    profiles = []
+    eng = []
+    l2 = []
+    for g in groups:
+        if g['type'] == 'profile' or g['class_name'][0] == '8' or g['class_name'][0] == '9':
+            profiles.append({'class_id': g['class_id'], 'class_name': g['class_name']})
+        elif g['type'] == 'eng':
+            eng.append({'class_id': g['class_id'], 'class_name': g['class_name']})
+        elif g['type'] == '2l':
+            l2.append({'class_id': g['class_id'], 'class_name': g['class_name']})
+    pr = sorted(profiles, key=lambda x: x['class_name'])
+    e = sorted(eng, key=lambda x: x['class_name'])
+    l2s = sorted(l2, key=lambda x: x['class_name'])
+
+    user_groups = [g.class_id
+                   for g in StudentGroup.query.filter(StudentGroup.user_id == int(session['user_id'])).all()]
+
+    print(user_groups)
+    return render_template('application management/get_runner.html', profiles=pr, eng=e, l2=l2s,
+                           user_groups=user_groups)
+
+
+@app.route('/my_study_groups', methods=['POST'])
+def my_study_groups():
+    profile = int(request.form['profile'])
+    eng = int(request.form['eng'])
+    l2 = int(request.form['l2'])
+    user_id = int(session['user_id'])
+    st_pr = StudentGroup(user_id, profile, 'profile')
+    st_en = StudentGroup(user_id, eng, 'eng')
+    st_l2 = StudentGroup(user_id, l2, '2l')
+
+    if 'profile' in [g.group_type for g in StudentGroup.query.all()]:
+        if user_id not in [u.user_id for u in StudentGroup.query.filter(StudentGroup.group_type == 'profile').all()]:
+            db.session.add(st_pr)
+            db.session.commit()
+        else:
+            db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id)\
+                .filter(StudentGroup.group_type == 'profile').update({StudentGroup.class_id: profile})
+            db.session.commit()
+    else:
+        db.session.add(st_pr)
+        db.session.commit()
+
+    if 'eng' in [g.group_type for g in StudentGroup.query.all()]:
+        if user_id not in [u.user_id for u in StudentGroup.query.filter(StudentGroup.group_type == 'eng').all()]:
+            db.session.add(st_en)
+            db.session.commit()
+        else:
+            db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id)\
+                .filter(StudentGroup.group_type == 'eng').update({StudentGroup.class_id: eng})
+            db.session.commit()
+    else:
+        db.session.add(st_en)
+        db.session.commit()
+
+    if '2l' in [g.group_type for g in StudentGroup.query.all()]:
+        if user_id not in [u.user_id for u in StudentGroup.query.filter(StudentGroup.group_type == 'eng').all()]:
+            db.session.add(st_l2)
+            db.session.commit()
+        else:
+            db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id) \
+                .filter(StudentGroup.group_type == '2l').update({StudentGroup.class_id: l2})
+            db.session.commit()
+    else:
+        db.session.add(st_l2)
+        db.session.commit()
+    return redirect(url_for('.get_runner'))
+
+
+@app.route('/download_runner')
+def download_runner():
+    u = db.session.query(Users).filter(Users.user_id == int(session['user_id'])).first()
+    user_id = int(session['user_id'])
+
+    name = u.last_name + ' ' + u.first_name + ' ' + u.patronymic
+
+    gr = db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id)
+
+    prof = gr.filter(StudentGroup.group_type == 'profile').first().class_id
+    eng = gr.filter(StudentGroup.group_type == 'eng').first().class_id
+    l2 = gr.filter(StudentGroup.group_type == '2l').first().class_id
+
+    my_lessons = [le.lesson_id for le in LessonGroup.query.filter(LessonGroup.class_id == prof).all()]
+    my_lessons.extend([le.lesson_id for le in LessonGroup.query.filter(LessonGroup.class_id == eng).all()])
+    my_lessons.extend([le.lesson_id for le in LessonGroup.query.filter(LessonGroup.class_id == l2).all()])
+
+    cl = SchoolClasses.query.filter(SchoolClasses.class_id == prof).first().class_name
+
+    if cl[:1] == '10':
+        lesson_time = MSU_lessons_10
+    else:
+        lesson_time = MSU_lessons
+
+    tasks = [{'id': t.task_id,
+              'task_name': t.task_name,
+              'location': t.location,
+              'address': t.address,
+              'description': t.description,
+              'real_date': t.start_time,
+              'task_date': days_full[t.start_time.strftime('%w')] + ', ' + t.start_time.strftime('%d') + ' ' +
+                           months_full[t.start_time.strftime('%m')],
+              'start_time': datetime.datetime.strftime(t.start_time, '%H:%M'),
+              'end_time': datetime.datetime.strftime(t.end_time, '%H:%M'),
+              'start': t.start_time,
+              'end': t.end_time,
+              'volunteers_required': t.volunteers_required}
+             for t in VolunteerTasks.query.filter(VolunteerTasks.year == curr_year)
+             .order_by(VolunteerTasks.start_time).all()]
+
+    for task in tasks:
+        if datetime.datetime.strftime(task['real_date'], '%w') == 5:
+            s = task['start'] - datetime.timedelta(hours=1, minutes=30)
+            e = task['end'] + datetime.timedelta(hours=1, minutes=30)
+        else:
+            s = task['start'] - datetime.timedelta(hours=1)
+            e = task['end'] + datetime.timedelta(hours=1)
+        task['first_l'] = 0
+        task['last_l'] = 0
+        d = s.date() - lesson_time[1]['start'].date()
+        for k, v in lesson_time.items():
+            if v['end'] + d <= s or k == 1:
+                task['first_l'] = k
+            if v['start'] + d < e:
+                task['last_l'] = k
+
+    task_days = [task['real_date'] for task in tasks]
+    day_tasks = {day.date(): [] for day in sorted(list(set(task_days)))}
+    t = [d for d in day_tasks.keys()]
+
+    for task in tasks:
+        day_tasks[task['real_date'].date()].append(task)
+
+    sched = LessonSchedule.query.filter(LessonSchedule.year == curr_year)
+    vol_days = set(datetime.datetime.strftime(task['real_date'], '%w') for task in tasks)
+    schedule = {day: sorted([{'lesson_no': lesson.lesson_no, 'lesson_name': lesson.lesson_name}
+                             for lesson in sched.filter(LessonSchedule.weekday == day)
+                             if lesson.lesson_id in my_lessons], key=lambda x: x['lesson_no'])
+                for day in vol_days}
+
+    document = Document()
+    sections = document.sections
+    for section in sections:
+        section.top_margin = Cm(0.6)
+        section.bottom_margin = Cm(0.6)
+        section.left_margin = Cm(0.6)
+        section.right_margin = Cm(0.6)
+    style = document.styles['Normal']
+    font = style.font
+    font.name = 'Calibri'
+    font.size = Pt(12)
+
+    i = 0
+    while i < len(t):
+        d_tasks = day_tasks[t[i]]
+        if len(schedule[datetime.datetime.strftime(d_tasks[0]['real_date'], '%w')]) > 0:
+            a = document.add_paragraph()
+            a.alignment = 1
+            p = a.add_run('Пропуск уроков обучающимся: ' + name + ' (' + cl + ')' + '\n')
+            p.bold = True
+            pp = a.add_run('(волонтер Чтений им. В. И. Вернадского)')
+            a.paragraph_format.space_after = Pt(6)
+
+            b = document.add_paragraph()
+            b.alignment = 1
+            ppp = b.add_run(d_tasks[0]['task_date'])
+            ppp.bold = True
+
+            font = ppp.font
+            font.name = 'Calibri'
+            font.size = Pt(14)
+
+            font = p.font
+            font.name = 'Calibri'
+            font.size = Pt(16)
+
+            table = document.add_table(cols=4, rows=1)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+
+            hdr_cells[0].paragraphs[0].add_run('Место').bold = True
+            hdr_cells[0].width = Cm(7.2)
+            hdr_cells[1].paragraphs[0].add_run('Задача волонтера').bold = True
+            hdr_cells[1].width = Cm(7.4)
+            hdr_cells[2].paragraphs[0].add_run('Время работы/ уроки').bold = True
+            hdr_cells[2].width = Cm(3.4)
+            hdr_cells[3].paragraphs[0].add_run('Выбор задачи').bold = True
+            hdr_cells[3].width = Cm(1.8)
+
+            for task in d_tasks:
+                if task['first_l'] != 0 and task['last_l'] != 0:
+                    missing_lessons = '\n(' + str(task['first_l']) + '-' + str(task['last_l']) + ' урок)'
+                elif task['first_l'] != 0:
+                    missing_lessons = '\n(' + str(task['first_l']) + ' урок)'
+                elif task['last_l'] != 0:
+                    missing_lessons = '\n(' + str(task['last_l']) + ' урок)'
+                else:
+                    missing_lessons = ''
+
+                row_cells = table.add_row().cells
+                row_cells[0].text = task['location'] + '\n(' + task['address'] + ')'
+                row_cells[0].width = Cm(7.2)
+                row_cells[1].text = task['task_name']
+                row_cells[1].width = Cm(7.4)
+                row_cells[2].text = task['start_time'] + ' – ' + task['end_time'] + missing_lessons
+                row_cells[2].width = Cm(3.4)
+                row_cells[3].width = Cm(1.8)
+
+            for row in table.rows:
+                for cell in row.cells:
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+                row.height = Cm(1.3)
+
+            # document.add_paragraph()
+            document.add_paragraph()
+
+            table = document.add_table(cols=3, rows=1)
+            table.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            a = table.cell(0, 0)
+            b = table.cell(0, 1)
+            A = a.merge(b)
+
+            hdr_cells[0].paragraphs[0].add_run('Урок').bold = True
+            hdr_cells[0].width = Cm(1)
+            hdr_cells[1].width = Cm(8.9)
+            hdr_cells[2].paragraphs[0].add_run('Пропуск согласован' + '\n' + '(подпись, задание при наличии)').bold = True
+            hdr_cells[2].width = Cm(8.9)
+
+            for one_lesson in schedule[datetime.datetime.strftime(d_tasks[0]['real_date'], '%w')]:
+                row_cells = table.add_row().cells
+                row_cells[0].text = str(one_lesson['lesson_no'])
+                row_cells[0].width = Cm(1)
+                row_cells[1].text = one_lesson['lesson_name']
+                row_cells[1].width = Cm(8.9)
+                row_cells[2].width = Cm(8.9)
+
+            for row in table.rows:
+                for cell in row.cells:
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+                row.height = Cm(1.3)
+
+            if i < len(day_tasks) - 1:
+                document.add_page_break()
+        i += 1
+
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    document.save('static/files/generated_files/' + u.last_name + ' бегунок ЧВ.docx')
+    return send_file('static/files/generated_files/' + u.last_name + ' бегунок ЧВ.docx', as_attachment=True)
 
 
 # БАЗА ЗНАНИЙ
