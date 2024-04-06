@@ -6148,7 +6148,7 @@ def my_study_groups():
         db.session.commit()
 
     if '2l' in [g.group_type for g in StudentGroup.query.all()]:
-        if user_id not in [u.user_id for u in StudentGroup.query.filter(StudentGroup.group_type == 'eng').all()]:
+        if user_id not in [u.user_id for u in StudentGroup.query.filter(StudentGroup.group_type == 'l2').all()]:
             db.session.add(st_l2)
             db.session.commit()
         else:
