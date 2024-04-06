@@ -86,6 +86,7 @@
         </td>
 
         {% for task in day %}
+        {% if task['description'] != 'secretary' %}
         <td align="center" width="auto"
         {% if task['applied'] == True %}
         {% if task['permitted'] == 'yes' %}
@@ -203,6 +204,7 @@
         </td>
     </tr>
     <tr>
+        {% endif %}
         {% endfor %}
     </tr>
     {% endfor %}

@@ -6108,7 +6108,6 @@ def get_runner():
 
     user_groups = [g.class_id
                    for g in StudentGroup.query.filter(StudentGroup.user_id == int(session['user_id'])).all()]
-
     return render_template('application management/get_runner.html', profiles=pr, eng=e, l2=l2s,
                            user_groups=user_groups)
 
@@ -6148,7 +6147,7 @@ def my_study_groups():
         db.session.commit()
 
     if '2l' in [g.group_type for g in StudentGroup.query.all()]:
-        if user_id not in [u.user_id for u in StudentGroup.query.filter(StudentGroup.group_type == 'l2').all()]:
+        if user_id not in [u.user_id for u in StudentGroup.query.filter(StudentGroup.group_type == '2l').all()]:
             db.session.add(st_l2)
             db.session.commit()
         else:
@@ -6201,7 +6200,32 @@ def download_runner():
              for t in VolunteerTasks.query.filter(VolunteerTasks.year == curr_year)
              .order_by(VolunteerTasks.start_time).all()]
 
+    ta = []
+
     for task in tasks:
+        if 'secretary' in session.keys():
+            if task['real_date'].strftime('%w') in ['2', '5']:
+                if task['description'] == 'secretary':
+                    secr_secr = True
+                else:
+                    secr_secr = False
+            elif task['real_date'].strftime('%w') == '3':
+                secr_secr = True
+            else:
+                if task['description'] == 'secretary':
+                    secr_secr = False
+                else:
+                    secr_secr = True
+        else:
+            if task['description'] == 'secretary':
+                secr_secr = False
+            else:
+                secr_secr = True
+
+        if secr_secr is True:
+            ta.append(task)
+
+    for task in ta:
         if datetime.datetime.strftime(task['real_date'], '%w') == 5:
             s = task['start'] - datetime.timedelta(hours=1, minutes=30)
             e = task['end'] + datetime.timedelta(hours=1, minutes=30)
@@ -6217,11 +6241,11 @@ def download_runner():
             if v['start'] + d < e:
                 task['last_l'] = k
 
-    task_days = [task['real_date'] for task in tasks]
+    task_days = [task['real_date'] for task in ta]
     day_tasks = {day.date(): [] for day in sorted(list(set(task_days)))}
     t = [d for d in day_tasks.keys()]
 
-    for task in tasks:
+    for task in ta:
         day_tasks[task['real_date'].date()].append(task)
 
     sched = LessonSchedule.query.filter(LessonSchedule.year == curr_year)
