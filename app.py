@@ -6109,7 +6109,6 @@ def get_runner():
     user_groups = [g.class_id
                    for g in StudentGroup.query.filter(StudentGroup.user_id == int(session['user_id'])).all()]
 
-    print(user_groups)
     return render_template('application management/get_runner.html', profiles=pr, eng=e, l2=l2s,
                            user_groups=user_groups)
 
