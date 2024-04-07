@@ -21,9 +21,9 @@
         {% elif response['type'] == 'work' %}
         <b>Работа {{ response['works']['work_id'] }}
                     {% if response['works']['part_offline'] == True %}
-                        <span class="alarm">Участвовала очно</span>
+                        <span class="alarm">Очно</span>
                     {% else %}
-                        <span class="green-text">Д</span>
+                        <span class="green-text">Дистанционно</span>
                     {% endif %}
             <a href="/discount_and_participation_mode/{{ response['works']['work_id'] }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"

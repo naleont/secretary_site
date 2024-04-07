@@ -818,7 +818,8 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['fee'] = fee
         if work['work_id'] in [w.work_id for w in AppliedForOnline.query.all()]:
             work['format'] = 'online'
-        if work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
+        if work_id in [w.work_id for w in ParticipatedWorks.query.all()] or \
+                work_id in [w.work_id for w in Applications2Tour.query.all() if w.appl_no is not None]:
             work['part_offline'] = True
             work['format'] = 'face-to-face'
         else:
