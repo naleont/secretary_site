@@ -179,7 +179,7 @@ def renew_session():
                 session['tutor'] = True
                 if session['access'] < 7:
                     session['access'] = 7
-                session['class_id'] = TutorUser.query.join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)\
+                session['class_id'] = TutorUser.query.join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id) \
                     .filter(SchoolClasses.year == curr_year).filter(TutorUser.user_id == user).first().class_id
             else:
                 session['tutor'] = False
@@ -303,7 +303,7 @@ def get_user_info(user):
             .join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)
             .filter(SchoolClasses.year == curr_year).all()]:
         user_info['tutor'] = True
-        user_info['class_id'] = TutorUser.query.join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id)\
+        user_info['class_id'] = TutorUser.query.join(SchoolClasses, TutorUser.class_id == SchoolClasses.class_id) \
             .filter(SchoolClasses.year == curr_year).filter(TutorUser.user_id == user).first().class_id
     return user_info
 
@@ -2435,7 +2435,7 @@ def tutor_user(user_id):
             db.session.commit()
     else:
         if user_id in [u.user_id for u in TutorUser.query.all()]:
-            user_sup = TutorUser.query.filter(TutorUser.user_id == user_id)\
+            user_sup = TutorUser.query.filter(TutorUser.user_id == user_id) \
                 .filter(TutorUser.supervisor_id == user_id).first()
             db.session.delete(user_sup)
             db.session.commit()
@@ -3625,11 +3625,23 @@ def many_applications():
 
 @app.route('/button_applications')
 def button_applications():
-    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
+    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/" + str(curr_year) + "/",
                                         headers=mail_data.headers).text)
     works_applied = []
     participants = []
     organisations = []
+
+    appl_2_tour = [(w.work_id, w.appl_no, w.arrived) for w in Applications2Tour.query.all()]
+    part_ids = [p.participant_id for p in ParticipantsApplied.query.all()]
+    work_applied_ids = [wo.work_id for wo in Applications2Tour.query.all()]
+    work_ids = [wo.work_id for wo in Works.query.all()]
+    part_appl = [(p.participant_id, p.appl_id, p.last_name, p.first_name, p.patronymic_name,
+                  p.participant_class, p.role, None) for p in ParticipantsApplied.query.all()]
+    org_appl = [(o.organisation_id, o.name, o.city, o.country) for o in Organisations.query.all()]
+    org_ids = [o.organisation_id for o in Organisations.query.all()]
+    org_appl_db = [(o.organisation_id, o.appl_no, o.arrived) for o in OrganisationApplication.query.all()]
+    org_appl_ids = [o.organisation_id for o in OrganisationApplication.query.all()]
+
     for n in response:
         organisation = {'organisation_id': int(n['organization']['id']), 'name': n['organization']['name'],
                         'city': n['organization']['city'], 'country': n['organization']['country'],
@@ -3641,31 +3653,28 @@ def button_applications():
                    'first_name': p['first_name'], 'patronymic_name': p['patronymic_name'],
                    'participant_class': p['class'], 'role': p['role']} for p in n['delegation']['members']]
         participants.extend(part_s)
-        for participant in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == int(n['id'])).all():
-            if participant.participant_id not in [p['id'] for p in participants]:
-                part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
-                                                                           participant.participant_id).first()
-                db.session.delete(part_to_del)
-                db.session.commit()
+    for participant in part_ids:
+        if participant not in [p['id'] for p in participants]:
+            part_to_del = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id ==
+                                                                       participant).first()
+            db.session.delete(part_to_del)
+            db.session.commit()
     for work in works_applied:
-        if Applications2Tour(work['work'], work['appl'], False) not in Applications2Tour.query.all():
-            if work['work'] in [wo.work_id for wo in Applications2Tour.query.all()]:
+        if (work['work'], work['appl'], False) not in appl_2_tour:
+            if work['work'] in work_applied_ids:
                 db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
                                                            ).update({Applications2Tour.appl_no: work['appl'],
                                                                      Applications2Tour.arrived: work['arrived']})
                 db.session.commit()
             else:
-                if work['work'] in [wo.work_id for wo in Works.query.all()]:
-                    wo = Works.query.filter(Works.work_id == work['work']).first().work_id
-                    appl = Applications2Tour(wo, work['appl'], False)
+                if work['work'] in work_ids:
+                    appl = Applications2Tour(work['work'], work['appl'], False)
                     db.session.add(appl)
                     db.session.commit()
     for participant in participants:
-        if ParticipantsApplied(participant['id'], participant['appl'], participant['last_name'],
-                               participant['first_name'], participant['patronymic_name'],
-                               participant['participant_class'], participant['role'], None) \
-                not in ParticipantsApplied.query.all():
-            if participant['id'] in [p.participant_id for p in ParticipantsApplied.query.all()]:
+        if (participant['id'], participant['appl'], participant['last_name'], participant['first_name'],
+            participant['participant_class'], participant['role'], None) not in part_appl:
+            if participant['id'] in part_ids:
                 db.session.query(ParticipantsApplied
                                  ).filter(ParticipantsApplied.participant_id == participant['id']
                                           ).update({ParticipantsApplied.appl_id: participant['appl'],
@@ -3684,9 +3693,9 @@ def button_applications():
                 db.session.commit()
 
     for organisation in organisations:
-        if Organisations(organisation['organisation_id'], organisation['name'], organisation['city'],
-                         organisation['country']) not in Organisations.query.all():
-            if organisation['organisation_id'] in [o.organisation_id for o in Organisations.query.all()]:
+        if (organisation['organisation_id'], organisation['name'], organisation['city'], organisation['country']) \
+                not in org_appl:
+            if organisation['organisation_id'] in org_ids:
                 db.session.query(Organisations).filter(Organisations.organisation_id == organisation['organisation_id']) \
                     .update({Organisations.name: organisation['name'],
                              Organisations.city: organisation['city'],
@@ -3697,9 +3706,8 @@ def button_applications():
                                   organisation['country'])
                 db.session.add(o)
                 db.session.commit()
-        if OrganisationApplication(organisation['organisation_id'], organisation['appl_no'], organisation['arrived']) \
-                not in OrganisationApplication.query.all():
-            if organisation['organisation_id'] in [o.organisation_id for o in OrganisationApplication.query.all()]:
+        if (organisation['organisation_id'], organisation['appl_no'], organisation['arrived']) not in org_appl_db:
+            if organisation['organisation_id'] in org_appl_ids:
                 db.session.query(OrganisationApplication) \
                     .filter(OrganisationApplication.organisation_id == organisation['organisation_id']) \
                     .update({OrganisationApplication.appl_no: organisation['appl_no'],
@@ -3711,14 +3719,14 @@ def button_applications():
                 db.session.add(o)
                 db.session.commit()
 
-    for org in [o.organisation_id for o in Organisations.query.all()
-                if o.organisation_id not in [a.organisation_id for a in OrganisationApplication.query.all()]]:
-        o = OrganisationApplication(org, None, None)
-        db.session.add(o)
-        db.session.commit()
+    for org in org_ids:
+        if org not in org_appl_ids:
+            o = OrganisationApplication(org, None, None)
+            db.session.add(o)
+            db.session.commit()
 
     applications_to_del = [a.appl_no for a in Applications2Tour.query.all()
-                           if a.appl_no not in [o['appl_no'] for o in organisations]]
+                           if a.appl_no not in [o['appl_no'] for o in organisations] and a.appl_no is not None]
     for a in applications_to_del:
         if a in [wo.appl_no for wo in Applications2Tour.query.all()]:
             for to_del in db.session.query(Applications2Tour).filter(Applications2Tour.appl_no == a):
@@ -5770,7 +5778,7 @@ def school_classes(class_id):
     sch_classes = [{'class_id': c.class_id,
                     'class_name': c.class_name,
                     'school': c.school} for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
-    .filter(SchoolClasses.class_type == 'class').all()]
+                   .filter(SchoolClasses.class_type == 'class').all()]
     s_cl = sorted(sch_classes, key=lambda x: x['class_name'])
     sch_classes = sorted(s_cl, key=lambda x: x['school'])
     if class_id != '':
@@ -5904,7 +5912,7 @@ def pick_task(task_id, action):
         db.session.add(ass)
         db.session.commit()
     elif to_assign in assignments and action == 'delete':
-        db.session.query(VolunteerAssignment).filter(VolunteerAssignment.user_id == user_id)\
+        db.session.query(VolunteerAssignment).filter(VolunteerAssignment.user_id == user_id) \
             .filter(VolunteerAssignment.task_id == task_id).delete()
         db.session.commit()
     else:
@@ -5955,13 +5963,13 @@ def volunteer_applications(view):
     if (session['tutor'] is True and session['type'] not in ['admin', 'org', 'manager']) or view == 'tutor':
         t_list = {t['id']: [{'user_id': u.user_id, 'permitted': u.permitted,
                              'permitter': u.permitter_id} for u in VolunteerAssignment.query
-        .join(StudentClass, VolunteerAssignment.user_id == StudentClass.user_id)
-        .filter(VolunteerAssignment.task_id == t['id'])
-        .filter(StudentClass.class_id == int(session['class_id'])).all()] for t in tasks}
+                            .join(StudentClass, VolunteerAssignment.user_id == StudentClass.user_id)
+                            .filter(VolunteerAssignment.task_id == t['id'])
+                            .filter(StudentClass.class_id == int(session['class_id'])).all()] for t in tasks}
     else:
         t_list = {t['id']: [{'user_id': u.user_id, 'permitted': u.permitted,
                              'permitter': u.permitter_id} for u in VolunteerAssignment.query
-        .filter(VolunteerAssignment.task_id == t['id']).all()] for t in tasks}
+                            .filter(VolunteerAssignment.task_id == t['id']).all()] for t in tasks}
     for task in tasks:
         vols = []
         for u in t_list[task['id']]:
@@ -5986,7 +5994,7 @@ def approve_volunteer(task_id, user_id, approval, view):
     user_id = int(user_id)
     permitter_id = int(session['user_id'])
     try:
-        VolunteerAssignment.query.filter(VolunteerAssignment.user_id == user_id)\
+        VolunteerAssignment.query.filter(VolunteerAssignment.user_id == user_id) \
             .filter(VolunteerAssignment.task_id == task_id).update({VolunteerAssignment.permitted: approval,
                                                                     VolunteerAssignment.permitter_id: permitter_id})
         db.session.commit()
@@ -6127,7 +6135,7 @@ def my_study_groups():
             db.session.add(st_pr)
             db.session.commit()
         else:
-            db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id)\
+            db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id) \
                 .filter(StudentGroup.group_type == 'profile').update({StudentGroup.class_id: profile})
             db.session.commit()
     else:
@@ -6139,7 +6147,7 @@ def my_study_groups():
             db.session.add(st_en)
             db.session.commit()
         else:
-            db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id)\
+            db.session.query(StudentGroup).filter(StudentGroup.user_id == user_id) \
                 .filter(StudentGroup.group_type == 'eng').update({StudentGroup.class_id: eng})
             db.session.commit()
     else:
@@ -6344,7 +6352,8 @@ def download_runner():
             hdr_cells[0].paragraphs[0].add_run('Урок').bold = True
             hdr_cells[0].width = Cm(1)
             hdr_cells[1].width = Cm(8.9)
-            hdr_cells[2].paragraphs[0].add_run('Пропуск согласован' + '\n' + '(подпись, задание при наличии)').bold = True
+            hdr_cells[2].paragraphs[0].add_run(
+                'Пропуск согласован' + '\n' + '(подпись, задание при наличии)').bold = True
             hdr_cells[2].width = Cm(8.9)
 
             for one_lesson in schedule[datetime.datetime.strftime(d_tasks[0]['real_date'], '%w')]:
