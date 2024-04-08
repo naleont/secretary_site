@@ -86,9 +86,9 @@
                     <span class="alarm">{{ work['reg_tour'] }} тур</span>
                     {% endif %}<br>
                 {{ work['authors'] }}<br>
-                Руководитель {{ work['supervisor'] }}<br>
-                Секция {{ work['cat_name'] }}<br>
-                {% endfor %}<br>
+                <i>Руководитель</i> {{ work['supervisor'] }}<br>
+                <i>Секция</i> {{ work['cat_short'] }}<br><br>
+                {% endfor %}
             <b>Участники</b><br>
                 {% for participant in response['value']['participants'] %}
                 <i>{{ participant['role'] }} {{ participant['id'] }}</i>
@@ -150,13 +150,22 @@
             {% endif %}<br>
             {{ work['authors'] }}<br>
             Руководитель {{ work['supervisor'] }}<br>
-            Секция {{ work['cat_name'] }}<br>
+            Секция {{ work['cat_name'] }}
             {% if work['appl_no'] == False or work['appl_no'] == 'False'
             or 'appl_no' not in work.keys() %}
-        Заявка Не подана<br>
-        {% else %}
-        Заявка {{ work['appl_no'] }}
-        {% endif %}
+            <br>Заявка Не подана<br>
+            {% else %}
+            <form action="/searching_participant" method = 'GET'>
+                <fieldset>
+                    <input size="30" type="hidden" name="query" value="{{ work['appl_no'] }}">
+                    <button class="blue_no_border" type="submit">
+                        Заявка {{ work['appl_no'] }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-forward-fill" viewBox="0 0 16 16">
+                      <path d="m9.77 12.11 4.012-2.953a.647.647 0 0 0 0-1.114L9.771 5.09a.644.644 0 0 0-.971.557V6.65H2v3.9h6.8v1.003c0 .505.545.808.97.557"/>
+                    </svg></button>
+                </fieldset>
+            </form>
+            {% endif %}
         Оргвзнос {{ work['fee'] }} р.,
             {% if not work['format'] or work['format'] == 'face-to-face' %}
                 Очное участие
