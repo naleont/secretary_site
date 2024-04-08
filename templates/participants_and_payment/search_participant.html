@@ -72,7 +72,7 @@
                 <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
                 <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
             </svg>
-        </a><br><br>
+        </a><br>{{ response['value']['organisation'] }} ({{ response['value']['city'] }})<br><br>
         <b>Работы</b><br>
                 {% for work in response['value']['works'] %}
                 Работа {{ work['work_id'] }}
@@ -188,7 +188,7 @@
                     <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
                     <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
                 </svg>
-            </a><br><br>
+            </a><br>{{ appl['organisation'] }} ({{ appl['city'] }})<br><br>
             <b>Работы</b><br>
                 {% for work in appl['works'] %}
                 Работа {{ work['work_id'] }}
@@ -201,10 +201,10 @@
                     {% if work['reg_tour'] %}
                     <span class="alarm">{{ work['reg_tour'] }} тур</span>
                     {% endif %}<br>
-                    {{ response['works']['authors'] }}<br>
-                    Руководитель {{ response['works']['supervisor'] }}<br>
-                    Секция {{ response['works']['cat_name'] }}<br>
-                {% endfor %}<br>
+                    {{ work['authors'] }}<br>
+                    Руководитель {{ work['supervisor'] }}<br>
+                    Секция {{ work['cat_short'] }}<br><br>
+                {% endfor %}
         <b>Участники</b><br>
             {% for participant in appl['participants'] %}
                 <i>{{ participant['role'] }} {{ participant['id'] }}</i>

@@ -1120,6 +1120,12 @@ def application_2_tour(appl):
     application = {'id': appl, 'works': [work_info(w.work_id, w_payment_info=True, appl_info=True) for w
                                          in Applications2Tour.query.filter(Applications2Tour.appl_no == appl).all()],
                    'participants': []}
+    org = Organisations.query\
+        .join(OrganisationApplication, Organisations.organisation_id == OrganisationApplication.organisation_id)\
+        .filter(OrganisationApplication.appl_no == application['id']).first()
+
+    application['organisation'] = org.name
+    application['city'] = org.city
     for part in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).all():
         part_db = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id == part.participant_id
                                                                ).first()

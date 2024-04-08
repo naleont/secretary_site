@@ -94,7 +94,7 @@
     {% for appl in participant['participant'] %}
     <tr>
         <td>
-            <b>Заявка {{ appl['id'] }}</b><br>
+            <b>Заявка {{ appl['id'] }}</b><br>{{ appl['organisation'] }} ({{ appl['city'] }})<br><br>
                 <b>Работы</b><br>
                 {% for work in appl['works'] %}
                 <i>Работа {{ work['work_id'] }}</i>
@@ -109,7 +109,7 @@
                 {% endif %}<br>
                     <i>{{ work['authors'] }}</i><br>
                     <i>Руководитель {{ work['supervisor'] }}</i><br><br>
-                {% endfor %}<br>
+                {% endfor %}
                 <b>Участники</b><br>
                 {% for member in appl['participants'] %}
                 <i>{{ member['role'] }} {{ member['id'] }}</i><br>
@@ -186,7 +186,7 @@
             </tr>
         </table>
     </fieldset>
-</form><br>
+</form>
 {% endfor %}
 
 {% if participant['participant'] %}
@@ -196,7 +196,8 @@
     {% for appl in participant['participant'] %}
     <tr>
         <td>
-            <b>Заявка {{ appl['id'] }}</b><br>
+            <b><i>Заявка {{ appl['id'] }}</i></b><br>
+            {{ appl['organisation'] }} ({{ appl['city'] }})<br><br>
                 <b>Работы</b><br>
                 {% for work in appl['works'] %}
                 <i>Работа {{ work['work_id'] }}</i>
@@ -211,7 +212,7 @@
                 {% endif %}<br>
                     <i>{{ work['authors'] }}</i><br>
             <i>Руководитель {{ work['supervisor'] }}</i><br><br>
-                {% endfor %}<br>
+                {% endfor %}
                 <b>Участники</b><br>
                 {% for member in appl['participants'] %}
                 <i>{{ member['role'] }} {{ member['id'] }}</i><br>
