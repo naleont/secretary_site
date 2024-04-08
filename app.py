@@ -4644,7 +4644,6 @@ def search_participant(query):
                     response = {'type': None, 'value': query}
     else:
         response = {'type': None, 'value': query}
-    print(response)
     return render_template('participants_and_payment/search_participant.html', response=response)
 
 
