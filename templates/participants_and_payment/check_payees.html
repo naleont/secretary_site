@@ -42,9 +42,10 @@
             <tr>
             {% for participant in appl['participants'] %}
                 <td>
-                    <input type="checkbox" name="{{ participant['id'] }}">
+                    <input type="checkbox" name="{{ participant['id'] }}" id="{{ participant['id'] }}">
                 </td>
                 <td>
+                    <label for="{{ participant['id'] }}">
                     <br><i>{{ participant['role'] }} {{ participant['id'] }}</i><br>
                     {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
                     Оргвзнос {{ participant['fee'] }}р.,
@@ -52,7 +53,7 @@
                         Очное участие
                     {% elif participant['format'] == 'online'%}
                         Дистанционное участие
-                    {% endif %}<br>
+                    {% endif %}</label><br>
                 </td>
             </tr>
             {% endfor %}
