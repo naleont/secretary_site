@@ -21,24 +21,24 @@
     </tr>
 </table>
 
-Дата получения платежа: {{ payment['date'] }}<br>
-Сумма: {{ payment['debit'] }}<br>
+<i>Дата получения платежа:</i> {{ payment['date'] }}<br>
+<i>Сумма:</i> {{ payment['debit'] }}<br>
 {% if payment['remainder'] != '0 р.' %}
 <span class="alarm">Не распределено: {{ payment['remainder'] }}</span>
 {% else %}
-Платеж распределен по участникам
+<i>Платеж распределен по участникам
 {% endif %}<br><br>
-Комментарий к платежу: {{ payment['comment'] }}<br><br>
-Плательщик: {{ payment['organisation'] }}<br>
-ИНН: {{ payment['tin'] }}<br>
-БИК: {{ payment['bic'] }}<br>
-Название банка: {{ payment['bank_name'] }}<br>
-Счет плательщика: {{ payment['account'] }}<br>
-Номер платежного документа: {{ payment['order_id'] }}<br><br>
+<i>Комментарий к платежу:</i> {{ payment['comment'] }}<br><br>
+<i>Плательщик:</i> {{ payment['organisation'] }}<br>
+<i>ИНН:</i> {{ payment['tin'] }}<br>
+<i>БИК:</i> {{ payment['bic'] }}<br>
+<i>Название банка:</i> {{ payment['bank_name'] }}<br>
+<i>Счет плательщика:</i> {{ payment['account'] }}<br>
+<i>Номер платежного документа:</i> {{ payment['order_id'] }}<br><br>
 
-{% if participant['type'] == 'None' and participant['participant'] != None or participant['works'] == [] %}
+{% if participant['type'] == None and query != None %}
 
-{{ participant['participant'] }}: Не найдено таких участников
+    <b>{{ query }}: Не найдено таких участников</b>
 
 {% elif participant['type'] == 'work' %}
 

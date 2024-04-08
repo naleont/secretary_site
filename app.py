@@ -5482,7 +5482,8 @@ def set_payee(payment_id, payee):
                 participant = {'type': None, 'participant': payee}
     else:
         participant = {'type': None, 'participant': payee}
-    return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant)
+    return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant,
+                           query=payee)
 
 
 @app.route('/application_payment/<payment_id>', methods=['GET'], defaults={'payee': None})
