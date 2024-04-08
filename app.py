@@ -5371,7 +5371,7 @@ def manage_payments(query, length, page):
         return access
     if query == 'all':
         q = BankStatement.query.order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
-        query = 'Все'
+        query_name = 'Все'
     else:
         q = BankStatement.query \
             .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id) \
@@ -5382,7 +5382,8 @@ def manage_payments(query, length, page):
     statement = statement_info(data)
     types = set(p.payment_type for p in PaymentTypes.query.all())
     return render_template('participants_and_payment/manage_payments.html', statement=statement, pages=n, page=page,
-                           length=length, link='manage_payments/' + query, types=types, query=query)
+                           length=length, link='manage_payments/' + query, types=types, query=query,
+                           query_name=query_name)
 
 
 @app.route('/payment_types', defaults={'length': 30, 'page': 1})
