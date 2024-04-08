@@ -24,11 +24,13 @@
                 <td colspan="2">
                     <b>Работы</b><br>
                     {% for work in appl['works'] %}
-                    Работа {{ work['work_id'] }} -
+                    <i>Работа</i> {{ work['work_id'] }} -
                     {{ work['work_name'] }}<br>
                     {% if work['reg_tour'] %}
-                    <span class="alarm">{{ work['reg_tour'] }} тур</span>
-                    {% endif %}<br>
+                    <span class="alarm">{{ work['reg_tour'] }} тур</span><br>
+                    {% endif %}
+                    <i>Авторы</i> {{ work['authors'] }}<br>
+                    <i>Руководитель</i> {{ work['supervisor'] }}<br><br>
                     {% endfor %}<br>
                 </td>
             </tr>

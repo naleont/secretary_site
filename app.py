@@ -5159,7 +5159,8 @@ def discount_and_participation_mode(part_id):
         info['type'] = 'work'
     else:
         return redirect(url_for('.search_participant'))
-    return render_template('participants_and_payment/discount_and_participation_mode.html', info=info)
+    return render_template('participants_and_payment/discount_and_participation_mode.html', info=info,
+                           full_fee=fee, discounted=tour_fee)
 
 
 @app.route('/set_fee/<part_id>', methods=['POST'])

@@ -38,11 +38,21 @@
             {% endif %}<br>
         {{ response['works']['authors'] }}<br>
         Руководитель {{ response['works']['supervisor'] }}<br>
-        Секция {{ response['works']['cat_name'] }}<br>
-            {% if response['works']['appl_no'] == False %}
-        Заявка отсутствует<br>
+        Секция {{ response['works']['cat_name'] }}
+            {% if response['works']['appl_no'] == False or response['works']['appl_no'] == 'False'
+            or 'appl_no' not in response['works'].keys() %}
+        <br>Заявка Не подана<br>
             {% else %}
-        Заявка {{ response['works']['appl_no'] }}<br>
+            <form action="/searching_participant" method = 'GET'>
+                <fieldset>
+                    <input size="30" type="hidden" name="query" value="{{ response['works']['appl_no'] }}">
+                    <button class="blue_no_border" type="submit">
+                        Заявка {{ response['works']['appl_no'] }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-forward-fill" viewBox="0 0 16 16">
+                      <path d="m9.77 12.11 4.012-2.953a.647.647 0 0 0 0-1.114L9.771 5.09a.644.644 0 0 0-.971.557V6.65H2v3.9h6.8v1.003c0 .505.545.808.97.557"/>
+                    </svg></button>
+                </fieldset>
+            </form>
             {% endif %}
         Оргвзнос {{ response['works']['fee'] }} р.,
             {% if not response['works']['format'] or response['works']['format'] == 'face-to-face' %}
@@ -67,7 +77,7 @@
                 {% for work in response['value']['works'] %}
                 Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm"><b>Участвовала очно</b></span>
+                        <span class="alarm"><b>О</b></span>
                     {% else %}
                         <span class="green-text"><b>Д</b></span>
                     {% endif %} -
@@ -123,7 +133,7 @@
         {% for work in response['works'] %}
             <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm">Участвовала очно</span>
+                        <span class="alarm">О</span>
                     {% else %}
                         <span class="green-text">Д</span>
                     {% endif %}
@@ -141,7 +151,12 @@
             {{ work['authors'] }}<br>
             Руководитель {{ work['supervisor'] }}<br>
             Секция {{ work['cat_name'] }}<br>
-        Заявка {{ work['appl_no'] }}<br>
+            {% if work['appl_no'] == False or work['appl_no'] == 'False'
+            or 'appl_no' not in work.keys() %}
+        Заявка Не подана<br>
+        {% else %}
+        Заявка {{ work['appl_no'] }}
+        {% endif %}
         Оргвзнос {{ work['fee'] }} р.,
             {% if not work['format'] or work['format'] == 'face-to-face' %}
                 Очное участие
@@ -169,7 +184,7 @@
                 {% for work in appl['works'] %}
                 Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm"><b>Участвовала очно</b></span>
+                        <span class="alarm"><b>О</b></span>
                     {% else %}
                         <span class="green-text"><b>Д</b></span>
                     {% endif %} -
