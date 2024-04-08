@@ -6033,7 +6033,8 @@ def download_team_applicants():
     user_class = {s.user_id: sch_class[s.class_id]
                   for s in StudentClass.query.filter(StudentClass.year == curr_year).all()}
     user_class.update({u: '' for u in prof_info.keys() if u not in user_class})
-    applicants = [{'user_id': u.user_id, 'last_name': u.last_name, 'first_name': u.first_name, 'email': u.email,
+    applicants = [{'user_id': u.user_id, 'last_name': u.last_name, 'first_name': u.first_name,
+                   'patronymic': u.patronymic, 'email': u.email,
                    'tel': u.tel, 'occupation': prof_info[u.user_id]['occupation'],
                    'place_of_work': prof_info[u.user_id]['place_of_work'], 'involved': prof_info[u.user_id]['involved'],
                    'grade': prof_info[u.user_id]['grade'], 'year': prof_info[u.user_id]['year'],
