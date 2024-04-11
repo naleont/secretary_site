@@ -3736,9 +3736,11 @@ def button_applications():
                            if a.appl_no not in [o['appl_no'] for o in organisations] and a.appl_no is not None]
     for a in applications_to_del:
         if a in [wo.appl_no for wo in Applications2Tour.query.all()]:
-            for to_del in db.session.query(Applications2Tour).filter(Applications2Tour.appl_no == a):
-                to_del.update({Applications2Tour.appl_no: None,
-                               Applications2Tour.arrived: False})
+            a_w = [w.work_id for w in Applications2Tour.query.filter(Applications2Tour.appl_no == a).all()]
+            for k in a_w:
+                Applications2Tour.query.filter(Applications2Tour.appl_no == a).filter(Applications2Tour.work_id == k)\
+                    .update({Applications2Tour.appl_no: None,
+                             Applications2Tour.arrived: False})
                 db.session.commit()
         if a in [wo.appl_id for wo in ParticipantsApplied.query.all()]:
             for to_del in db.session.query(ParticipantsApplied).filter(ParticipantsApplied.appl_id == a).all():
