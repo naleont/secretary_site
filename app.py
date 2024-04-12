@@ -3451,24 +3451,23 @@ def button_works(cat_id):
                       author_3_name=author_3_name, author_3_age=author_3_age, author_3_class=author_3_class,
                       teacher_name=teacher_name, reg_tour=reg_tour, msk_time_shift=timeshift, reported=rep)
             if work_id in work_id_list:
-                if Works.query.filter(Works.work_id == work_id).first() != d:
-                    db.session.query(Works).filter(Works.work_id == work_id).update({Works.work_name: work_name,
-                                                                                     Works.work_site_id: work_site_id,
-                                                                                     Works.email: email, Works.tel: tel,
-                                                                                     Works.author_1_name: author_1_name,
-                                                                                     Works.author_1_age: author_1_age,
-                                                                                     Works.author_1_class: author_1_class,
-                                                                                     Works.author_2_name: author_2_name,
-                                                                                     Works.author_2_age: author_2_age,
-                                                                                     Works.author_2_class: author_2_class,
-                                                                                     Works.author_3_name: author_3_name,
-                                                                                     Works.author_3_age: author_3_age,
-                                                                                     Works.author_3_class: author_3_class,
-                                                                                     Works.teacher_name: teacher_name,
-                                                                                     Works.reg_tour: reg_tour,
-                                                                                     Works.msk_time_shift: timeshift})
-                    edited = True
-                    db.session.commit()
+                db.session.query(Works).filter(Works.work_id == work_id).update({Works.work_name: work_name,
+                                                                                 Works.work_site_id: work_site_id,
+                                                                                 Works.email: email, Works.tel: tel,
+                                                                                 Works.author_1_name: author_1_name,
+                                                                                 Works.author_1_age: author_1_age,
+                                                                                 Works.author_1_class: author_1_class,
+                                                                                 Works.author_2_name: author_2_name,
+                                                                                 Works.author_2_age: author_2_age,
+                                                                                 Works.author_2_class: author_2_class,
+                                                                                 Works.author_3_name: author_3_name,
+                                                                                 Works.author_3_age: author_3_age,
+                                                                                 Works.author_3_class: author_3_class,
+                                                                                 Works.teacher_name: teacher_name,
+                                                                                 Works.reg_tour: reg_tour,
+                                                                                 Works.msk_time_shift: timeshift})
+                edited = True
+                db.session.commit()
             else:
                 db.session.add(d)
                 works_added += 1
