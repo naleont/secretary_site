@@ -6065,7 +6065,7 @@ def download_volunteer_applications():
                         'exit': datetime.datetime.strftime(s, '%d.%m.%Y %H:%M'),
                         'return': datetime.datetime.strftime(e, '%d.%m.%Y %H:%M'),
                         'lessons': str(first_l) + ' - ' + str(last_l), 'location': task['location']}
-                dnl.append(line)
+                dnl.append(sorted(line, key=lambda x: x['name']))
 
     df = pd.DataFrame(data=dnl)
     if not os.path.isdir('static/files/generated_files'):
