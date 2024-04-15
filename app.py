@@ -5999,6 +5999,82 @@ def volunteer_applications(view):
                            vol_with_tasks=vol_with_tasks, view=view)
 
 
+@app.route('/download_volunteer_applications')
+def download_volunteer_applications():
+    access = check_access(7)
+    if access is not True:
+        return access
+
+    dnl = []
+
+    tasks = [{'id': t.task_id,
+              'location': t.location + ' (' + t.address + ')',
+              'task_date': t.start_time.strftime('%w'),
+              'start_time': t.start_time,
+              'end_time': t.end_time}
+             for t in VolunteerTasks.query.filter(VolunteerTasks.year == curr_year)
+             .order_by(VolunteerTasks.start_time).all()]
+    volunteers = set(v.user_id for v in VolunteerAssignment.query
+                     .join(VolunteerTasks, VolunteerAssignment.task_id == VolunteerTasks.task_id)
+                     .filter(VolunteerTasks.year == curr_year).all())
+    sch_classes = {c.class_id: {'school': c.school, 'class_name': c.class_name}
+                   for c in SchoolClasses.query.filter(SchoolClasses.year == curr_year)
+                   .filter(SchoolClasses.class_type == 'class').all()}
+    school_info = {u.user_id: sch_classes[u.class_id] for u in StudentClass.query.all() if u.user_id in volunteers}
+    for u in volunteers:
+        if u not in school_info.keys():
+            school_info[u] = {'school': '', 'class_name': ''}
+    user_info = {u.user_id: {'user_id': u.user_id,
+                             'name': u.last_name + ' ' + u.first_name + ' ' + u.patronymic,
+                             'school': school_info[u.user_id]['school'],
+                             'class_name': school_info[u.user_id]['class_name']}
+                 for u in Users.query.all() if u.user_id in volunteers}
+    t_list = {t['id']: [{'user_id': u.user_id, 'permitted': u.permitted,
+                         'permitter': u.permitter_id} for u in VolunteerAssignment.query
+                        .filter(VolunteerAssignment.task_id == t['id']).all()] for t in tasks}
+    for task in tasks:
+        vols = []
+        for u in t_list[task['id']]:
+            u.update(user_info[u['user_id']])
+            vols.append(u)
+        task['volunteers_list'] = sorted(vols, key=lambda x: x['name'])
+        for v in task['volunteers_list']:
+            if v['school'] == 'MSU_School':
+                if v['class_name'][:1] == '10':
+                    lesson_time = MSU_lessons_10
+                else:
+                    lesson_time = MSU_lessons
+
+                if task['task_date'] == 5:
+                    s = task['start_time'] - datetime.timedelta(hours=1, minutes=30)
+                    e = task['end_time'] + datetime.timedelta(hours=1, minutes=30)
+                else:
+                    s = task['start_time'] - datetime.timedelta(hours=1)
+                    e = task['end_time'] + datetime.timedelta(hours=1)
+                first_l = 0
+                last_l = 0
+                d = s.date() - lesson_time[1]['start'].date()
+                for k, q in lesson_time.items():
+                    if q['end'] + d <= s or k == 1:
+                        first_l = k
+                    if q['start'] + d < e:
+                        last_l = k
+
+                line = {'day': days[task['task_date']], 'permitted': v['permitted'],
+                        'name': v['name'] + ' (' + v['class_name'] + ')',
+                        'exit': datetime.datetime.strftime(s, '%d.%m.%Y %H:%M'),
+                        'return': datetime.datetime.strftime(e, '%d.%m.%Y %H:%M'),
+                        'lessons': str(first_l) + ' - ' + str(last_l), 'location': task['location']}
+                dnl.append(line)
+
+    df = pd.DataFrame(data=dnl)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/volunteer_tasks.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Задачи волонтеров')
+    return send_file('static/files/generated_files/volunteer_tasks.xlsx', as_attachment=True)
+
+
 @app.route('/approve_volunteer/<task_id>/<user_id>/<approval>/<view>')
 def approve_volunteer(task_id, user_id, approval, view):
     task_id = int(task_id)
