@@ -3945,7 +3945,7 @@ def create_report_dates_html(cat_dates):
         table += '''<tr><td>'''
         table += cat['cat_name'] + '''</td><td align="center">'''
         da = []
-        if cat['d_1'] is not None:
+        if 'd_1' in cat.keys() and cat['d_1'] is not None:
             da.append(cat['d_1'])
             if cat['d_2'] is not None:
                 da.append(cat['d_2'])
@@ -4084,6 +4084,9 @@ def set_report_dates(message):
             c_dates['day_1'] = None
             c_dates['day_2'] = None
             c_dates['day_3'] = None
+            c_dates['d_1'] = None
+            c_dates['d_2'] = None
+            c_dates['d_3'] = None
         cat_dates.append(c_dates)
     create_report_dates_html(cat_dates)
     return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=message)
