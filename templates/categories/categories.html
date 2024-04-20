@@ -36,14 +36,17 @@
         <td align="center" width="30%">
             <b>Название секции</b>
         </td>
-        <td align="center">
-            <b>tg-канал</b>
-        </td>
+<!--        <td align="center">-->
+<!--            <b>tg-канал</b>-->
+<!--        </td>-->
         <td align="center" width="30%">
             <b>Руководитель секции</b>
         </td>
         <td align="center" width="20%">
             <b>Секретарь</b>
+        </td>
+        <td align="center" width="20%">
+            <b>Секретарь <br>на онлайне</b>
         </td>
     </tr>
 {% for cat in categories %}
@@ -58,16 +61,19 @@
         <td>
             <a href="/category_page/{{ cat['id'] }}">{{ cat['name'] }}</a>
         </td>
-        <td>
-            {% if cat['tg_channel'] %}
-            <a href="https://t.me/{{ cat['tg_channel'] }}">@{{ cat['tg_channel'] }}</a>
-            {% endif %}
-        </td>
+<!--        <td>-->
+<!--            {% if cat['tg_channel'] %}-->
+<!--            <a href="https://t.me/{{ cat['tg_channel'] }}">@{{ cat['tg_channel'] }}</a>-->
+<!--            {% endif %}-->
+<!--        </td>-->
         <td>
             <a href="/supervisor_profile/{{ cat['supervisor_id'] }}">{{ cat['supervisor'] }}</a>
         </td>
         <td>
             <a href="/user_page/{{ cat['secretary_id'] }}">{{ cat['secretary'] }}</a>
+        </td>
+        <td>
+            <a href="/user_page/{{ cat['online_secretary_id'] }}">{{ cat['online_secretary'] }}</a>
         </td>
     </tr>
 {% endfor %}

@@ -139,6 +139,8 @@ def renew_session():
         user_db = db.session.query(Users).filter(Users.user_id == session['user_id']).first()
         if user_db is not None:
             cat_sec = db.session.query(CatSecretaries).filter(CatSecretaries.secretary_id == session['user_id']).all()
+            cat_online_sec = db.session.query(OnlineSecretaries).filter(OnlineSecretaries.secretary_id ==
+                                                                        session['user_id']).all()
             user = session['user_id']
             session['type'] = user_db.user_type
             session['approved'] = user_db.approved
@@ -149,7 +151,17 @@ def renew_session():
             if user in [u.secretary_id for u in CatSecretaries.query.all()]:
                 session['secretary'] = True
                 session['access'] = 5
-                session['cat_id'] = [c.cat_id for c in cat_sec]
+                if 'cat_id' not in session.keys():
+                    session['cat_id'] = [c.cat_id for c in cat_sec]
+                else:
+                    session['cat_id'].extend([c.cat_id for c in cat_sec])
+            if user in [u.secretary_id for u in OnlineSecretaries.query.all()]:
+                session['secretary'] = True
+                session['access'] = 5
+                if 'cat_id' not in session.keys():
+                    session['cat_id'] = [c.cat_id for c in cat_online_sec]
+                else:
+                    session['cat_id'].extend([c.cat_id for c in cat_online_sec])
             if user in [u.user_id for u in SupervisorUser.query.all()]:
                 session['supervisor'] = True
                 session['access'] = 6
@@ -499,6 +511,13 @@ def one_category(categ):
         cat['secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
         cat['secretary_email'] = user.email
         cat['secretary_tel'] = user.tel
+    if cat_id in [c.cat_id for c in OnlineSecretaries.query.all()]:
+        user = db.session.query(Users).join(OnlineSecretaries).filter(OnlineSecretaries.cat_id == cat_id).first()
+        cat['online_secretary_id'] = user.user_id
+        cat['online_secretary'] = user.last_name + ' ' + user.first_name
+        cat['online_secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
+        cat['online_secretary_email'] = user.email
+        cat['online_secretary_tel'] = user.tel
     if cat_id in [cat.cat_id for cat in ReportDates.query.all()]:
         dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
         dates = []
@@ -534,6 +553,7 @@ def categories_info(cat_id='all'):
 
         cat_sup = [c.cat_id for c in CatSupervisors.query.all()]
         cat_sec = [c.cat_id for c in CatSecretaries.query.all()]
+        cat_online_sec = [c.cat_id for c in OnlineSecretaries.query.all()]
         cat_rep = [cat.cat_id for cat in ReportDates.query.all()]
         cats = []
         for categ in categories:
@@ -566,6 +586,14 @@ def categories_info(cat_id='all'):
                 cat['secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
                 cat['secretary_email'] = user.email
                 cat['secretary_tel'] = user.tel
+            if cat_id in cat_online_sec:
+                user = db.session.query(Users).join(OnlineSecretaries).filter(
+                    OnlineSecretaries.cat_id == cat_id).first()  # check
+                cat['online_secretary_id'] = user.user_id
+                cat['online_secretary'] = user.last_name + ' ' + user.first_name
+                cat['online_secretary_full'] = user.last_name + ' ' + user.first_name + ' ' + user.patronymic
+                cat['online_secretary_email'] = user.email
+                cat['online_secretary_tel'] = user.tel
             if cat_id in cat_rep:
                 dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()  # check
                 dates = []
@@ -1772,11 +1800,17 @@ def download_categories():
             c['secretary_full'] = ''
             c['secretary_email'] = ''
             c['secretary_tel'] = ''
+        if 'online_secretary_id' not in c.keys():
+            c['online_secretary_full'] = ''
+            c['online_secretary_email'] = ''
+            c['online_secretary_tel'] = ''
         cat = {'Направление': c['direction'], 'Название секции': c['name'], 'Короткое название': c['short_name'],
                'Telegram-канал': '@' + c['tg_channel'], 'Руководитель': c['supervisor'],
                'e-mail руководителя': c['supervisor_email'], 'Телефон руководиотеля': c['supervisor_tel'],
                'Секретарь': c['secretary_full'], 'e-mail секретаря': c['secretary_email'],
-               'Телефон секретаря': c['secretary_tel']}
+               'Телефон секретаря': c['secretary_tel'],
+               'Секретарь онлайн': c['online_secretary_full'], 'e-mail секретаря онлайн': c['online_secretary_email'],
+               'Телефон секретаря онлайн': c['online_secretary_tel']}
         if 'dates' in c.keys():
             cat['Даты заседаний'] = c['dates']
         categories.append(cat)
@@ -2198,6 +2232,17 @@ def assign_category(user, category):
     return render_template('application management/confirm_assignment.html', user=user_info, category=cats)
 
 
+@app.route('/assign_online_category/<user>/<category>')
+def assign_online_category(user, category):
+    access = check_access(8)
+    if access is not True:
+        return access
+    user_info = get_user_info(user)
+    cats_count, cats = categories_info(category)
+    renew_session()
+    return render_template('application management/confirm_online_assignment.html', user=user_info, category=cats)
+
+
 @app.route('/confirm_assignment/<user>/<category>')
 def confirm_assignment(user, category):
     access = check_access(8)
@@ -2210,6 +2255,24 @@ def confirm_assignment(user, category):
         cat.secretary_id = user
     else:
         cat_sec = CatSecretaries(category, user)
+        db.session.add(cat_sec)
+    db.session.commit()
+    renew_session()
+    return redirect(url_for('.view_applications'))
+
+
+@app.route('/confirm_online_assignment/<user>/<category>')
+def confirm_online_assignment(user, category):
+    access = check_access(8)
+    if access is not True:
+        return access
+    user = int(user)
+    category = int(category)
+    if category in [cat.cat_id for cat in OnlineSecretaries.query.all()]:
+        cat = db.session.query(OnlineSecretaries).filter(OnlineSecretaries.cat_id == category).first()
+        cat.secretary_id = user
+    else:
+        cat_sec = OnlineSecretaries(category, user)
         db.session.add(cat_sec)
     db.session.commit()
     renew_session()

@@ -16,11 +16,13 @@
             {% if category['tg_channel'] %}
             Telegram-канал: <a href="https://t.me/{{ category['tg_channel'] }}">@{{ category['tg_channel'] }}</a><br>
             {% endif %}
+
             {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
             Руководитель секции: <a href="/supervisor_profile/{{ category['supervisor_id'] }}">{{ category['supervisor'] }}</a><br>
             {% else %}
             Руководитель секции: {{ category['supervisor'] }}
             {% endif %}
+
             {% if category['secretary'] %}
             {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
             Секретарь: <a href="/user_page/{{ category['secretary_id'] }}">{{ category['secretary'] }}</a><br>
@@ -28,6 +30,16 @@
             Секретарь: {{ category['secretary'] }}<br>
             {% endif %}
             {% endif %}
+
+            {% if category['online_secretary'] %}
+            {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
+            Секретарь на Дополнительном онлайн-конкурсе: <a href="/user_page/{{ category['online_secretary_id'] }}">
+            {{ category['online_secretary'] }}</a><br>
+            {% else %}
+            Секретарь: {{ category['online_secretary'] }}<br>
+            {% endif %}
+            {% endif %}
+
             Даты дистанционного заседания секции: {{ category['dates'] }}<br>
             {% if category['drive_link'] %}
             <a href="{{ category['drive_link'] }}" target="_blank">Папка с презентациями секции</a>
@@ -36,15 +48,16 @@
         </td>
         {% if session['type'] in ['admin', 'org', 'manager']
         or (session['supervisor'] == True and category['id'] in session['cat_id'])
-        or (session['secretary'] == True and category['id'] in session['cat_id']) %}
+        or (session['secretary'] == True and category['id'] in session['cat_id'])
+        or (session['online_secretary'] == True and category['id'] in session['cat_id']) %}
             <td width="auto" valign="middle"><a href="/button_works/{{ category['id'] }}">
                 <button>Обновить работы секции</button>
             </a></td>
     </tr>
     <tr>
-<!--            <td width="auto" valign="middle"><a href="/reports_order/{{ category['id'] }}">-->
-<!--                <button>Порядок выступлений</button>-->
-<!--            </a></td>-->
+            <td width="auto" valign="middle"><a href="/reports_order/{{ category['id'] }}">
+                <button>Порядок выступлений</button>
+            </a></td>
     </tr>
     <tr>
             <td width="auto" valign="middle"><a href="/analysis_works/{{ category['id'] }}">

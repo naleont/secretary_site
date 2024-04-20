@@ -228,6 +228,18 @@ class CatSecretaries(db.Model):
         self.secretary_id = secretary_id
 
 
+class OnlineSecretaries(db.Model):
+    __tablename__ = 'online_secretaries'
+    __table_args__ = (PrimaryKeyConstraint('category_id', 'secretary_id'),)
+
+    cat_id = db.Column('category_id', db.Integer, ForeignKey('categories.cat_id'), unique=False)
+    secretary_id = db.Column('secretary_id', db.Integer, ForeignKey('users.user_id'), unique=False)
+
+    def __init__(self, cat_id, secretary_id):
+        self.cat_id = cat_id
+        self.secretary_id = secretary_id
+
+
 class Works(db.Model):
     __tablename__ = 'works'
 

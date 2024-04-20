@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %} Заявки {% endblock %}
+
+{% block content %}
+
+<h2>Подтверждение назначения секретаря для Дополнительного онлайн-конкурса</h2>
+
+Назначаем секретаря: {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}<br>
+Секция: {{ category['name'] }}<br>
+{% if category['online_secretary'] %}
+<span class="alarm">На эту секцию уже назначен секретарь {{ category['online_secretary'] }}. После подтверждения будет назначен новый секретарь.</span>
+{% endif %}
+Руководитель секции: {{ category['supervisor'] }}<br><br>
+
+<table>
+    <tr>
+        <td>
+            <a href="/confirm_online_assignment/{{ user['user_id'] }}/{{ category['id'] }}"><button>Подтвердить</button></a>
+        </td>
+        <td>
+            <a href="/one_application/{{ category['year'] }}/{{ user['user_id'] }}"><button class="red-button">Назад</button></a>
+        </td>
+    </tr>
+</table>
+{% endblock %}
