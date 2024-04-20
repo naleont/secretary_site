@@ -97,6 +97,29 @@
             {% endfor %}
     </tr>
     {% endif %}
+
+    {% if user['online_secretary'] == True %}
+    <tr>
+        <td rowspan="{{ user['online_cat_id']|length }}">
+            Секция (онлайн)
+        </td>
+            {% for c in user['online_cat_id'] %}
+                <td colspan="2">
+                    {% for cat in categories %}
+                        {% if cat['id'] == c %}
+                            {{ cat['name'] }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td width="10%">
+                    <a href="/remove_oline_secretary/{{ user['user_id'] }}/{{ c }}">
+                        <button class="blue" type="button">Снять</button></a>
+                </td>
+        </tr><tr>
+            {% endfor %}
+    </tr>
+    {% endif %}
+
     <tr>
         <td>
             Статус аккаунта

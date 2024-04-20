@@ -304,10 +304,24 @@ def get_user_info(user):
         user_info['last_login'] = user_db.last_login.strftime('%d.%m.%Y %H:%M:%S')
     if user in [u.secretary_id for u in CatSecretaries.query.all()]:
         user_info['secretary'] = True
-        user_info['cat_id'] = [c.cat_id for c in db.session.query(CatSecretaries).filter(
-            CatSecretaries.secretary_id == user).all() if c.cat_id in year_cats]
+        if 'cat_id' not in user_info.keys():
+            user_info['cat_id'] = [c.cat_id for c in db.session.query(CatSecretaries).filter(
+                CatSecretaries.secretary_id == user).all() if c.cat_id in year_cats]
+        else:
+            user_info['cat_id'].extend([c.cat_id for c in db.session.query(CatSecretaries).filter(
+                CatSecretaries.secretary_id == user).all() if c.cat_id in year_cats])
     else:
         user_info['cat_id'] = []
+    if user in [u.secretary_id for u in OnlineSecretaries.query.all()]:
+        user_info['online_secretary'] = True
+        if 'online_cat_id' not in user_info.keys():
+            user_info['online_cat_id'] = [c.cat_id for c in db.session.query(OnlineSecretaries).filter(
+                OnlineSecretaries.secretary_id == user).all() if c.cat_id in year_cats]
+        else:
+            user_info['online_cat_id'].extend([c.cat_id for c in db.session.query(OnlineSecretaries).filter(
+                OnlineSecretaries.secretary_id == user).all() if c.cat_id in year_cats])
+    else:
+        user_info['online_cat_id'] = []
     if user in [s.user_id for s in SupervisorUser.query.all()]:
         user_info['supervisor_id'] = SupervisorUser.query.filter(SupervisorUser.user_id == user).first().supervisor_id
 
@@ -2382,6 +2396,18 @@ def remove_secretary(user_id, cat_id):
         return access
     cat_sec = CatSecretaries.query.filter(CatSecretaries.secretary_id == user_id
                                           ).filter(CatSecretaries.cat_id == cat_id).first()
+    db.session.delete(cat_sec)
+    db.session.commit()
+    return redirect(url_for('.user_page', user=user_id))
+
+
+@app.route('/remove_oline_secretary/<user_id>/<cat_id>')
+def remove_oline_secretary(user_id, cat_id):
+    access = check_access(8)
+    if access is not True:
+        return access
+    cat_sec = OnlineSecretaries.query.filter(OnlineSecretaries.secretary_id == user_id
+                                             ).filter(OnlineSecretaries.cat_id == cat_id).first()
     db.session.delete(cat_sec)
     db.session.commit()
     return redirect(url_for('.user_page', user=user_id))
