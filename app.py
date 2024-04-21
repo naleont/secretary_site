@@ -4184,6 +4184,9 @@ def set_report_dates(message):
 @app.route('/save_report_dates', methods=['POST'])
 def save_report_dates():
     dates = []
+    day_1 = None
+    day_2 = None
+    day_3 = None
     for cat_id in [c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()]:
         if str(cat_id) + '_day_1' in request.form.keys():
             if request.form[str(cat_id) + '_day_1'] != '':
