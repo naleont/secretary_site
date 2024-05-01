@@ -5875,7 +5875,9 @@ def sending_left_diplomas(send_type, w_c_id):
                                       html=render_template('diplomas_mail.html', work_id=w_id),
                                       attachments=attachments,
                                       sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
-                                      recipients=[m])
+                                      recipients=[m],
+                                      bcc=['info@vernadsky.info'],
+                                      reply_to='info@vernadsky.info')
                         mail.send(msg)
                         a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
                         for b in a:
