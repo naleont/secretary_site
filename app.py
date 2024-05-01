@@ -3473,6 +3473,8 @@ def button_works(cat_id):
     work_statuses_list = [s.work_id for s in WorkStatuses.query.all()]
     work_categories_list = [w.work_id for w in WorkCategories.query.all()]
     applications_2_tour_list = [w.work_id for w in Applications2Tour.query.all()]
+    mails = {m.email: m.mail_id for m in Mails.query.all()}
+    work_mails = [{'work_id': w_m.work_id, 'mail_id': w_m.mail_id} for w_m in WorkMail.query.all()]
 
     for n in response:
         if int(n['section']['id']) in cats:
@@ -3592,6 +3594,18 @@ def button_works(cat_id):
                     if cat_id:
                         db.session.add(w_cat)
                         db.session.commit()
+            if email not in mails:
+                m = Mails(email)
+                db.session.add(m)
+                db.session.commit()
+                db.session.flush(m)
+                mail_id = m.mail_id
+            else:
+                mail_id = work_mails[email]
+            if {'work_id': work_id, 'mail_id': mail_id} not in work_mails:
+                w_m = WorkMail(work_id, mail_id, False)
+                db.session.add(w_m)
+                db.session.commit()
             if edited:
                 works_edited += 1
 
@@ -5747,6 +5761,23 @@ def send_diplomas(cat_id, wrong):
     return render_template('online_reports/send_diplomas.html', cats=cats, cat_id=cat_id, wrong=wrong)
 
 
+@app.route('/send_left_diplomas', defaults={'cat_id': 'first', 'wrong': None})
+@app.route('/send_left_diplomas/<cat_id>/<wrong>')
+def send_left_diplomas(cat_id, wrong):
+    if cat_id == 'first':
+        cat_id = min([c.cat_id for c in Categories.query.filter(Categories.year == curr_year).all()])
+    c, cats = categories_info()
+    for cat in cats:
+        if cat['id'] == int(cat_id) or cat_id == 'all':
+            cat['works'] = [work_info(work_id=w.work_id, mail_info=True, w_payment_info=True) for w in Works.query
+            .join(WorkCategories, Works.work_id == WorkCategories.work_id)
+            .join(ParticipatedWorks, Works.work_id == ParticipatedWorks.work_id)
+            .filter(WorkCategories.cat_id == cat['id']).all()]
+    if cat_id != 'all':
+        cat_id = int(cat_id)
+    return render_template('online_reports/send_left_diplomas.html', cats=cats, cat_id=cat_id, wrong=wrong)
+
+
 @app.route('/sending_diplomas/<send_type>/<w_c_id>')
 def sending_diplomas(send_type, w_c_id):
     if send_type == 'cat':
@@ -5760,7 +5791,7 @@ def sending_diplomas(send_type, w_c_id):
         .filter(Works.reported == 1).all()]
         cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
 
-    dir = 'static/files/uploaded_files/diplomas_2023/'
+    dir = 'static/files/uploaded_files/diplomas_' + str(curr_year) + '/'
     for w_id in works:
         # try:
         if w_id in [p.participant for p in PaymentRegistration.query.all()] \
@@ -5792,21 +5823,81 @@ def sending_diplomas(send_type, w_c_id):
                                     WorkMail.mail_id == b) \
                                     .update({WorkMail.sent: True})
                                 db.session.commit()
-                            if w_id in [w.work_id for w in Diplomas.query.all()]:
-                                to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
-                                db.session.delete(to_del)
-                                db.session.commit()
-            else:
-                if w_id not in [w.work_id for w in Diplomas.query.all()]:
-                    a = Diplomas(w_id, False)
-                    db.session.add(a)
-                    db.session.commit()
-                elif Diplomas.query.filter(Diplomas.work_id == w_id).first().diplomas:
-                    db.session.query(Diplomas).filter(Diplomas.work_id == w_id).update({Diplomas.diplomas: False})
-                    db.session.commit()
+                            # if w_id in [w.work_id for w in Diplomas.query.all()]:
+                            #     to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
+                            #     db.session.delete(to_del)
+                            #     db.session.commit()
+            # else:
+            #     if w_id not in [w.work_id for w in Diplomas.query.all()]:
+            #         a = Diplomas(w_id, False)
+            #         db.session.add(a)
+            #         db.session.commit()
+            #     elif Diplomas.query.filter(Diplomas.work_id == w_id).first().diplomas:
+            #         db.session.query(Diplomas).filter(Diplomas.work_id == w_id).update({Diplomas.diplomas: False})
+            #         db.session.commit()
         # except Exception:
         #     return redirect(url_for('.send_diplomas', cat_id=cat_id, wrong=True))
     return redirect(url_for('.send_diplomas', cat_id=cat_id, wrong=False))
+
+
+@app.route('/sending_left_diplomas/<send_type>/<w_c_id>')
+def sending_left_diplomas(send_type, w_c_id):
+    if send_type == 'cat':
+        cat_id = int(w_c_id)
+        works = [work_info(work_id=w.work_id, mail_info=True, w_payment_info=True) for w in Works.query
+        .join(WorkCategories, Works.work_id == WorkCategories.work_id)
+        .join(ParticipatedWorks, Works.work_id == ParticipatedWorks.work_id)
+        .filter(WorkCategories.cat_id == cat_id).all()]
+    else:
+        work_id = int(w_c_id)
+        works = [w.work_id for w in Works.query.filter(Works.work_id == work_id).all()]
+        cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+
+    dir = 'static/files/uploaded_files/diplomas_' + str(curr_year) + '/'
+    for w_id in works:
+        # try:
+        files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
+        if files:
+            mails = [m.email for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
+            .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
+            if mails:
+                for m in mails:
+                    if m != 0 and m != '0' and m != '':
+                        attachments = []
+                        for f in files:
+                            fi = dir + '/' + f
+                            with app.open_resource(fi) as file:
+                                attachments.append(Attachment(filename=os.path.basename(fi),
+                                                              content_type=mimetypes.guess_type(fi)[0],
+                                                              data=file.read()))
+
+                        msg = Message(subject='Наградные документы ' + str(w_id),
+                                      html=render_template('diplomas_mail.html', work_id=w_id),
+                                      attachments=attachments,
+                                      sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
+                                      recipients=[m])
+                        mail.send(msg)
+                        a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
+                        for b in a:
+                            db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
+                                WorkMail.mail_id == b) \
+                                .update({WorkMail.sent: True})
+                            db.session.commit()
+                        # if w_id in [w.work_id for w in Diplomas.query.all()]:
+                        #     to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
+                        #     db.session.delete(to_del)
+                        #     db.session.commit()
+            # else:
+            #     if w_id not in [w.work_id for w in Diplomas.query.all()]:
+            #         a = Diplomas(w_id, False)
+            #         db.session.add(a)
+            #         db.session.commit()
+            #     elif Diplomas.query.filter(Diplomas.work_id == w_id).first().diplomas:
+            #         db.session.query(Diplomas).filter(Diplomas.work_id == w_id).update({Diplomas.diplomas: False})
+            #         db.session.commit()
+        # except Exception:
+        #     return redirect(url_for('.send_diplomas', cat_id=cat_id, wrong=True))
+    return redirect(url_for('.send_left_diplomas', cat_id=cat_id, wrong=False))
 
 
 @app.route('/volunteer_tasks/', defaults={'task_id': ''})

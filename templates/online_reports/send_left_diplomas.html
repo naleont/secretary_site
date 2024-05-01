@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Отправка очных дипломов</h2>
+{% if wrong == True %}
+<span class="bigger alarm">Что-то не получилось</span><br>
+{% endif %}
+<table width="100%">
+    <tr>
+        <td>
+        </td>
+        <td align="right">
+          <div vertical-align="middle">Секция
+            <div class="drop">
+              <button class="dropping">
+                  {% for cat in cats %}
+                  {% if cat['id'] == cat_id %}
+                  {{ cat['short_name'] }}
+                  {% endif %}
+                  {% endfor %}
+              </button>
+              <div class="dropped">
+                {% for cat in cats %}
+                <a href="/send_left_diplomas/{{ cat['id'] }}/None">{{ cat['short_name'] }}</a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </td>
+    </tr>
+</table>
+
+{% for cat in cats %}
+{% if cat['id'] == cat_id %}
+<h3>{{ cat['name'] }}</h3>
+<!--<a href="/sending_left_diplomas/cat/{{ cat['id'] }}"><button>Отправить дипломы секции</button></a><br>-->
+<table frame="void" border="2px" bordercolor="#4962A4" width="100%">
+    <tr>
+        <th align="center">
+        </th>
+        <th align="center">
+            Номер
+        </th>
+        <th align="center">
+            Название
+        </th>
+        <th align="center">
+            Авторы
+        </th>
+<!--        <th align="center">-->
+<!--            Оплата-->
+<!--        </th>-->
+        <th align="center">
+            email
+        </th>
+        <th align="center">
+            Отправлено
+        </th>
+    </tr>
+    {% for work in cat['works'] %}
+    <tr>
+        <td align="center" {% if work['mails'] != [] %}
+        rowspan="{{ work['mails']|length }}" {% endif %}>
+            <a href="/sending_left_diplomas/work/{{ work['work_id'] }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                  <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                </svg>
+            </a>
+        </td>
+        <td align="center" {% if work['mails'] != [] %}
+        rowspan="{{ work['mails']|length }}" {% endif %}>
+            {{ work['work_id'] }}
+        </td>
+        <td {% if work['mails'] != [] %}
+        rowspan="{{ work['mails']|length }}" {% endif %}>
+            {{ work['work_name'] }}
+        </td>
+        <td {% if work['mails'] != [] %}
+        rowspan="{{ work['mails']|length }}" {% endif %}>
+            {{ work['authors'] }}
+        </td>
+<!--        <td align="center" {% if work['mails'] != [] %}-->
+<!--        rowspan="{{ work['mails']|length }}" {% endif %}>-->
+<!--            {% if work['payed'] == True %}-->
+<!--                <span class="green-text">-->
+<!--                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">-->
+<!--                      <circle cx="8" cy="8" r="8"/>-->
+<!--                    </svg>-->
+<!--                </span>-->
+<!--            {% else %}-->
+<!--                <span class="alarm">-->
+<!--                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">-->
+<!--                      <circle cx="8" cy="8" r="8"/>-->
+<!--                    </svg>-->
+<!--                </span>-->
+<!--            {% endif %}-->
+<!--        </td>-->
+        {% if work['mails'] != [] %}
+    {% for mail in work['mails'] %}
+        <td>
+            {{ mail['email'] }}
+        </td>
+        <td align="center" valign="middle">
+            {% if mail['sent'] == True %}
+                <span class="green-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                      <circle cx="8" cy="8" r="8"/>
+                    </svg>
+                </span>
+            {% elif mail['sent'] == False %}
+                <span class="alarm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                      <circle cx="8" cy="8" r="8"/>
+                    </svg>
+                </span>
+            {% else %}
+            {{ mail['sent'] }}
+            {% endif %}
+        </td>
+    </tr><tr>
+    {% endfor %}
+    {% else %}
+    <td>
+
+    </td>
+    <td>
+
+    </td>
+    {% endif %}
+    </tr>
+    {% endfor %}
+</table><br>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
