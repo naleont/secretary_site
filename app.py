@@ -3474,7 +3474,7 @@ def button_works(cat_id):
     work_categories_list = [w.work_id for w in WorkCategories.query.all()]
     applications_2_tour_list = [w.work_id for w in Applications2Tour.query.all()]
     mails = {m.email: m.mail_id for m in Mails.query.all()}
-    work_mails = {'work_id': w_m.work_id, 'mail_id': w_m.mail_id for w_m in WorkMail.query.all()}
+    work_mails = {w_m.work_id: w_m.mail_id for w_m in WorkMail.query.all()}
 
     for n in response:
         if int(n['section']['id']) in cats:
