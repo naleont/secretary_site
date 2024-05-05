@@ -3474,7 +3474,7 @@ def button_works(cat_id):
     work_categories_list = [w.work_id for w in WorkCategories.query.all()]
     applications_2_tour_list = [w.work_id for w in Applications2Tour.query.all()]
     mails = {m.email: m.mail_id for m in Mails.query.all()}
-    work_mails = {w_m.work_id: w_m.mail_id for w_m in WorkMail.query.all()}
+    work_mails = [{'work_id': w_m.work_id,'mail_id': w_m.mail_id} for w_m in WorkMail.query.all()]
 
     for n in response:
         if int(n['section']['id']) in cats:
@@ -3601,7 +3601,7 @@ def button_works(cat_id):
                 db.session.flush(m)
                 mail_id = m.mail_id
             else:
-                mail_id = work_mails[email]
+                mail_id = mails[email]
             if {'work_id': work_id, 'mail_id': mail_id} not in work_mails:
                 w_m = WorkMail(work_id, mail_id, False)
                 db.session.add(w_m)
