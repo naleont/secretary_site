@@ -3474,7 +3474,7 @@ def button_works(cat_id):
     work_categories_list = [w.work_id for w in WorkCategories.query.all()]
     applications_2_tour_list = [w.work_id for w in Applications2Tour.query.all()]
     mails = {m.email: m.mail_id for m in Mails.query.all()}
-    work_mails = [{'work_id': w_m.work_id, 'mail_id': w_m.mail_id} for w_m in WorkMail.query.all()]
+    work_mails = {'work_id': w_m.work_id, 'mail_id': w_m.mail_id for w_m in WorkMail.query.all()}
 
     for n in response:
         if int(n['section']['id']) in cats:
@@ -5689,6 +5689,7 @@ def save_emails():
     data = request.files['file'].read().decode('mac_cyrillic').replace('\xa0', ' ')
     lines = data.split('\n')
     mail_data = []
+    all_works = [w.work_id for w in Works.query.all()]
     for line in lines[1:]:
         if line != '':
             sta = {name.strip().strip('\r'): value.strip().strip('\r')
@@ -5697,7 +5698,7 @@ def save_emails():
     for work in mail_data:
         if work['work_id'] != '':
             work_id = int(work['work_id'])
-            if work_id in [w.work_id for w in Works.query.all()]:
+            if work_id in all_works:
                 indices = ['email' + str(i) for i in range(1, len(work))]
                 mls = [work[ind] for ind in indices if work[ind] != '' and work[ind] is not None]
                 work_mail = Works.query.filter(Works.work_id == work_id).first().email
@@ -5742,7 +5743,20 @@ def save_diplomas():
     for file in files:
         file.save(os.path.join('static/files/uploaded_files/diplomas_' + str(curr_year), file.filename))
     success = True
-    return redirect(url_for('.load_diplomas', success=success))
+#     return redirect(url_for('.load_diplomas', success=success))
+#
+#
+# @app.route('/save_diplomas_check')
+# def save_diplomas():
+#     if not os.path.isdir('static/files/uploaded_files'):
+#         os.mkdir('static/files/uploaded_files')
+#     if not os.path.isdir('static/files/uploaded_files/diplomas_' + str(curr_year)):
+#         os.mkdir('static/files/uploaded_files/diplomas_' + str(curr_year))
+#     dirpath, dirnames, filenames = os.walk('static/files/uploaded_files/diplomas_' + str(curr_year))
+#     for file in files:
+#         file.save(os.path.join('static/files/uploaded_files/diplomas_' + str(curr_year), file.filename))
+#     success = True
+#     return redirect(url_for('.load_diplomas', success=success))
 
 
 @app.route('/send_diplomas', defaults={'cat_id': 'first', 'wrong': None})
