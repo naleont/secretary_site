@@ -3475,6 +3475,11 @@ def button_works(cat_id):
     applications_2_tour_list = [w.work_id for w in Applications2Tour.query.all()]
     mails = {m.email: m.mail_id for m in Mails.query.all()}
     work_mails = [{'work_id': w_m.work_id,'mail_id': w_m.mail_id} for w_m in WorkMail.query.all()]
+    site_cats = {c.cat_site_id: c.cat_id for c in Categories.query.all()}
+    works_reports = {w.work_id: w.reported for w in Works.query.all()}
+    work_statuses = {w.work_id: w.status_id for w in WorkStatuses.query.all()}
+    work_cats = {w.work_id: w.cat_id for w in WorkCategories.query.all()}
+    country_db = db.session.query(Cities)
 
     for n in response:
         if int(n['section']['id']) in cats:
@@ -3488,7 +3493,6 @@ def button_works(cat_id):
             country = n['organization']['country']
             region = n['organization']['region']
             city = n['organization']['city']
-            country_db = db.session.query(Cities)
             if country in [c.country for c in country_db.all()]:
                 region_db = country_db.filter(Cities.country == country)
                 if region in [r.region for r in region_db.all()]:
@@ -3505,7 +3509,7 @@ def button_works(cat_id):
             if cat == 0:
                 cat_id = None
             else:
-                cat_id = Categories.query.filter(Categories.cat_site_id == cat).first().cat_id
+                cat_id = site_cats[cat]
             authors = n['authors']
             author_1_name = authors[0]['name']
             author_1_age = authors[0]['age']
@@ -3533,7 +3537,7 @@ def button_works(cat_id):
             status_name = n['status']['value']
             reg_tour = n['regional_tour']
             if work_id in work_id_list:
-                rep = Works.query.filter(Works.work_id == work_id).first().reported
+                rep = works_reports[work_id]
             else:
                 rep = False
             d = Works(work_id=work_id, work_name=work_name, work_site_id=work_site_id, email=email, tel=tel,
@@ -3568,7 +3572,7 @@ def button_works(cat_id):
                 db.session.add(part_status)
                 db.session.commit()
             if work_id in work_statuses_list:
-                if WorkStatuses.query.filter(WorkStatuses.work_id == work_id).first().status_id != status_id:
+                if work_statuses[work_id]:
                     db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
                                                           ).update({WorkStatuses.status_id: status_id})
                     db.session.commit()
@@ -3578,10 +3582,10 @@ def button_works(cat_id):
                 db.session.add(s)
                 db.session.commit()
             w_cat = WorkCategories(work_id, cat_id)
-            if w_cat not in WorkCategories.query.all():
+            if w_cat not in work_cats.keys():
                 if work_id in work_categories_list:
                     if not cat_id:
-                        work_cat = db.session.query(WorkCategories).filter(WorkCategories.work_id == work_id).first()
+                        work_cat = work_cats[work_id]
                         db.session.delete(work_cat)
                         db.session.commit()
                         edited = True
@@ -3897,6 +3901,10 @@ def applied_for_online():
     works = request.form['works']
     works_list = []
     success = False
+    all_works = [w.work_id for w in Works.query.all()]
+    participated = [w.work_id for w in ParticipatedWorks.query.all()]
+    applied = [w.work_id for w in AppliedForOnline.query.all()]
+    w_stat = {w.work_id: w.status_id for w in WorkStatuses.query.all()}
     if ',' in works:
         works_list.extend(works.split(','))
     else:
@@ -3905,15 +3913,15 @@ def applied_for_online():
     for work in set(works_list):
         try:
             work = int(work.strip())
-            if work in [w.work_id for w in Works.query.all()]:
+            if work in all_works:
                 work_db = db.session.query(Works).filter(Works.work_id == work).first()
-                if WorkStatuses.query.filter(WorkStatuses.work_id == work).first().status_id < 6:
+                if w_stat[work] < 6:
                     errors[work] = 'работа не прошла во Второй тур'
                 else:
-                    if work_db.work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
+                    if work_db.work_id in participated:
                         errors[work] = 'работа уже участвовала во 2 туре'
                     else:
-                        if work not in [w.work_id for w in AppliedForOnline.query.all()]:
+                        if work not in applied:
                             w = AppliedForOnline(work_db.work_id)
                             db.session.add(w)
                             db.session.commit()
