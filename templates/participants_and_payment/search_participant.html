@@ -19,6 +19,24 @@
         {{ response['value'] }} - ничего не найдено
 
         {% elif response['type'] == 'work' %}
+
+            {% if response['works']['part_offline'] == False %}
+            {% if session['access'] > 2 %}
+                {% if response['works']['payed'] == True %}
+                <span class="green-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                      <circle cx="8" cy="8" r="8"/>
+                    </svg>
+                </span>
+                {% elif response['works']['payed'] == False %}
+                <span class="alarm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                      <circle cx="8" cy="8" r="8"/>
+                    </svg>
+                </span>
+                {% endif %}
+            {% endif %}
+            {% endif %}
         <b>Работа {{ response['works']['work_id'] }}
                     {% if response['works']['part_offline'] == True %}
                         <span class="alarm">Очно</span>
@@ -130,7 +148,24 @@
             {% if response['works'] != [] %}
             <h3>В работах</h3>
             {% endif %}
-        {% for work in response['works'] %}
+                {% for work in response['works'] %}
+                    {% if work['part_offline'] == False %}
+                    {% if session['access'] > 2 %}
+                        {% if work['payed'] == True %}
+                        <span class="green-text">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span>
+                        {% elif work['payed'] == False %}
+                        <span class="alarm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span>
+                        {% endif %}
+                    {% endif %}
+                    {% endif %}
             <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
                         <span class="alarm">О</span>
