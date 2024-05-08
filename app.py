@@ -3905,24 +3905,27 @@ def applied_for_online():
     participated = [w.work_id for w in ParticipatedWorks.query.all()]
     applied = [w.work_id for w in AppliedForOnline.query.all()]
     w_stat = {w.work_id: w.status_id for w in WorkStatuses.query.all()}
+    if not participated:
+        return redirect(url_for('.apply_for_online', errs_a='Не загрузились участвовавшие работы'))
     if ',' in works:
         works_list.extend(works.split(','))
     else:
         works_list.append(works)
+    if '' in works_list:
+        works_list.remove('')
     errors = {}
     for work in set(works_list):
         try:
             work = int(work.strip())
             if work in all_works:
-                work_db = db.session.query(Works).filter(Works.work_id == work).first()
                 if w_stat[work] < 6:
                     errors[work] = 'работа не прошла во Второй тур'
                 else:
-                    if work_db.work_id in participated:
+                    if work in participated:
                         errors[work] = 'работа уже участвовала во 2 туре'
                     else:
                         if work not in applied:
-                            w = AppliedForOnline(work_db.work_id)
+                            w = AppliedForOnline(work)
                             db.session.add(w)
                             db.session.commit()
                             success = True
