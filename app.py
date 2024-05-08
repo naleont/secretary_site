@@ -4889,8 +4889,10 @@ def download_online_participants_html():
     for cat in cats:
         cat['online_participants'] = [work_info(w[1], reports_info=True) for w in cat_works if w[0] == cat['id']]
 
+    c_w = [cat for cat in cats if len(cat['online_participants']) > 0]
+
     with open('static/files/generated_files/online_participants_' + str(curr_year) + '.html', 'w', encoding='utf-8') as f:
-        f.write(render_template('online_reports/online_participants_html.html', cats=cats))
+        f.write(render_template('online_reports/online_participants_html.html', cats=c_w))
     return send_file('static/files/generated_files/online_participants_' + str(curr_year) + '.html', as_attachment=True)
 
 
