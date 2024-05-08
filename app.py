@@ -4036,25 +4036,7 @@ def online_applicants():
 
 
 def create_report_dates_html(cat_dates):
-    text = '<h2>Даты заседаний секций</h2>\n'
-    text += '''<p>Для получения важной информации о работе вашей секции подпишитесь на Telegram-канал секции и 
-    включите уведомления.<br>
-    Обратите внимание, что секции с небольшим количеством работ могут проводить совместные заседания.</p>\n '''
-    table = '''<table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
-            <tr>
-                <td width="70%" align="сenter"><b>
-                    Название секции
-                </b></td>
-                <td width="15%" align="сenter"><b>
-                    Даты заседаний
-                </b></td>
-                <td width="15%" align="сenter"><b>
-                    Telegram-канал
-                </b></td>
-            </tr>'''
     for cat in cat_dates:
-        table += '''<tr><td>'''
-        table += cat['cat_name'] + '''</td><td align="center">'''
         da = []
         if 'd_1' in cat.keys() and cat['d_1'] is not None:
             da.append(cat['d_1'])
@@ -4062,20 +4044,49 @@ def create_report_dates_html(cat_dates):
                 da.append(cat['d_2'])
                 if cat['d_3'] is not None:
                     da.append(cat['d_3'])
+                else:
+                    cat['d_3'] = ''
+            else:
+                cat['d_2'] = ''
+        else:
+            cat['d_1'] = ''
         if da and type(da) == list:
             d = '; '.join(da)
         else:
             d = 'Не назначены'
-        table += d + '''</td><td>'''
-        if cat['tg_channel'] != '':
-            table += '''<a target="_blank" href="https://t.me/''' + cat['tg_channel'] + '''">@''' + cat['tg_channel'] \
-                     + '''</a></td></tr>'''
-        else:
-            table += '''</td></tr>'''
-    table += '''\n</table>'''
-    text += table
-    with open('static/files/generated_files/report_dates.html', 'w', encoding='utf-8') as f:
-        f.write(text)
+        cat['all_dates'] = d
+
+    all_dates = set()
+    all_dates.update([c['day_1_date'] for c in cat_dates])
+    all_dates.update([c['day_2_date'] for c in cat_dates])
+    all_dates.update([c['day_3_date'] for c in cat_dates])
+    all_dates.remove(None)
+    dates = sorted(list(all_dates))
+
+    with open('static/files/generated_files/report_dates_' + str(curr_year) + '.html', 'w', encoding='utf-8') as f:
+        f.write(render_template('online_reports/report_dates_html.html', cat_dates=cat_dates))
+
+    table_1 = [{'Название секции': cat['cat_name'], 'Telegram-канал': cat['tg_channel'], 'День 1': cat['d_1'],
+                'День 2': cat['d_2'], 'День 3': cat['d_3']} for cat in cat_dates]
+    table_2 = []
+    for cat in cat_dates:
+        c_d = [cat['day_1_date'], cat['day_2_date'], cat['day_3_date']]
+        c = {'Название секции': cat['cat_name'], 'Telegram-канал': cat['tg_channel']}
+        for d in dates:
+            day_name = days[d.strftime('%w')] + ', ' + d.strftime('%d.%m')
+            if d in c_d:
+                c[day_name] = True
+            else:
+                c[day_name] = ''
+        table_2.append(c)
+
+    t_1 = pd.DataFrame(data=table_1)
+    t_2 = pd.DataFrame(data=table_2)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/report_dates_' + str(curr_year) + '.xlsx') as writer:
+        t_1.to_excel(writer, sheet_name='Даты')
+        t_2.to_excel(writer, sheet_name='Сетка')
     return 'ok'
 
 
@@ -4084,9 +4095,14 @@ def download_applicants():
     return send_file('static/files/generated_files/online_applicants.html', as_attachment=True)
 
 
-@app.route('/download_report_dates')
-def download_report_dates():
-    return send_file('static/files/generated_files/report_dates.html', as_attachment=True)
+@app.route('/download_report_dates_html')
+def download_report_dates_html():
+    return send_file('static/files/generated_files/report_dates_' + str(curr_year) + '.html', as_attachment=True)
+
+
+@app.route('/download_report_dates_excel')
+def download_report_dates_excel():
+    return send_file('static/files/generated_files/report_dates_' + str(curr_year) + '.xlsx', as_attachment=True)
 
 
 @app.route('/works_for_free/<cat_id>', methods=['POST'])
@@ -4176,21 +4192,27 @@ def set_report_dates(message):
             if dates_db.day_1:
                 c_dates['day_1'] = dates_db.day_1.strftime('%Y-%m-%d')
                 c_dates['d_1'] = days[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
+                c_dates['day_1_date'] = dates_db.day_1
             else:
                 c_dates['day_1'] = None
                 c_dates['d_1'] = None
+                c_dates['day_1_date'] = None
             if dates_db.day_2:
                 c_dates['day_2'] = dates_db.day_2.strftime('%Y-%m-%d')
                 c_dates['d_2'] = days[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d.%m')
+                c_dates['day_2_date'] = dates_db.day_2
             else:
                 c_dates['day_2'] = None
                 c_dates['d_2'] = None
+                c_dates['day_2_date'] = None
             if dates_db.day_3:
                 c_dates['day_3'] = dates_db.day_3.strftime('%Y-%m-%d')
                 c_dates['d_3'] = days[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d.%m')
+                c_dates['day_3_date'] = dates_db.day_3
             else:
                 c_dates['day_3'] = None
                 c_dates['d_3'] = None
+                c_dates['day_3_date'] = None
         else:
             c_dates['day_1'] = None
             c_dates['day_2'] = None
@@ -4198,12 +4220,15 @@ def set_report_dates(message):
             c_dates['d_1'] = None
             c_dates['d_2'] = None
             c_dates['d_3'] = None
+            c_dates['day_1_date'] = None
+            c_dates['day_2_date'] = None
+            c_dates['day_3_date'] = None
         cat_dates.append(c_dates)
     create_report_dates_html(cat_dates)
     return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=message)
 
 
-@app.route('/save_report_dates', methods=['POST'])
+@app.route('/save_report_dates/<cat_id>', methods=['POST'])
 def save_report_dates():
     dates = []
     day_1 = None

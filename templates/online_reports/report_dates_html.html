@@ -1,0 +1,28 @@
+<p>Для получения важной информации подпишитесь на <a href="https://t.me/InfoVernadsky"> Telegram-канал Конкурса</a> и
+    включите уведомления.</p>
+
+<table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
+    <tr>
+        <td width="70%" align="сenter"><b>
+            Название секции
+        </b></td>
+        <td width="15%" align="сenter"><b>
+            Даты заседаний
+        </b></td>
+<!--        <td width="15%" align="сenter"><b>-->
+<!--            Telegram-канал-->
+<!--        </b></td>-->
+    </tr>
+    {% for cat in cat_dates %}
+    <tr>
+        <td>
+            {{ cat['cat_name'] }}
+        </td>
+        <td>
+            {{ cat['all_dates'] }}
+        </td>
+<!--        <td>-->
+<!--            {{ cat['tg_channel'] }}-->
+<!--        </td>-->
+    </tr>
+    {% endfor %}
