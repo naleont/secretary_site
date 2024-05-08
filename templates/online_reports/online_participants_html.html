@@ -1,24 +1,23 @@
+{% for cat in cats %}
+<h4><b>{{ cat['name'] }}</b></h4>
 <p>Ниже представлен список работ, заявленных на Дополнительный онлайн-конкурс.
     <b>Список не является порядком выступлений.</b>
     Порядок выступлений участников будет опубликован накануне заседания секции.</p>
-
-{% for cat in cats %}
-<p><b>{{ cat['name'] }}</b></p>
 <table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
     <tr>
-        <td align="center"><b>
+        <td align="center" width="10%"><b>
             Номер работы
         </b></td>
-        <td align="center"><b>
+        <td align="center" width="30%"><b>
             Авторы
         </b></td>
-        <td align="center"><b>
+        <td align="center" width="60%"><b>
             Название работы
         </b></td>
     </tr>
     {% for work in cat['online_participants'] %}
     <tr>
-        <td valign="middle">
+        <td valign="middle" align="center">
             {{ work['work_id'] }}
         </td>
         <td valign="middle">
