@@ -1,0 +1,33 @@
+<p>Ниже представлен список работ, заявленных на Дополнительный онлайн-конкурс.
+    <b>Список не является порядком выступлений.</b>
+    Порядок выступлений участников будет опубликован накануне заседания секции.</p>
+
+{% for cat in cats %}
+<p><b>{{ cat['name'] }}</b></p>
+<table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
+    <tr>
+        <td align="center"><b>
+            Номер работы
+        </b></td>
+        <td align="center"><b>
+            Авторы
+        </b></td>
+        <td align="center"><b>
+            Название работы
+        </b></td>
+    </tr>
+    {% for work in cat['online_participants'] %}
+    <tr>
+        <td valign="middle">
+            {{ work['work_id'] }}
+        </td>
+        <td valign="middle">
+            {{ work['authors'] }}
+        </td>
+        <td valign="middle">
+            {{ work['work_name']}}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endfor %}

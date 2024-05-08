@@ -4228,7 +4228,7 @@ def set_report_dates(message):
     return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=message)
 
 
-@app.route('/save_report_dates/<cat_id>', methods=['POST'])
+@app.route('/save_report_dates', methods=['POST'])
 def save_report_dates():
     dates = []
     day_1 = None
@@ -4878,6 +4878,20 @@ def download_online_participants():
     with pd.ExcelWriter('static/files/generated_files/online_participants.xlsx') as writer:
         df.to_excel(writer, sheet_name='Участники онлайна')
     return send_file('static/files/generated_files/online_participants.xlsx', as_attachment=True)
+
+
+@app.route('/download_online_participants_html')
+def download_online_participants_html():
+    c, cats = categories_info()
+    cat_works = [(w.cat_id, w.work_id) for w in
+                 WorkCategories.query.join(AppliedForOnline, WorkCategories.work_id == AppliedForOnline.work_id).all()
+                 if w.cat_id in [c['id'] for c in cats]]
+    for cat in cats:
+        cat['online_participants'] = [work_info(w[1], reports_info=True) for w in cat_works if w[0] == cat['id']]
+
+    with open('static/files/generated_files/online_participants_' + str(curr_year) + '.html', 'w', encoding='utf-8') as f:
+        f.write(render_template('online_reports/online_participants_html.html', cats=cats))
+    return send_file('static/files/generated_files/online_participants_' + str(curr_year) + '.html', as_attachment=True)
 
 
 @app.route('/delete_online_participant/<work_id>')
