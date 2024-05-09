@@ -5676,12 +5676,15 @@ def set_payee(payment_id, payee):
         return access
     order_ids = {p.payment_id: p.order_id for p in BankStatement.query.all()}
     payment = payment_info(payment_id)
-    del order_ids[payment['payment_id']]
-    if payment['order_id'] in order_ids.values():
-        for k, v in order_ids.items():
-            if v == payment['order_id']:
-                double_id = k
-        double = payment_info(double_id)
+    if payment['order_id'] is not None:
+        del order_ids[payment['payment_id']]
+        if payment['order_id'] in order_ids.values():
+            for k, v in order_ids.items():
+                if v == payment['order_id']:
+                    double_id = k
+            double = payment_info(double_id)
+        else:
+            double = None
     else:
         double = None
     participant = {'type': None, 'participant': payee}
