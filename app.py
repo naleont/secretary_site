@@ -5644,20 +5644,28 @@ def set_payment_types():
     return redirect(url_for('.payment_types'))
 
 
-@app.route('/id_payments', defaults={'length': 30, 'page': 1})
-@app.route('/id_payments/<length>/<page>')
-def id_payments(length, page):
+@app.route('/id_payments', defaults={'mode': 'unset', 'length': 30, 'page': 1})
+@app.route('/id_payments/<mode>/<length>/<page>')
+def id_payments(mode, length, page):
     access = check_access(8)
     if access is not True:
         return access
-    payments = [p.payment_id for p in BankStatement.query
-    .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
-    .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
-    .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+    set_payments = [p.payment_id for p in PaymentRegistration.query.all()]
+    if mode == 'unset':
+        payments = [p.payment_id for p in BankStatement.query
+        .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
+        .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
+        .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
+                    if p.payment_id not in set_payments]
+    else:
+        payments = [p.payment_id for p in BankStatement.query
+        .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
+        .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
+        .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
     return render_template('participants_and_payment/id_payments.html', statement=statement, pages=n, page=page,
-                           length=length, link='id_payments')
+                           length=length, link='id_payments/' + mode, mode=mode)
 
 
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})

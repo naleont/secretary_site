@@ -4,6 +4,12 @@
 
 <h2>Платежи</h2>
 
+{% if mode == 'unset' %}
+<a href="/id_payments/all/{{ length }}/{{ page }}"><button>Посмотреть все</button></a>
+{% else %}
+<a href="/id_payments/unset/{{ length }}/{{ page }}"><button>Посмотреть не внесенные</button></a>
+{% endif %}
+
 {% include 'include/iterate_pages.html' %}
 
 <table frame="void" border="2px" bordercolor="#4962A4" width="100%">
