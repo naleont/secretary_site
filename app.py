@@ -4898,10 +4898,11 @@ def online_participants(length, page):
 
 @app.route('/download_online_participants')
 def download_online_participants():
-    works = [work_info(w.work_id, reports_info=True, w_payment_info=True, cat_info=True)
+    works = [work_info(w.work_id, reports_info=True, w_payment_info=True, cat_info=True, additional_info=True)
              for w in AppliedForOnline.query.all()
              if str(w.work_id)[:2] == str(curr_year)[-2:]]
     file = [{'Номер работы': w['work_id'], 'Название работы': w['work_name'], 'Авторы': w['authors'],
+             'Руководитель': w['supervisor'], 'email': w['email'],
              'Название секции': w['cat_name'], 'Оргвзнос оплачен': w['payed'], 'Выступил': w['reported']}
             for w in works]
 
