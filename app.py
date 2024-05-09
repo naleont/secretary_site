@@ -5371,32 +5371,50 @@ def add_bank_statement():
     data = request.files['file'].read().decode('ptcp154')
     lines = data.split('\n')
     statement = []
+    existing = [{'d_c': 'C', 'date_oper': datetime.datetime.strftime(p.date, '%d.%m.%Y'), 'number': str(p.order_id),
+                 'sum_val': p.debit, 'plat_name': p.organisation, 'plat_inn': str(p.tin),
+                 'plat_bic': str(p.bic), 'plat_bank': p.bank_name, 'plat_acc': str(p.account),
+                 'text70': p.payment_comment}
+                for p in BankStatement.query.all()]
+    with open('/Users/nataliya/Downloads/hi.json', 'w', encoding='utf-8') as f:
+        json.dump(existing, f)
     for line in lines[2:]:
         if line != '':
             sta = {name: value for name, value in zip(lines[0].split('\t'), line.split('\t'))}
             statement.append(sta)
     for payment in statement:
         if payment != {}:
-            payment['date_oper'] = datetime.datetime.strptime(payment['date_oper'], '%d.%m.%Y')
-            if payment['date_oper'] != datetime.datetime.now().date:
-                if payment['d_c'] == 'C':
-                    pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
-                                        debit=float(payment['sum_val'].replace(',', '.')), credit=0,
-                                        organisation=payment['plat_name'], tin=payment['plat_inn'],
-                                        bic=payment['plat_bic'],
-                                        bank_name=payment['plat_bank'], account=payment['plat_acc'],
-                                        payment_comment=payment['text70'], alternative=None, alternative_comment=None)
-                    db.session.add(pay)
-                    db.session.commit()
-                # else:
-                #     pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
-                #                         debit=0, credit=float(payment['sum_val'].replace(',', '.')),
-                #                         organisation=payment['plat_name'], tin=payment['plat_inn'],
-                #                         bic=payment['plat_bic'],
-                #                         bank_name=payment['plat_bank'], account=payment['plat_acc'],
-                #                         payment_comment=payment['text70'], alternative=None, alternative_comment=None)
-                #     db.session.add(pay)
-                #     db.session.commit()
+            p = {'d_c': payment['d_c'], 'date_oper': payment['date_oper'], 'number': payment['number'],
+                 'sum_val': float(payment['sum_val'].replace(',', '.')), 'plat_name': payment['plat_name'], 'plat_inn':
+                     payment['plat_inn'],
+                 'plat_bic': payment['plat_bic'], 'plat_bank': payment['plat_bank'], 'plat_acc': payment['plat_acc'],
+                 'text70': payment['text70']}
+            if p not in existing:
+                payment['date_oper'] = datetime.datetime.strptime(payment['date_oper'], '%d.%m.%Y')
+                if payment['date_oper'] != datetime.datetime.now().date:
+                    if payment['d_c'] == 'C':
+                        pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
+                                            debit=float(payment['sum_val'].replace(',', '.')), credit=0,
+                                            organisation=payment['plat_name'], tin=payment['plat_inn'],
+                                            bic=payment['plat_bic'],
+                                            bank_name=payment['plat_bank'], account=payment['plat_acc'],
+                                            payment_comment=payment['text70'], alternative=None, alternative_comment=None)
+                        db.session.add(pay)
+                        db.session.commit()
+                        db.session.flush()
+                        payment_id = pay.payment_id
+                        p_t = PaymentTypes(payment_id, 'Чтения Вернадского')
+                        db.session.add(p_t)
+                        db.session.commit()
+                    # else:
+                    #     pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
+                    #                         debit=0, credit=float(payment['sum_val'].replace(',', '.')),
+                    #                         organisation=payment['plat_name'], tin=payment['plat_inn'],
+                    #                         bic=payment['plat_bic'],
+                    #                         bank_name=payment['plat_bank'], account=payment['plat_acc'],
+                    #                         payment_comment=payment['text70'], alternative=None, alternative_comment=None)
+                    #     db.session.add(pay)
+                    #     db.session.commit()
     return redirect(url_for('.load_statement', success=True))
 
 
@@ -5667,8 +5685,9 @@ def set_payee(payment_id, payee):
                 participant = {'type': None, 'participant': payee}
     else:
         participant = {'type': None, 'participant': payee}
+    p_types = set(p.payment_type for p in PaymentTypes.query.all())
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant,
-                           query=payee)
+                           query=payee, p_types=p_types)
 
 
 @app.route('/application_payment/<payment_id>', methods=['GET'], defaults={'payee': None})
@@ -5748,6 +5767,20 @@ def delete_payment(del_id):
     BankStatement.query.filter(BankStatement.payment_id == del_id).delete()
     db.session.commit()
     return redirect(url_for('.manage_payments'))
+
+
+@app.route('/reset_payment_type/<payment_id>/<payment_type>')
+def reset_payment_type(payment_id, payment_type):
+    payment_id = int(payment_id)
+    if payment_id in [p.payment_id for p in PaymentTypes.query.all()]:
+        db.session.query(PaymentTypes).filter(PaymentTypes.payment_id == payment_id) \
+            .update({PaymentTypes.payment_type: payment_type})
+        db.session.commit()
+    else:
+        p = PaymentTypes(payment_id, payment_type)
+        db.session.add(p)
+        db.session.commit()
+    return redirect(url_for('.id_payments'))
 
 
 @app.route('/add_emails', defaults={'success': None})

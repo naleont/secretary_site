@@ -7,6 +7,21 @@
         <td>
             <h2>Платеж {{ payment['payment_id'] }}</h2>
         </td>
+        <td align="center">
+            <div vertical-align="middle">
+
+              <div class="drop">
+                <button class="dropping">
+                    Другой тип платежа
+                </button>
+                <div class="dropped">
+                  {% for p in p_types %}
+                  <a href="/reset_payment_type/{{ payment['payment_id'] }}/{{ p }}">{{ p }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+        </td>
         <td align="right">
 
             <form action="/application_payment/{{ payment['payment_id'] }}" method = 'GET'>
