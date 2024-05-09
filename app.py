@@ -1196,20 +1196,28 @@ def application_2_tour(appl):
 def payment_info(payment_id):
     payment = db.session.query(BankStatement).filter(BankStatement.payment_id == int(payment_id)).first()
     date = datetime.datetime.strftime(payment.date, '%d.%m.%Y')
+    payment_reg = db.session.query(PaymentRegistration)
+    p_discounts = [p.participant_id for p in Discounts.query.all()]
+    w_discounts = [p.work_id for p in Discounts.query.all()]
+    works = {w.work_id: w.reg_tour for w in Works.query.all()}
+    pays_for = {p.participant: p.for_work for p in payment_reg
+    .filter(PaymentRegistration.payment_id == payment.payment_id).all()}
+
     remainder = payment.debit
-    if int(payment_id) in [p.payment_id for p in PaymentRegistration.query.filter(PaymentRegistration.for_work == 0
-                                                                                  ).all()]:
-        for participant in PaymentRegistration.query.filter(PaymentRegistration.payment_id == int(payment_id)).all():
-            if participant.participant in [p.participant_id for p in ParticipantsApplied.query.all()]:
-                participants = application_2_tour(ParticipantsApplied.query.filter(ParticipantsApplied.participant_id ==
-                                                                                   participant.participant
-                                                                                   ).first().appl_id)['participants']
-                for part in participants:
-                    if part['id'] == participant.participant:
-                        remainder -= float(part['fee'])
+    if payment.payment_id in [p.payment_id for p in payment_reg.all()]:
+        for participant in pays_for.keys():
+            if participant in p_discounts:
+                disc = db.session.query(Discounts).filter(Discounts.participant_id == participant).first()
+                payed = disc.payment
+            elif participant in w_discounts:
+                disc = db.session.query(Discounts).filter(Discounts.work_id == participant).first()
+                payed = disc.payment
+            elif participant in works.keys() and works[participant] is not None:
+                payed = tour_fee
             else:
-                PaymentRegistration.query.filter(PaymentRegistration.participant == participant.participant).delete()
-                db.session.commit()
+                payed = fee
+            remainder -= payed
+
     if remainder % 1 == 0:
         remainder = str(int(remainder)) + ' р.'
     else:
@@ -1218,10 +1226,25 @@ def payment_info(payment_id):
         debit = str(int(payment.debit)) + ' р.'
     else:
         debit = str(payment.debit).replace('.', ',') + ' р.'
+
+    payees_list = []
+    for part, t in pays_for.items():
+        if t is True:
+            a = 'работа ' + str(part)
+        else:
+            p = ParticipantsApplied.query.filter(ParticipantsApplied.participant_id == part).first()
+            name = p.last_name + ' ' + p.first_name + ' ' + p.patronymic_name
+            a = 'участник ' + str(part) + ' ' + name
+        payees_list.append(a)
+    if len(payees_list) > 0:
+        payees = '; '.join(payees_list)
+    else:
+        payees = 'платеж еще никому не назначен'
+
     pay = {'payment_id': payment.payment_id, 'date': date, 'order_id': payment.order_id,
            'debit': debit, 'organisation': payment.organisation, 'tin': payment.tin, 'bic': payment.bic,
            'bank_name': payment.bank_name, 'account': payment.account, 'comment': payment.payment_comment,
-           'remainder': remainder}
+           'remainder': remainder, 'payees': payees}
     return pay
 
 
@@ -5722,22 +5745,22 @@ def set_payment(payment_id, payee):
     if len(payee) == 6:
         for_work = True
         participant = int(payee)
-        if str(participant) not in request.form.keys():
-            if participant in [p.participant for p in PaymentRegistration.query.all()]:
-                if PaymentRegistration.query.filter(PaymentRegistration.participant == participant
-                                                    ).first().payment_id == int(payment_id):
-                    PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
-                    db.session.commit()
-        else:
-            data = request.form[str(participant)]
-            if data == 'on':
-                if participant not in [p.participant for p in PaymentRegistration.query.all()]:
-                    payment = PaymentRegistration(payment_id, participant, for_work)
-                    db.session.add(payment)
-                    db.session.commit()
-                else:
-                    PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
-                    db.session.commit()
+        # if str(participant) not in request.form.keys():
+        #     if participant in [p.participant for p in PaymentRegistration.query.all()]:
+        #         if PaymentRegistration.query.filter(PaymentRegistration.participant == participant
+        #                                             ).first().payment_id == int(payment_id):
+        #             PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
+        #             db.session.commit()
+        # else:
+        data = request.form[str(participant)]
+        if data == 'on':
+            if participant not in [p.participant for p in PaymentRegistration.query.all()]:
+                payment = PaymentRegistration(payment_id, participant, for_work)
+                db.session.add(payment)
+                db.session.commit()
+            else:
+                PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
+                db.session.commit()
         db.session.commit()
     elif len(payee) == 5:
         for_work = False

@@ -65,9 +65,11 @@
             <i>Дата получения платежа:</i> {{ payment['date'] }}<br>
             <i>Сумма:</i> {{ payment['debit'] }}<br>
             {% if payment['remainder'] != '0 р.' %}
-            <span class="alarm">Не распределено: {{ payment['remainder'] }}</span>
+            <span class="alarm">Не распределено: {{ payment['remainder'] }}</span><br>
+            <span class="green-text">Оплачено: {{ payment['payees'] }}.</span>
             {% else %}
-            <i>Платеж распределен по участникам
+            <i>Платеж распределен по участникам</i><br>
+            <span class="green-text">Оплачено: {{ payment['payees'] }}.</span>
             {% endif %}<br><br>
             <i>Комментарий к платежу:</i> {{ payment['comment'] }}<br><br>
             <i>Плательщик:</i> {{ payment['organisation'] }}<br>
@@ -98,9 +100,11 @@
             <i>Дата получения платежа:</i> {{ double['date'] }}<br>
             <i>Сумма:</i> {{ double['debit'] }}<br>
             {% if double['remainder'] != '0 р.' %}
-            <span class="alarm">Не распределено: {{ double['remainder'] }}</span>
+            <span class="alarm">Не распределено: {{ double['remainder'] }}</span><br>
+            <span class="green-text">Оплачено: {{ double['payees'] }}.</span>
             {% else %}
-            <i>Платеж распределен по участникам
+            <i>Платеж распределен по участникам</i><br>
+            <span class="green-text">Оплачено: {{ double['payees'] }}.</span>
             {% endif %}<br><br>
             <i>Комментарий к платежу:</i> {{ double['comment'] }}<br><br>
             <i>Плательщик:</i> {{ double['organisation'] }}<br>
