@@ -5643,7 +5643,16 @@ def set_payee(payment_id, payee):
     access = check_access(8)
     if access is not True:
         return access
+    order_ids = {p.payment_id: p.order_id for p in BankStatement.query.all()}
     payment = payment_info(payment_id)
+    del order_ids[payment['payment_id']]
+    if payment['order_id'] in order_ids.values():
+        for k, v in order_ids.items():
+            if v == payment['order_id']:
+                double_id = k
+        double = payment_info(double_id)
+    else:
+        double = None
     participant = {'type': None, 'participant': payee}
     if payee is not None:
         payee = payee.strip()
@@ -5687,7 +5696,7 @@ def set_payee(payment_id, payee):
         participant = {'type': None, 'participant': payee}
     p_types = set(p.payment_type for p in PaymentTypes.query.all())
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant,
-                           query=payee, p_types=p_types)
+                           query=payee, p_types=p_types, double=double)
 
 
 @app.route('/application_payment/<payment_id>', methods=['GET'], defaults={'payee': None})
