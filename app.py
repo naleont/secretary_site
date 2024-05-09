@@ -612,15 +612,15 @@ def categories_info(cat_id='all'):
                 dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()  # check
                 dates = []
                 if dates_db.day_1:
-                    dates.append(days[dates_db.day_1.strftime('%w')] + ' ' + dates_db.day_1.strftime('%d') + ' ' +
+                    dates.append(days[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' +
                                  months_full[dates_db.day_1.strftime('%m')])
                 if dates_db.day_2:
-                    dates.append(days[dates_db.day_2.strftime('%w')] + ' ' + dates_db.day_2.strftime('%d') + ' ' +
+                    dates.append(days[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d') + ' ' +
                                  months_full[dates_db.day_2.strftime('%m')])
                 if dates_db.day_3:
-                    dates.append(days[dates_db.day_3.strftime('%w')] + ' ' + dates_db.day_3.strftime('%d') + ' ' +
+                    dates.append(days[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d') + ' ' +
                                  months_full[dates_db.day_3.strftime('%m')])
-                cat['dates'] = ', '.join(dates)
+                cat['dates'] = '; '.join(dates)
 
             cats.append(cat)
     else:

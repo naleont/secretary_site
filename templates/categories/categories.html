@@ -36,9 +36,9 @@
         <td align="center" width="30%">
             <b>Название секции</b>
         </td>
-<!--        <td align="center">-->
-<!--            <b>tg-канал</b>-->
-<!--        </td>-->
+        <td align="center">
+            <b>tg-канал</b>
+        </td>
         <td align="center" width="30%">
             <b>Руководитель секции</b>
         </td>
@@ -61,11 +61,11 @@
         <td>
             <a href="/category_page/{{ cat['id'] }}">{{ cat['name'] }}</a>
         </td>
-<!--        <td>-->
-<!--            {% if cat['tg_channel'] %}-->
-<!--            <a href="https://t.me/{{ cat['tg_channel'] }}">@{{ cat['tg_channel'] }}</a>-->
-<!--            {% endif %}-->
-<!--        </td>-->
+        <td>
+            {% if cat['tg_channel'] %}
+            <a href="https://t.me/{{ cat['tg_channel'] }}">@{{ cat['tg_channel'] }}</a>
+            {% endif %}
+        </td>
         <td>
             <a href="/supervisor_profile/{{ cat['supervisor_id'] }}">{{ cat['supervisor'] }}</a>
         </td>
