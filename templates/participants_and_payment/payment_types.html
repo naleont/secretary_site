@@ -3,6 +3,19 @@
 {% block content %}
 
 <h2>Платежи</h2>
+<div vertical-align="middle">Скачать
+  <div class="drop">
+    <button class="dropping">
+        Выберите тип платежей
+    </button>
+    <div class="dropped">
+      <a href="/download_payments/all">Все</a>
+      {% for p in p_types %}
+      <a href="/download_payments/{{ p }}">{{ p }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 
 {% include 'include/iterate_pages.html' %}
 

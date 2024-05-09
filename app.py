@@ -5558,8 +5558,31 @@ def payment_types(length, page):
     .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
+    p_types = set(p['payment_type'] for p in statement)
     return render_template('participants_and_payment/payment_types.html', statement=statement, pages=n, page=page,
-                           length=length, link='payment_types')
+                           length=length, link='payment_types', p_types=p_types)
+
+
+@app.route('/download_payments/<p_type>')
+def download_payments(p_type):
+    if p_type == 'all':
+        payments = db.session.query(BankStatement).order_by(BankStatement.date).all()
+    else:
+        payments = db.session.query(BankStatement)\
+            .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)\
+            .filter(PaymentTypes.payment_type == p_type).order_by(BankStatement.date).all()
+    statement = [{'ID': p.payment_id, 'Дата': datetime.datetime.strftime(p.date, '%d.%m.%Y'),
+                  'Номер платежного поручения': p.order_id, 'Дебит': p.debit, 'Кредит': p.credit,
+                  'Плательщик': p.organisation, 'ИНН': p.tin, 'БИК': p.bic, 'Банк отправителя': p.bank_name,
+                  'Номер счета': p.account, 'Назначение платежа': p.payment_comment,
+                  'Альтернативная оплата': p.alternative, 'Комментарий': p.alternative_comment} for p in payments]
+
+    df = pd.DataFrame(data=statement)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/statement_' + str(curr_year) + '.xlsx') as writer:
+        df.to_excel(writer, sheet_name=p_type)
+    return send_file('static/files/generated_files/statement_' + str(curr_year) + '.xlsx', as_attachment=True)
 
 
 @app.route('/set_payment_types', methods=['POST'])
