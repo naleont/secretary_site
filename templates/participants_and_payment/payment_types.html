@@ -71,6 +71,8 @@
                       selected="true" {% endif %} value="Я - Исследователь">Я - Исследователь</option>
               <option class="container-fluid bg-2" {% if payment['payment_type'] == 'МИШ' %}
                       selected="true" {% endif %} value="МИШ">МИШ</option>
+              <option class="container-fluid bg-2" {% if payment['payment_type'] == 'ИДУ' %}
+                      selected="true" {% endif %} value="ИДУ">ИДУ</option>
           </select>
         </td>
       </tr>
