@@ -860,12 +860,19 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['fee'] = fee
         if work['work_id'] in [w.work_id for w in AppliedForOnline.query.all()]:
             work['format'] = 'online'
-        if work_id in [w.work_id for w in ParticipatedWorks.query.all()] or \
-                work_id in [w.work_id for w in Applications2Tour.query.all() if w.appl_no is not None]:
-            work['part_offline'] = True
-            work['format'] = 'face-to-face'
+        if str(curr_year)[2:] not in [str(w.work_id)[:2] for w in ParticipatedWorks.query.all()]:
+            if work_id in [w.work_id for w in ParticipatedWorks.query.all()] or \
+                    work_id in [w.work_id for w in Applications2Tour.query.all() if w.appl_no is not None]:
+                work['part_offline'] = True
+                work['format'] = 'face-to-face'
+            else:
+                work['part_offline'] = False
         else:
-            work['part_offline'] = False
+            if work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
+                work['part_offline'] = True
+                work['format'] = 'face-to-face'
+            else:
+                work['part_offline'] = False
         if work['work_id'] in [p.participant for p in PaymentRegistration.query.all()]:
             work['payed'] = True
             work['payment_id'] = PaymentRegistration.query.filter(PaymentRegistration.participant ==
