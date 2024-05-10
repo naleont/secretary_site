@@ -1349,6 +1349,9 @@ def document_set():
 def write_work_date(cat_id, work_id, day):
     cat_id = int(cat_id)
     work_cat = cat_id
+    ordered = [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]
+    orders = [w.order for w in ReportOrder.query.filter(ReportOrder.cat_id ==
+                                                        int(cat_id)).filter(ReportOrder.report_day == day).all()]
     if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
         union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
         cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
@@ -1359,10 +1362,8 @@ def write_work_date(cat_id, work_id, day):
 
     order = 1
     for cat_id in cats:
-        if int(cat_id) in [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]:
-            last_order = max([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id == int(cat_id)
-                                                                        ).filter(ReportOrder.report_day == day)
-                             .all()]) + 1
+        if int(cat_id) in ordered:
+            last_order = max(orders) + 1
             if last_order > order:
                 order = last_order
 
@@ -4430,6 +4431,8 @@ def reports_order(cat_id):
     participating = 0
     c_dates = []
     works = {}
+    appl_for_online = [w.work_id for w in AppliedForOnline.query.all()]
+    reported = [w.work_id for w in ReportOrder.query.all()]
 
     for cat_id in cats:
         dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
@@ -4459,9 +4462,9 @@ def reports_order(cat_id):
                 c_dates.append(d_3)
 
     for work in works.keys():
-        if work in [w.work_id for w in AppliedForOnline.query.all()]:
+        if work in appl_for_online:
             participating += 1
-        if works[work]['work_id'] not in [w.work_id for w in ReportOrder.query.all()]:
+        if works[work]['work_id'] not in reported:
             works_unordered.append(works[work])
 
     for day in c_dates:
@@ -4667,9 +4670,10 @@ def reorder(cat_id, work_id, direction):
     else:
         order_2 = order_1 + 1
 
+    day_ordered = [o.order for o in ReportOrder.query.filter(ReportOrder.cat_id ==
+                                                             cat_id).filter(ReportOrder.report_day == day).all()]
     for cat_id in cats:
-        if order_2 in [o.order for o in ReportOrder.query.filter(ReportOrder.cat_id == cat_id)
-                .filter(ReportOrder.report_day == day).all()]:
+        if order_2 in day_ordered:
             db.session.query(ReportOrder).filter(ReportOrder.cat_id == cat_id
                                                  ).filter(ReportOrder.report_day == day
                                                           ).filter(ReportOrder.order == order_2
