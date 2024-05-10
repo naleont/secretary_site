@@ -3545,15 +3545,15 @@ def button_works(cat_id):
                 if len(country) > 0:
                     tz_country = country[0].upper() + country[1:].lower()
                 else:
-                    tz_country = None
+                    tz_country = ''
                 if len(region) > 0:
                     tz_region = region[0].upper() + region[1:].lower()
                 else:
-                    tz_region = None
+                    tz_region = ''
                 if len(city) > 0:
                     tz_area = city[0].upper() + city[1:].lower()
                 else:
-                    tz_area = None
+                    tz_area = ''
                 timeshift = None
                 ta = TimeZones(country=tz_country, region=tz_region, area=tz_area, tz=timeshift)
                 db.session.add(ta)
