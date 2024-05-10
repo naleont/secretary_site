@@ -3542,9 +3542,18 @@ def button_works(cat_id):
             elif city.lower() in tz_regions.keys():
                 timeshift = tz_regions[city.lower()]
             else:
-                tz_country = country[0].upper() + country[1:].lower()
-                tz_region = region[0].upper() + region[1:].lower()
-                tz_area = city[0].upper() + city[1:].lower()
+                if len(country) > 0:
+                    tz_country = country[0].upper() + country[1:].lower()
+                else:
+                    tz_country = None
+                if len(region) > 0:
+                    tz_region = region[0].upper() + region[1:].lower()
+                else:
+                    tz_region = None
+                if len(city) > 0:
+                    tz_area = city[0].upper() + city[1:].lower()
+                else:
+                    tz_area = None
                 timeshift = None
                 ta = TimeZones(country=tz_country, region=tz_region, area=tz_area, tz=timeshift)
                 db.session.add(ta)
