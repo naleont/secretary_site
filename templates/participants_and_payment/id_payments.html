@@ -2,16 +2,35 @@
 
 {% block content %}
 
-<h2>Платежи</h2>
-
-{% if mode == 'unset' %}
-<a href="/id_payments/all/{{ length }}/{{ page }}"><button>Посмотреть все</button></a>
-{% else %}
-<a href="/id_payments/unset/{{ length }}/{{ page }}"><button>Посмотреть не внесенные</button></a>
-{% endif %}
+<table width="100%">
+  <tr>
+    <td align="left">
+      <h2>Платежи</h2>
+      {% if mode == 'unset' %}
+        <a href="/id_payments/all/{{ length }}/{{ page }}"><button>Посмотреть все</button></a>
+      {% else %}
+        <a href="/id_payments/unset/{{ length }}/{{ page }}"><button>Посмотреть не внесенные</button></a>
+      {% endif %}
+    </td>
+    <td align="right">
+      Поиск платежа<br><span class="comment">По плательщику или назначению</span><br>
+      <form action="/searching_payment" method = 'GET'>
+        <fieldset>
+          <input size="50" type="text" name="query">
+          <button class="blue_no_border" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg></button>
+        </fieldset>
+      </form>
+    </td>
+  </tr>
+</table>
 
 {% include 'include/iterate_pages.html' %}
 
+{% if mode != 'all' and mode != 'unset' and statement == [] %}
+<h4>{{ mode }}: не найдено</h4>
+{% else %}
 <table frame="void" border="2px" bordercolor="#4962A4" width="100%">
   <tr>
     <td align="center" width="5%"><b>
@@ -63,5 +82,6 @@
 
   {% endfor %}
 </table>
+{% endif %}
 
 {% endblock %}

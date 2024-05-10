@@ -1394,6 +1394,8 @@ def get_responsibility(responsibility_id):
 def make_pages(length, data, page):
     if length == 'all':
         return 1, data
+    if len(data) == 1:
+        return 1, data
     length = int(length)
     page = int(page)
     k = len(data) // length
@@ -4837,6 +4839,13 @@ def searching_participant():
     return redirect(url_for('.search_participant', query=query))
 
 
+@app.route('/searching_payment', methods=['GET'])
+def searching_payment():
+    renew_session()
+    query = request.values.get('query', str)
+    return redirect(url_for('.id_payments', mode=query, page=1, length=30,query=query))
+
+
 @app.route('/unpayed')
 def unpayed():
     access = check_access(8)
@@ -5672,11 +5681,18 @@ def id_payments(mode, length, page):
         .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
         .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
                     if p.payment_id not in set_payments]
-    else:
+    elif mode == 'all':
         payments = [p.payment_id for p in BankStatement.query
         .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
         .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
         .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+    else:
+        all_payments = {p.payment_id: (p.organisation + p.payment_comment).lower().replace(' ', '')
+                        for p in BankStatement.query.all()}
+        payments = []
+        for k, v in all_payments.items():
+            if mode.lower().replace(' ', '')  in v:
+                payments.append(k)
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
     return render_template('participants_and_payment/id_payments.html', statement=statement, pages=n, page=page,
