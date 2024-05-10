@@ -670,6 +670,22 @@ class Cities(db.Model):
         self.msk_time_shift = msk_time_shift
 
 
+class TimeZones(db.Model):
+    __tablename__ = 'time_zones'
+
+    tz_id = db.Column('tz_id', db.Integer, primary_key=True)
+    country = db.Column('country', db.Text)
+    region = db.Column('region', db.Text)
+    area = db.Column('area', db.Text)
+    tz = db.Column('tz', db.Integer)
+
+    def __init__(self, country, region, area, tz):
+        self.country = country
+        self.region = region
+        self.area = area
+        self.tz = tz
+
+
 class ParticipationFormat(db.Model):
     __tablename__ = 'participation_format'
 

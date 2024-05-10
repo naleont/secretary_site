@@ -3518,7 +3518,10 @@ def button_works(cat_id):
     works_reports = {w.work_id: w.reported for w in Works.query.all()}
     work_statuses = {w.work_id: w.status_id for w in WorkStatuses.query.all()}
     work_cats = {w.work_id: w.cat_id for w in WorkCategories.query.all()}
-    country_db = db.session.query(Cities)
+    # country_db = db.session.query(Cities)
+    tz_regions = {t.region.lower(): t.tz for t in TimeZones.query.all()}
+    # tz_areas = {t.area.lower(): t.tz for t in TimeZones.query.filter(TimeZones.area != 0).all()}
+    tz_countries = {t.country.lower(): t.tz for t in TimeZones.query.filter(TimeZones.region == 0).all()}
 
     for n in response:
         if int(n['section']['id']) in cats:
@@ -3532,18 +3535,32 @@ def button_works(cat_id):
             country = n['organization']['country']
             region = n['organization']['region']
             city = n['organization']['city']
-            if country in [c.country for c in country_db.all()]:
-                region_db = country_db.filter(Cities.country == country)
-                if region in [r.region for r in region_db.all()]:
-                    city_db = region_db.filter(Cities.region == region)
-                    if city in [c.city for c in city_db.all()]:
-                        timeshift = city_db.filter(Cities.city == city).first().msk_time_shift
-                    else:
-                        timeshift = None
-                else:
-                    timeshift = None
+            if region.lower() in tz_regions.keys():
+                timeshift = tz_regions[region.lower()]
+            elif country.lower() in tz_countries:
+                timeshift = tz_countries[country.lower()]
+            elif city.lower() in tz_regions.keys():
+                timeshift = tz_regions[city.lower()]
             else:
+                tz_country = country
+                tz_region = region
+                tz_area = city
                 timeshift = None
+                ta = TimeZones(country=tz_country, region=tz_region, area=tz_area, tz=timeshift)
+                db.session.add(ta)
+                db.session.commit()
+            # if country in [c.country for c in country_db.all()]:
+            #     region_db = country_db.filter(Cities.country == country)
+            #     if region in [r.region for r in region_db.all()]:
+            #         city_db = region_db.filter(Cities.region == region)
+            #         if city in [c.city for c in city_db.all()]:
+            #             timeshift = city_db.filter(Cities.city == city).first().msk_time_shift
+            #         else:
+            #             timeshift = None
+            #     else:
+            #         timeshift = None
+            # else:
+            #     timeshift = None
 
             if cat == 0:
                 cat_id = None
@@ -3665,6 +3682,61 @@ def button_works(cat_id):
             return redirect(url_for('.categories_list'))
     else:
         return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
+
+
+@app.route('/timezones', defaults={'e': None})
+@app.route('/timezones/<e>')
+def timezones(e):
+    all_t = [{'tz_id': t.tz_id, 'country': t.country, 'region': t.region, 'area': t.area, 'tz': t.tz}
+             for t in TimeZones.query.all()]
+    tz = sorted(all_t, key=lambda x: x['region'])
+    if e is not None:
+        t = TimeZones.query.filter(TimeZones.tz_id == int(e)).first()
+        edit = {'tz_id': t.tz_id, 'country': t.country, 'region': t.region, 'area': t.area, 'tz': t.tz}
+    else:
+        edit = None
+    return render_template('online_reports/timezones.html', tz=tz, edit=edit)
+
+
+@app.route('/save_a_timezone', methods=['POST'])
+def save_a_timezone():
+    country = request.form['country']
+    region = request.form['region']
+    area = request.form['area']
+    tz = int(request.form['tz'])
+    if 'tz_id' in request.form.keys():
+        tz_id = int(request.form['tz_id'])
+        db.session.query(TimeZones).filter(TimeZones.tz_id == tz_id).update({TimeZones.country: country,
+                                                                             TimeZones.region: region,
+                                                                             TimeZones.area: area,
+                                                                             TimeZones.tz: tz})
+        db.session.commit()
+    else:
+        ta = TimeZones(country=country, region=region, area=area, tz=tz)
+        db.session.add(ta)
+        db.session.commit()
+    return redirect(url_for('.timezones'))
+
+
+@app.route('/save_timezones', methods=['POST'])
+def save_timezones():
+    data = request.files['file'].read().decode('mac_cyrillic').replace('\r', '')
+    lines = data.split('\n')
+    all_t = [{'country': t.country, 'region': t.region, 'area': t.area, 'tz': t.tz}
+             for t in TimeZones.query.all()]
+    for line in lines[2:]:
+        if line != '':
+            sta = {name: value for name, value in zip(lines[0].split('\t'), line.split('\t'))}
+            if sta['tz'] == 'МСК':
+                t_z = 0
+            else:
+                t_z = int(sta['tz'].strip('МСК+'))
+            t = {'country': sta['country'], 'region': sta['region'], 'area': sta['area'], 'tz': t_z}
+            if t not in all_t:
+                ta = TimeZones(country=t['country'], region=t['region'], area=t['area'], tz=t['tz'])
+                db.session.add(ta)
+                db.session.commit()
+    return redirect(url_for('.timezones'))
 
 
 @app.route('/many_applications', methods=['POST'])
@@ -5072,7 +5144,7 @@ def renew_organisations(one_cat, which):
     else:
         wks = [w.work_id for w in Works.query.all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
-    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
+    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/" + str(curr_year) + "/",
                                         headers=mail_data.headers).text)
     for w in response:
         if int(w['number']) in works:
