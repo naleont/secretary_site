@@ -3535,11 +3535,11 @@ def button_works(cat_id):
             country = n['organization']['country']
             region = n['organization']['region']
             city = n['organization']['city']
-            if city.lower() in tz_regions.keys():
+            if city.lower() in tz_regions.keys() and city != '':
                 timeshift = tz_regions[city.lower()]
-            elif region.lower() in tz_regions.keys():
+            elif region.lower() in tz_regions.keys() and region != '':
                 timeshift = tz_regions[region.lower()]
-            elif country.lower() in tz_countries:
+            elif country.lower() in tz_countries and country != '':
                 timeshift = tz_countries[country.lower()]
             else:
                 timeshift = None
