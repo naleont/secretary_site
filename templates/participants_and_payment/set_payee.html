@@ -133,8 +133,8 @@
                     <b>Работа {{ participant['works']['work_id'] }}
                     {% if participant['works']['part_offline'] == True %}
                         <span class="alarm">Очно</span>
-                    {% else %}
-                        <span class="green-text">Д</span>
+                    {% elif participant['works']['part_offline'] == False %}
+                        <span class="green-text">Дистанционно</span>
                     {% endif %}</b><br>
                         {{ participant['works']['work_name'] }}
                         {% if participant['works']['reg_tour'] %}
@@ -183,8 +183,8 @@
                 {{ work['work_name'] }}
                     {% if work['part_offline'] == True %}
                         <span class="alarm">Очно</span>
-                    {% else %}
-                        <span class="green-text">Д</span>
+                    {% elif work['part_offline'] == False %}
+                        <span class="green-text">Дистанционно</span>
                     {% endif %}
                 {% if work['reg_tour'] %}
                 <span class="alarm">{{ work['reg_tour'] }} тур</span>
@@ -236,8 +236,8 @@
                     <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
                         <span class="alarm">Очно</span>
-                    {% else %}
-                        <span class="green-text">Д</span>
+                    {% elif work['part_offline'] == False %}
+                        <span class="green-text">Дистанционно</span>
                     {% endif %}</b><br>
                         {{ work['work_name'] }}
                         {% if work['reg_tour'] %}
@@ -286,8 +286,8 @@
                 {{ work['work_name'] }}
                     {% if work['part_offline'] == True %}
                         <span class="alarm">Очно</span>
-                    {% else %}
-                        <span class="green-text">Д</span>
+                    {% elif work['part_offline'] == False %}
+                        <span class="green-text">Дистанционно</span>
                     {% endif %}
                 {% if work['reg_tour'] %}
                 <span class="alarm">{{ work['reg_tour'] }} тур</span>

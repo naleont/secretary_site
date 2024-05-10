@@ -46,7 +46,21 @@
                 </td>
                 <td>
                     <label for="{{ participant['id'] }}">
-                    <br><i>{{ participant['role'] }} {{ participant['id'] }}</i><br>
+                    <br>
+                        {% if participant['payed'] == True %}
+                        <span class="green-text">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span>
+                        {% elif participant['payed'] == False %}
+                        <span class="alarm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
+                              <circle cx="8" cy="8" r="8"/>
+                            </svg>
+                        </span><br>
+                        {% endif %}
+                        <i>{{ participant['role'] }} {{ participant['id'] }}</i><br>
                     {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
                     Оргвзнос {{ participant['fee'] }}р.,
                     {% if participant['format'] == 'face-to-face' %}

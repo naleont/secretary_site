@@ -20,7 +20,7 @@
 
         {% elif response['type'] == 'work' %}
 
-            {% if response['works']['part_offline'] == False %}
+            {% if response['works']['part_offline'] != True %}
             {% if session['access'] > 2 %}
                 {% if response['works']['payed'] == True %}
                 <span class="green-text">
@@ -40,7 +40,7 @@
         <b>Работа {{ response['works']['work_id'] }}
                     {% if response['works']['part_offline'] == True %}
                         <span class="alarm">Очно</span>
-                    {% else %}
+                    {% elif response['works']['part_offline'] == False %}
                         <span class="green-text">Дистанционно</span>
                     {% endif %}
             <a href="/discount_and_participation_mode/{{ response['works']['work_id'] }}">
@@ -96,8 +96,8 @@
                 Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
                         <span class="alarm"><b>О</b></span>
-                    {% else %}
-                        <span class="green-text"><b>Д</b></span>
+                    {% elif work['part_offline'] == False %}
+                        <span class="green-text">Д</span>
                     {% endif %} -
                 {{ work['work_name'] }}
                     {% if work['reg_tour'] %}
@@ -149,7 +149,7 @@
             <h3>В работах</h3>
             {% endif %}
                 {% for work in response['works'] %}
-                    {% if work['part_offline'] == False %}
+                    {% if work['part_offline'] != True %}
                     {% if session['access'] > 2 %}
                         {% if work['payed'] == True %}
                         <span class="green-text">
@@ -169,7 +169,7 @@
             <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
                         <span class="alarm">О</span>
-                    {% else %}
+                    {% elif work['part_offline'] == False %}
                         <span class="green-text">Д</span>
                     {% endif %}
             <a href="/discount_and_participation_mode/{{ work['work_id'] }}">
@@ -229,8 +229,8 @@
                 Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
                         <span class="alarm"><b>О</b></span>
-                    {% else %}
-                        <span class="green-text"><b>Д</b></span>
+                    {% elif work['part_offline'] == False %}
+                        <span class="green-text">Д</span>
                     {% endif %} -
                 {{ work['work_name'] }}
                     {% if work['reg_tour'] %}

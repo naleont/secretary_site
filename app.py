@@ -845,6 +845,7 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['analysis'] = False
 
     if w_payment_info is True:
+        appl_for_online = [w.work_id for w in AppliedForOnline.query.all()]
         work['reg_tour'] = work_db.reg_tour
         if work['work_id'] in [w.work_id for w in Discounts.query.all()]:
             disc = db.session.query(Discounts).filter(Discounts.work_id == work['work_id']).first()
@@ -866,13 +867,19 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
                 work['part_offline'] = True
                 work['format'] = 'face-to-face'
             else:
-                work['part_offline'] = False
+                if work_id in applied_for_online:
+                    work['part_offline'] = False
+                else:
+                    work['part_offline'] = None
         else:
             if work_id in [w.work_id for w in ParticipatedWorks.query.all()]:
                 work['part_offline'] = True
                 work['format'] = 'face-to-face'
             else:
-                work['part_offline'] = False
+                if work_id in appl_for_online:
+                    work['part_offline'] = False
+                else:
+                    work['part_offline'] = None
         if work['work_id'] in [p.participant for p in PaymentRegistration.query.all()]:
             work['payed'] = True
             work['payment_id'] = PaymentRegistration.query.filter(PaymentRegistration.participant ==
