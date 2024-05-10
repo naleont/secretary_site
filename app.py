@@ -3520,7 +3520,7 @@ def button_works(cat_id):
     work_cats = {w.work_id: w.cat_id for w in WorkCategories.query.all()}
     # country_db = db.session.query(Cities)
     tz_regions = {t.region.lower(): t.tz for t in TimeZones.query.all()}
-    # tz_areas = {t.area.lower(): t.tz for t in TimeZones.query.filter(TimeZones.area != 0).all()}
+    tz_areas = {t.area.lower(): t.tz for t in TimeZones.query.filter(TimeZones.area != 0).all()}
     tz_countries = {t.country.lower(): t.tz for t in TimeZones.query.filter(TimeZones.region == 0).all()}
 
     for n in response:
@@ -3535,29 +3535,32 @@ def button_works(cat_id):
             country = n['organization']['country']
             region = n['organization']['region']
             city = n['organization']['city']
-            if region.lower() in tz_regions.keys():
+            if city.lower() in tz_regions.keys():
+                timeshift = tz_regions[city.lower()]
+            elif region.lower() in tz_regions.keys():
                 timeshift = tz_regions[region.lower()]
             elif country.lower() in tz_countries:
                 timeshift = tz_countries[country.lower()]
-            elif city.lower() in tz_regions.keys():
-                timeshift = tz_regions[city.lower()]
             else:
-                if len(country) > 0:
-                    tz_country = country[0].upper() + country[1:].lower()
-                else:
-                    tz_country = ''
-                if len(region) > 0:
-                    tz_region = region[0].upper() + region[1:].lower()
-                else:
-                    tz_region = ''
-                if len(city) > 0:
-                    tz_area = city[0].upper() + city[1:].lower()
-                else:
-                    tz_area = ''
                 timeshift = None
-                ta = TimeZones(country=tz_country, region=tz_region, area=tz_area, tz=timeshift)
-                db.session.add(ta)
-                db.session.commit()
+                # if len(country) > 0:
+                #     tz_country = country[0].upper() + country[1:].lower()
+                #     tz_countries[tz_country.lower()] = timeshift
+                # else:
+                #     tz_country = ''
+                # if len(region) > 0:
+                #     tz_region = region[0].upper() + region[1:].lower()
+                #     tz_regions[tz_region.lower()] = timeshift
+                # else:
+                #     tz_region = ''
+                # if len(city) > 0:
+                #     tz_area = city[0].upper() + city[1:].lower()
+                #     tz_areas[tz_area.lower()] = timeshift
+                # else:
+                #     tz_area = ''
+                # ta = TimeZones(country=tz_country, region=tz_region, area=tz_area, tz=timeshift)
+                # db.session.add(ta)
+                # db.session.commit()
             # if country in [c.country for c in country_db.all()]:
             #     region_db = country_db.filter(Cities.country == country)
             #     if region in [r.region for r in region_db.all()]:
@@ -3747,6 +3750,13 @@ def save_timezones():
                 ta = TimeZones(country=t['country'], region=t['region'], area=t['area'], tz=t['tz'])
                 db.session.add(ta)
                 db.session.commit()
+    return redirect(url_for('.timezones'))
+
+
+@app.route('/del_timezone/<tz_id>')
+def del_timezone(tz_id):
+    db.session.query(TimeZones).filter(TimeZones.tz_id == tz_id).delete()
+    db.session.commit()
     return redirect(url_for('.timezones'))
 
 
