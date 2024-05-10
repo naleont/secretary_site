@@ -3542,9 +3542,9 @@ def button_works(cat_id):
             elif city.lower() in tz_regions.keys():
                 timeshift = tz_regions[city.lower()]
             else:
-                tz_country = country
-                tz_region = region
-                tz_area = city
+                tz_country = country[0].upper() + country[1:].lower()
+                tz_region = region[0].upper() + region[1:].lower()
+                tz_area = city[0].upper() + city[1:].lower()
                 timeshift = None
                 ta = TimeZones(country=tz_country, region=tz_region, area=tz_area, tz=timeshift)
                 db.session.add(ta)
@@ -3689,7 +3689,9 @@ def button_works(cat_id):
 def timezones(e):
     all_t = [{'tz_id': t.tz_id, 'country': t.country, 'region': t.region, 'area': t.area, 'tz': t.tz}
              for t in TimeZones.query.all()]
-    tz = sorted(all_t, key=lambda x: x['region'])
+    tz = sorted(all_t, key=lambda x: x['area'])
+    all_t = sorted(tz, key=lambda x: x['region'])
+    tz = sorted(all_t, key=lambda x: x['country'])
     if e is not None:
         t = TimeZones.query.filter(TimeZones.tz_id == int(e)).first()
         edit = {'tz_id': t.tz_id, 'country': t.country, 'region': t.region, 'area': t.area, 'tz': t.tz}
