@@ -1402,10 +1402,10 @@ def make_pages(length, data, page):
     k = len(data) // length
     a = len(data) % length
     if page > k:
-        chunk = data[length * k:length * k + (a - 1)]
+        chunk = data[length * k:length * k + a]
     else:
         page -= 1
-        chunk = [data[length * i:length * (i + 1) - 1] for i in range(k)][page]
+        chunk = [data[length * i:length * (i + 1)] for i in range(k)][page]
     if a > 0:
         n = k + 1
     else:
