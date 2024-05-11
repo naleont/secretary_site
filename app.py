@@ -1349,6 +1349,7 @@ def document_set():
 def write_work_date(cat_id, work_id, day):
     cat_id = int(cat_id)
     work_cat = cat_id
+    ordered = [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]
 
     if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
         union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
@@ -1359,12 +1360,12 @@ def write_work_date(cat_id, work_id, day):
         union = False
 
     if union is True:
+        orders = []
         for cat in cats:
-            ordered = [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]
-            orders = [w.order for w in ReportOrder.query.filter(ReportOrder.cat_id ==
-                                                                int(cat)).filter(ReportOrder.report_day == day).all()]
+            orders.extend([w.order for w in ReportOrder.query.filter(ReportOrder.cat_id ==
+                                                                     int(cat)).filter(ReportOrder.report_day ==
+                                                                                      day).all()])
     else:
-        ordered = [c.cat_id for c in ReportOrder.query.filter(ReportOrder.report_day == day).all()]
         orders = [w.order for w in ReportOrder.query.filter(ReportOrder.cat_id ==
                                                             int(cat_id)).filter(ReportOrder.report_day == day).all()]
 
