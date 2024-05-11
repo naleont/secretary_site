@@ -3873,7 +3873,8 @@ def many_applications():
 def button_applications():
     response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/" + str(curr_year) + "/",
                                         headers=mail_data.headers).text)
-    works_applied = []
+    works_applied = [w.work_id for w in AppliedForOnline.query.filter(str(AppliedForOnline.work_id)[:2]
+                                                                      == str(curr_year)[2:]).all()]
     participants = []
     organisations = []
 
@@ -3906,7 +3907,7 @@ def button_applications():
             db.session.delete(part_to_del)
             db.session.commit()
     for work in works_applied:
-        if (work['work'], work['appl'], False) not in appl_2_tour:
+        if (work['work'], work['appl'], work['arrived']) not in appl_2_tour:
             if work['work'] in work_applied_ids:
                 db.session.query(Applications2Tour).filter(Applications2Tour.work_id == work['work']
                                                            ).update({Applications2Tour.appl_no: work['appl'],
