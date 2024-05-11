@@ -3171,7 +3171,7 @@ def add_reviews(done):
 
 @app.route('/save_reviews')
 def save_reviews():
-    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/2023/",
+    response = json.loads(requests.post(url="https://vernadsky.info/all-works-json/" + str(curr_year) + "/",
                                         headers=mail_data.headers).text)
     for work in response:
         work_id = int(work['number'])
@@ -5100,7 +5100,7 @@ def online_participants_applications(one_cat, length, page):
 @app.route('/renew_applications/<one_cat>/<q_type>/<q_id>')
 def renew_applications(one_cat, q_type, q_id):
     q_id = int(q_id)
-    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/2023/",
+    response = json.loads(requests.post(url="https://vernadsky.info/second-tour-requests-json/" + str(curr_year) + "/",
                                         headers=mail_data.headers).text)
     if q_type == 'work':
         for a in response:
