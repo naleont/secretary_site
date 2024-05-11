@@ -5073,6 +5073,7 @@ def online_participants_applications(one_cat, length, page):
         .order_by(WorkOrganisations.organisation_id)
         .order_by(WorkStatuses.status_id).all()]
         works = [w for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+        w_len = len(works)
         n, data = make_pages(length, works, page)
         works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in data]
         one_cat = 'all'
@@ -5091,10 +5092,12 @@ def online_participants_applications(one_cat, length, page):
         .filter(Works.reported == 1)
         .order_by(WorkStatuses.status_id).all()]
         works = [work_info(w, organisation_info=True, appl_info=True, status_info=True) for w in wks]
+        w_len = len(works)
         # works = sorted(works_applied, key=lambda x: x['organisation_id'])
         n = 1
     return render_template('online_reports/online_participants_applications.html', works=works, pages=n, page=page,
-                           length=length, link='online_participants_applications/all', cats=cats, one_cat=one_cat)
+                           length=length, link='online_participants_applications/all', cats=cats, one_cat=one_cat,
+                           w_len=w_len)
 
 
 @app.route('/renew_applications/<one_cat>/<q_type>/<q_id>')
