@@ -172,7 +172,10 @@
     {% for appl in participant['participant'] %}
     <tr>
         <td>
-            <b>Заявка {{ appl['id'] }}</b><br>{{ appl['organisation'] }} ({{ appl['city'] }})<br><br>
+            <b>Заявка {{ appl['id'] }}</b><br>
+            {% if appl['organisation'] != '' %}
+            {{ appl['organisation'] }} ({{ appl['city'] }})<br><br>
+            {% endif %}
                 <b>Работы</b><br>
                 {% for work in appl['works'] %}
                 <i>Работа {{ work['work_id'] }}</i>
@@ -271,7 +274,9 @@
     <tr>
         <td>
             <b><i>Заявка {{ appl['id'] }}</i></b><br>
+            {% if appl['organisation'] != '' %}
             {{ appl['organisation'] }} ({{ appl['city'] }})<br><br>
+            {% endif %}
                 <b>Работы</b><br>
                 {% for work in appl['works'] %}
                 <i>Работа {{ work['work_id'] }}</i>

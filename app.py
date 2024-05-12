@@ -1180,8 +1180,12 @@ def application_2_tour(appl):
         .join(OrganisationApplication, Organisations.organisation_id == OrganisationApplication.organisation_id)\
         .filter(OrganisationApplication.appl_no == application['id']).first()
 
-    application['organisation'] = org.name
-    application['city'] = org.city
+    if org is not None:
+        application['organisation'] = org.name
+        application['city'] = org.city
+    else:
+        application['organisation'] = ''
+        application['city'] = ''
     for part in ParticipantsApplied.query.filter(ParticipantsApplied.appl_id == appl).all():
         part_db = db.session.query(ParticipantsApplied).filter(ParticipantsApplied.participant_id == part.participant_id
                                                                ).first()
