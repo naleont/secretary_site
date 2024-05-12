@@ -5906,14 +5906,20 @@ def set_payment(payment_id, payee):
         # else:
         data = request.form[str(participant)]
         if data == 'on':
-            if participant not in [p.participant for p in PaymentRegistration.query.all()]:
+            if participant in [p.participant for p in PaymentRegistration.query.all()]:
+                if payment_id not in [p.payment_id for p in
+                                      PaymentRegistration.query.filter(PaymentRegistration.participant ==
+                                                                       participant).all()]:
+                    payment = PaymentRegistration(payment_id, participant, for_work)
+                    db.session.add(payment)
+                    db.session.commit()
+            else:
                 payment = PaymentRegistration(payment_id, participant, for_work)
                 db.session.add(payment)
                 db.session.commit()
-            else:
-                PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
-                db.session.commit()
-        db.session.commit()
+        else:
+            PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
+            db.session.commit()
     elif len(payee) == 5:
         for_work = False
         participants = [p.participant_id for p

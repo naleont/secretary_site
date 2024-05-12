@@ -145,13 +145,9 @@
                         Оргвзнос {{ participant['works']['fee'] }}р.
                             {% if participant['works']['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
+                <a target="_blank" href="/set_payee/{{ participant['works']['payment_id'] }}/{{ participant['works']['work_id'] }}">Посмотреть платеж</a>
                             {% elif participant['works']['payed'] == False %}
                             <span class="alarm">(Не оплачен)</span>
-                            {% endif %},
-                            {% if not participant['works']['format'] or participant['works']['format'] == 'face-to-face' %}
-                                Очное участие
-                            {% elif participant['works']['format'] == 'online'%}
-                                Дистанционное участие
                             {% endif %}
                     <br>{% if participant['works']['appl_no'] == False %}
                         Заявка отсутствует<br>
@@ -248,13 +244,9 @@
                         Оргвзнос {{ work['fee'] }}р.
                             {% if work['payed'] == True %}
                             <span class="green-text">(Оплачен)</span>
+                <a target="_blank" href="/set_payee/{{ work['payment_id'] }}/{{ work['work_id'] }}">Посмотреть платеж</a>
                             {% elif work['payed'] == False %}
                             <span class="alarm">(Не оплачен)</span>
-                            {% endif %},
-                            {% if not work['format'] or work['format'] == 'face-to-face' %}
-                                Очное участие
-                            {% elif work['format'] == 'online'%}
-                                Дистанционное участие
                             {% endif %}
                     <br>
                             <a href="/application_payment/{{ payment['payment_id'] }}/{{ work['appl_no'] }}"><div class="blue_no_border" type="submit">
