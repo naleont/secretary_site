@@ -5801,7 +5801,8 @@ def id_payments(mode, length, page):
         .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
         .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
     else:
-        all_payments = {p.payment_id: (p.organisation + p.payment_comment).lower().replace(' ', '')
+        all_payments = {p.payment_id: (str(p.payment_id) + str(p.debit) + p.organisation + p.payment_comment +
+                                       str(p.order_id)).lower().replace(' ', '')
                         for p in BankStatement.query.all()}
         payments = []
         for k, v in all_payments.items():
@@ -5938,14 +5939,21 @@ def set_payment(payment_id, payee):
             else:
                 data = request.form[str(participant)]
                 if data == 'on':
-                    if participant not in [p.participant for p in PaymentRegistration.query.all()]:
+                    if participant in [p.participant for p in PaymentRegistration.query.all()]:
+                        if payment_id not in [p.payment_id for p in
+                                              PaymentRegistration.query.filter(PaymentRegistration.participant ==
+                                                                               participant).all()]:
+                            payment = PaymentRegistration(payment_id, participant, for_work)
+                            db.session.add(payment)
+                            db.session.commit()
+                    else:
                         payment = PaymentRegistration(payment_id, participant, for_work)
                         db.session.add(payment)
                         db.session.commit()
-                    else:
-                        db.session.query(PaymentRegistration).filter(PaymentRegistration.participant == participant
-                                                                     ).update({'payment_id': payment_id,
-                                                                               'for_work': for_work})
+                else:
+                    if PaymentRegistration.query.filter(PaymentRegistration.participant == participant
+                                                        ).first().payment_id == int(payment_id):
+                        PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
                         db.session.commit()
     return redirect(url_for('.id_payments'))
 
