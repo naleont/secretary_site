@@ -5560,8 +5560,6 @@ def add_bank_statement():
                  'text70': p.payment_comment}
                 for p in BankStatement.query.all()]
     p_types_existing = {p.payment_id: p.payment_type for p in PaymentTypes.query.all()}
-    with open('/Users/nataliya/Downloads/hi.json', 'w', encoding='utf-8') as f:
-        json.dump(existing, f)
     for line in lines[2:]:
         if line != '':
             sta = {name: value for name, value in zip(lines[0].split('\t'), line.split('\t'))}
