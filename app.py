@@ -5968,7 +5968,7 @@ def confirm_delete(specify, del_id, url):
 def delete_payment(del_id):
     BankStatement.query.filter(BankStatement.payment_id == del_id).delete()
     db.session.commit()
-    return redirect(url_for('.manage_payments'))
+    return redirect(url_for('.id_payments'))
 
 
 @app.route('/reset_payment_type/<payment_id>/<payment_type>')
