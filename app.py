@@ -5795,11 +5795,13 @@ def id_payments(mode, length, page):
         .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
         .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()
                     if p.payment_id not in set_payments]
+        p_l = len(payments)
     elif mode == 'all':
         payments = [p.payment_id for p in BankStatement.query
         .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)
         .filter(PaymentTypes.payment_type == 'Чтения Вернадского')
         .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
+        p_l = len(payments)
     else:
         all_payments = {p.payment_id: (str(p.payment_id) + str(p.debit) + p.organisation + p.payment_comment +
                                        str(p.order_id)).lower().replace(' ', '')
@@ -5808,10 +5810,11 @@ def id_payments(mode, length, page):
         for k, v in all_payments.items():
             if mode.lower().replace(' ', '')  in v:
                 payments.append(k)
+        p_l = len(payments)
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
     return render_template('participants_and_payment/id_payments.html', statement=statement, pages=n, page=page,
-                           length=length, link='id_payments/' + mode, mode=mode)
+                           length=length, link='id_payments/' + mode, mode=mode, p_l=p_l)
 
 
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})
@@ -5827,8 +5830,12 @@ def set_payee(payment_id, payee):
         if payment['order_id'] in order_ids.values():
             for k, v in order_ids.items():
                 if v == payment['order_id']:
-                    double_id = k
-            double = payment_info(double_id)
+                    if BankStatement.query.filter(BankStatement.date == payment['date']):
+                        double = payment_info(k)
+                    else:
+                        double = None
+                else:
+                    double = None
         else:
             double = None
     else:
