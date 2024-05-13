@@ -1220,6 +1220,28 @@ def payment_info(payment_id):
     works = {w.work_id: w.reg_tour for w in Works.query.all()}
     pays_for = {p.participant: p.for_work for p in payment_reg
     .filter(PaymentRegistration.payment_id == payment.payment_id).all()}
+    all_part = [p.participant_id for p in ParticipantsApplied.query.all()]
+
+    for p, t in pays_for.items():
+        if t is True:
+            if p not in works.keys():
+                d = True
+            else:
+                d = False
+        else:
+            if p not in all_part:
+                d = True
+            else:
+                d = False
+        if d is True:
+            db.session.query(PaymentRegistration).filter(PaymentRegistration.payment_id == payment_id)\
+                .filter(PaymentRegistration.participant == p).delete()
+            db.session.commit()
+            pays_for = {p.participant: p.for_work for p in payment_reg
+            .filter(PaymentRegistration.payment_id == payment.payment_id).all()}
+        else:
+            pass
+
 
     remainder = payment.debit
     if payment.payment_id in [p.payment_id for p in payment_reg.all()]:
