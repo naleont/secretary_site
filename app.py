@@ -5559,6 +5559,7 @@ def add_bank_statement():
                  'plat_bic': str(p.bic), 'plat_bank': p.bank_name, 'plat_acc': str(p.account),
                  'text70': p.payment_comment}
                 for p in BankStatement.query.all()]
+    p_types_existing = {p.payment_id: p.payment_type for p in PaymentTypes.query.all()}
     with open('/Users/nataliya/Downloads/hi.json', 'w', encoding='utf-8') as f:
         json.dump(existing, f)
     for line in lines[2:]:
@@ -5586,9 +5587,18 @@ def add_bank_statement():
                         db.session.commit()
                         db.session.flush()
                         payment_id = pay.payment_id
-                        p_t = PaymentTypes(payment_id, 'Чтения Вернадского')
-                        db.session.add(p_t)
-                        db.session.commit()
+                        if payment_id not in p_types_existing:
+                            p_t = PaymentTypes(payment_id, 'Чтения Вернадского')
+                            db.session.add(p_t)
+                            db.session.commit()
+                        else:
+                            if p_types_existing[payment_id] != 'Чтения Вернадского':
+                                db.session.query(PaymentTypes)\
+                                    .filter(PaymentTypes.payment_id == payment_id)\
+                                    .update({PaymentTypes.payment_type: 'Чтения Вернадского'})
+                                db.session.commit()
+                            else:
+                                pass
                     # else:
                     #     pay = BankStatement(date=payment['date_oper'], order_id=payment['number'],
                     #                         debit=0, credit=float(payment['sum_val'].replace(',', '.')),
