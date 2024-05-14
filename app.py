@@ -903,6 +903,14 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
             work['appl_no'] = False
             work['arrived'] = False
             work['included'] = False
+        if str(work_id)[:5] == str(curr_year)[2:] + '000':
+            work['copy_for_appl'] = str(work_id)[5:]
+        elif str(work_id)[:4] == str(curr_year)[2:] + '00':
+            work['copy_for_appl'] = str(work_id)[4:]
+        elif str(work_id)[:3] == str(curr_year)[2:] + '0':
+            work['copy_for_appl'] = str(work_id)[3:]
+        else:
+            work['copy_for_appl'] = str(work_id)[2:]
 
         if work['appl_no'] is False:
             if 'organisation_id' not in work.keys():
