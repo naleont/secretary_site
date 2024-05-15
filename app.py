@@ -5619,7 +5619,7 @@ def add_bank_statement():
 
 @app.route('/payment_stats')
 def payment_stats():
-    access = check_access(8)
+    access = check_access(10)
     if access is not True:
         return access
     statement_db = db.session.query(BankStatement) \
