@@ -1172,11 +1172,19 @@ def check_analysis(cat_id):
 def no_fee_nums():
     cats_no, cats = categories_info()
     total = 0
+    all_no_fee = []
     for cat in cats:
         works = get_works_no_fee(cat['id'])
         cat['works'] = ', '.join([str(w) for w in works.keys()])
-        cat['works_no'] = len(works)
-        total += cat['works_no']
+        total += len(works)
+        a = [{'cat_name': cat['name'], 'work_id': w} for w in works.keys()]
+        all_no_fee.extend(a)
+
+    df = pd.DataFrame(data=all_no_fee)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/no_fee_works' + str(curr_year) + '.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Топ')
     return total, cats
 
 
@@ -1184,8 +1192,8 @@ def application_2_tour(appl):
     application = {'id': appl, 'works': [work_info(w.work_id, w_payment_info=True, appl_info=True) for w
                                          in Applications2Tour.query.filter(Applications2Tour.appl_no == appl).all()],
                    'participants': []}
-    org = Organisations.query\
-        .join(OrganisationApplication, Organisations.organisation_id == OrganisationApplication.organisation_id)\
+    org = Organisations.query \
+        .join(OrganisationApplication, Organisations.organisation_id == OrganisationApplication.organisation_id) \
         .filter(OrganisationApplication.appl_no == application['id']).first()
 
     if org is not None:
@@ -1242,14 +1250,13 @@ def payment_info(payment_id):
             else:
                 d = False
         if d is True:
-            db.session.query(PaymentRegistration).filter(PaymentRegistration.payment_id == payment_id)\
+            db.session.query(PaymentRegistration).filter(PaymentRegistration.payment_id == payment_id) \
                 .filter(PaymentRegistration.participant == p).delete()
             db.session.commit()
             pays_for = {p.participant: p.for_work for p in payment_reg
             .filter(PaymentRegistration.payment_id == payment.payment_id).all()}
         else:
             pass
-
 
     remainder = payment.debit
     if payment.payment_id in [p.payment_id for p in payment_reg.all()]:
@@ -3557,7 +3564,7 @@ def button_works(cat_id):
     work_categories_list = [w.work_id for w in WorkCategories.query.all()]
     applications_2_tour_list = [w.work_id for w in Applications2Tour.query.all()]
     mails = {m.email: m.mail_id for m in Mails.query.all()}
-    work_mails = [{'work_id': w_m.work_id,'mail_id': w_m.mail_id} for w_m in WorkMail.query.all()]
+    work_mails = [{'work_id': w_m.work_id, 'mail_id': w_m.mail_id} for w_m in WorkMail.query.all()]
     site_cats = {c.cat_site_id: c.cat_id for c in Categories.query.all()}
     works_reports = {w.work_id: w.reported for w in Works.query.all()}
     work_statuses = {w.work_id: w.status_id for w in WorkStatuses.query.all()}
@@ -4021,7 +4028,7 @@ def button_applications():
         if a in [wo.appl_no for wo in Applications2Tour.query.all()]:
             a_w = [w.work_id for w in Applications2Tour.query.filter(Applications2Tour.appl_no == a).all()]
             for k in a_w:
-                Applications2Tour.query.filter(Applications2Tour.appl_no == a).filter(Applications2Tour.work_id == k)\
+                Applications2Tour.query.filter(Applications2Tour.appl_no == a).filter(Applications2Tour.work_id == k) \
                     .update({Applications2Tour.appl_no: None,
                              Applications2Tour.arrived: False})
                 db.session.commit()
@@ -4043,6 +4050,11 @@ def top_100():
         return access
     total, no_fee = no_fee_nums()
     return render_template('works/top_100.html', no_fee=no_fee, total=total)
+
+
+@app.route('/top_100_excel')
+def top_100_excel():
+    return send_file('static/files/generated_files/no_fee_works' + str(curr_year) + '.xlsx', as_attachment=True)
 
 
 @app.route('/top_100_for_site')
@@ -4984,7 +4996,7 @@ def searching_participant():
 def searching_payment():
     renew_session()
     query = request.values.get('query', str)
-    return redirect(url_for('.id_payments', mode=query, page=1, length=30,query=query))
+    return redirect(url_for('.id_payments', mode=query, page=1, length=30, query=query))
 
 
 @app.route('/unpayed')
@@ -5082,7 +5094,8 @@ def download_online_participants_html():
 
     c_w = [cat for cat in cats if len(cat['online_participants']) > 0]
 
-    with open('static/files/generated_files/online_participants_' + str(curr_year) + '.html', 'w', encoding='utf-8') as f:
+    with open('static/files/generated_files/online_participants_' + str(curr_year) + '.html', 'w',
+              encoding='utf-8') as f:
         f.write(render_template('online_reports/online_participants_html.html', cats=c_w))
     return send_file('static/files/generated_files/online_participants_' + str(curr_year) + '.html', as_attachment=True)
 
@@ -5588,7 +5601,8 @@ def add_bank_statement():
                                             organisation=payment['plat_name'], tin=payment['plat_inn'],
                                             bic=payment['plat_bic'],
                                             bank_name=payment['plat_bank'], account=payment['plat_acc'],
-                                            payment_comment=payment['text70'], alternative=None, alternative_comment=None)
+                                            payment_comment=payment['text70'], alternative=None,
+                                            alternative_comment=None)
                         db.session.add(pay)
                         db.session.commit()
                         db.session.flush()
@@ -5599,8 +5613,8 @@ def add_bank_statement():
                             db.session.commit()
                         else:
                             if p_types_existing[payment_id] != 'Чтения Вернадского':
-                                db.session.query(PaymentTypes)\
-                                    .filter(PaymentTypes.payment_id == payment_id)\
+                                db.session.query(PaymentTypes) \
+                                    .filter(PaymentTypes.payment_id == payment_id) \
                                     .update({PaymentTypes.payment_type: 'Чтения Вернадского'})
                                 db.session.commit()
                             else:
@@ -5785,8 +5799,8 @@ def download_payments(p_type):
     if p_type == 'all':
         payments = db.session.query(BankStatement).order_by(BankStatement.date).all()
     else:
-        payments = db.session.query(BankStatement)\
-            .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id)\
+        payments = db.session.query(BankStatement) \
+            .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id) \
             .filter(PaymentTypes.payment_type == p_type).order_by(BankStatement.date).all()
     statement = [{'ID': p.payment_id, 'Дата': datetime.datetime.strftime(p.date, '%d.%m.%Y'),
                   'Номер платежного поручения': p.order_id, 'Дебит': p.debit, 'Кредит': p.credit,
@@ -5846,7 +5860,7 @@ def id_payments(mode, length, page):
                         for p in BankStatement.query.all()}
         payments = []
         for k, v in all_payments.items():
-            if mode.lower().replace(' ', '')  in v:
+            if mode.lower().replace(' ', '') in v:
                 payments.append(k)
         p_l = len(payments)
     n, data = make_pages(length, payments, page)
@@ -6098,6 +6112,8 @@ def save_diplomas():
     for file in files:
         file.save(os.path.join('static/files/uploaded_files/diplomas_' + str(curr_year), file.filename))
     success = True
+
+
 #     return redirect(url_for('.load_diplomas', success=success))
 #
 #
