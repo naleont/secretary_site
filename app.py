@@ -6176,17 +6176,21 @@ def sending_diplomas(send_type, w_c_id):
         .filter(Works.reported == 1).all()]
         cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
 
-    dir = 'static/files/uploaded_files/diplomas_' + str(curr_year) + '/'
+    payed = [p.participant for p in PaymentRegistration.query.all()]
+    payed.extend([w.work_id for w in WorksNoFee.query.all()])
+    payed.extend([w.work_id for w in Discounts.query.filter(Discounts.payment == 0).all()])
+
+    dir = 'static/files/uploaded_files/diplomas_online_' + str(curr_year) + '/'
     for w_id in works:
         # try:
-        if w_id in [p.participant for p in PaymentRegistration.query.all()] \
-                or w_id in [w.work_id for w in WorksNoFee.query.all()]:
+        if w_id in payed:
             files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
             if files:
-                mails = [m.email for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
+                mails = [(m.mail_id, m.email) for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
                 .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
                 if mails:
-                    for m in mails:
+                    for a in mails:
+                        m = a[1]
                         if m != 0 and m != '0' and m != '':
                             attachments = []
                             for f in files:
@@ -6202,12 +6206,11 @@ def sending_diplomas(send_type, w_c_id):
                                           sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
                                           recipients=[m])
                             mail.send(msg)
-                            a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
-                            for b in a:
-                                db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
-                                    WorkMail.mail_id == b) \
-                                    .update({WorkMail.sent: True})
-                                db.session.commit()
+
+                            db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
+                                WorkMail.mail_id == a[0]) \
+                                .update({WorkMail.sent: True})
+                            db.session.commit()
                             # if w_id in [w.work_id for w in Diplomas.query.all()]:
                             #     to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
                             #     db.session.delete(to_del)
