@@ -50,7 +50,7 @@ app.config['MAIL_USE_SSL'] = mail_data.mail['MAIL_USE_SSL']
 mail = Mail(app)
 
 tel_unneeded = '-() '
-curr_year = 2024
+curr_year = 2025
 # curr_year = 2023
 fee = 5000
 tour_fee = 3900

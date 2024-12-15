@@ -56,7 +56,7 @@
         <td {% if task['volunteers_list']|length > 1 %}
         rowspan="{{ task['volunteers_list']|length }}"
         {% endif %}>
-            {{ task['task_name'] }}
+        <div class="sticky-td">{{ task['task_name'] }}
             {% if task['description'] != '' and task['description'] != 'secretary' %}
             <sup class="question">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
@@ -66,13 +66,13 @@
             </sup>
             <div class="answer">{{ task['description'] }}</div>
             {% endif %}<br>
-            {{ task['task_date'] }} {{ task['start_time'] }} – {{ task['end_time'] }}
+            {{ task['task_date'] }} {{ task['start_time'] }} – {{ task['end_time'] }}</div>
         </td>
         <td {% if task['volunteers_list']|length > 1 %}
         rowspan="{{ task['volunteers_list']|length }}"
         {% endif %} align="center">
-            {{ task['location'] }}<br>
-            <span class="comment"><i>{{ task['address'] }}</i></span>
+            <div class="sticky-td">{{ task['location'] }}<br>
+                <span class="comment"><i>{{ task['address'] }}</i></span></div>
         </td>
         {% if session['type'] in ['org', 'manager', 'admin'] %}
         <td {% if task['volunteers_list']|length > 1 %}
