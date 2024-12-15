@@ -369,8 +369,7 @@
         <li><a href="/organising_committee">Оргкомитет</a></li>
         {% if session['type'] in ['manager', 'org', 'admin'] %}
         <li><a href="/knowledge_main">База знаний</a></li>
-        {% endif %}
-        {% if session['secretary'] == True %}
+        {% elif session['secretary'] == True %}
         <li><a href="/secretary_knowledge">База знаний</a></li>
         {% endif %}
 <!--        <li><a href="#">Меню-4</a></li>-->
