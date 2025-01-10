@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-import dateutil.rrule
+# import dateutil.rrule
 import requests
 from cryptography.fernet import Fernet
 from flask import Flask
@@ -31,6 +31,7 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.app_context().push()
@@ -51,6 +52,7 @@ mail = Mail(app)
 
 tel_unneeded = '-() '
 curr_year = 2025
+# curr_year = 2024
 # curr_year = 2023
 fee = 5000
 tour_fee = 3900
@@ -1475,6 +1477,11 @@ def main_page():
         access = 0
     access_list = [i for i in access_types.keys() if access_types[i] <= access]
     return render_template('main.html', news=news, access_list=access_list)
+
+
+@app.route('/photo_archive')
+def photo_archive():
+    return render_template('photo_archive.html')
 
 
 @app.route('/no_access', defaults={'url': '', 'message': None})
