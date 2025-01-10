@@ -2,6 +2,8 @@ secret.key
 team_db.db
 mail_data.py
 /venv
+/secr-env
+/services
 /static/files/generated_files/schedules
 /logs
 /__pycache__
@@ -29,3 +31,4 @@ cat_site_ids.json
 /Александр Сергеевич Саввичев.vcf
 lesson_shedule.xlsx
 personal_schedule.py
+.DS_Store
