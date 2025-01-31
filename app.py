@@ -30,8 +30,8 @@ import string
 from bs4 import BeautifulSoup
 
 app = Flask(__name__, instance_relative_config=False)
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.app_context().push()
@@ -51,11 +51,11 @@ app.config['MAIL_USE_SSL'] = mail_data.mail['MAIL_USE_SSL']
 mail = Mail(app)
 
 tel_unneeded = '-() '
-# curr_year = 2025
-curr_year = 2024
+curr_year = 2025
+# curr_year = 2024
 # curr_year = 2023
 fee = 5000
-tour_fee = 3900
+tour_fee = 4000
 
 days = {'1': 'Пн', '2': 'Вт', '3': 'Ср', '4': 'Чт', '5': 'Пт', '6': 'Сб', '0': 'Вс'}
 days_full = {'1': 'Понедельник',

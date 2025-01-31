@@ -4,9 +4,10 @@ from sqlalchemy.orm import relationship
 import datetime
 
 db = SQLAlchemy()
-# db_name = 'team_db.db'
-db_name = 'team_db_arch_2024.db'
+db_name = 'team_db.db'
+# db_name = 'team_db_arch_2024.db'
 # db_name = 'team_db_arch.db'
+exit
 
 
 class Users(db.Model):
