@@ -30,8 +30,8 @@ import string
 from bs4 import BeautifulSoup
 
 app = Flask(__name__, instance_relative_config=False)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.app_context().push()
@@ -51,8 +51,8 @@ app.config['MAIL_USE_SSL'] = mail_data.mail['MAIL_USE_SSL']
 mail = Mail(app)
 
 tel_unneeded = '-() '
-curr_year = 2025
-# curr_year = 2024
+# curr_year = 2025
+curr_year = 2024
 # curr_year = 2023
 fee = 5000
 tour_fee = 3900
@@ -297,7 +297,7 @@ def get_user_info(user):
     user_info['first_name'] = user_db.first_name
     user_info['patronymic'] = user_db.patronymic
     user_info['name_initials'] = user_info['last_name'] + ' ' + user_info['first_name'][0] + '. ' + \
-                                 user_info['patronymic'][0] + '.'
+        user_info['patronymic'][0] + '.'
     user_info['type'] = user_db.user_type
     user_info['approved'] = user_db.approved
     user_info['created_on'] = user_db.created_on.strftime('%d.%m.%Y %H:%M:%S')
@@ -5302,230 +5302,230 @@ def download_online_reported():
     return send_file('static/files/generated_files/online_reported.xlsx', as_attachment=True)
 
 
-@app.route('/experts/<cat_id>', defaults={'expert_to_edit': None})
-@app.route('/experts/<cat_id>/<expert_to_edit>')
-def experts(cat_id, expert_to_edit):
-    if cat_id != 'all':
-        cat_id = int(cat_id)
-    c, cat = categories_info(cat_id)
-    cats = []
-    if type(cat) != list:
-        cats.append(cat)
-    else:
-        cats = cat
+# @app.route('/experts/<cat_id>', defaults={'expert_to_edit': None})
+# @app.route('/experts/<cat_id>/<expert_to_edit>')
+# def experts(cat_id, expert_to_edit):
+#     if cat_id != 'all':
+#         cat_id = int(cat_id)
+#     c, cat = categories_info(cat_id)
+#     cats = []
+#     if type(cat) != list:
+#         cats.append(cat)
+#     else:
+#         cats = cat
 
-    all_exps = [{'id': e.expert_id, 'name': e.last_name + ' ' + e.first_name + ' ' + e.patronymic}
-                for e in Experts.query.filter(Experts.year == curr_year).all()]
-    all_exps = sorted(all_exps, key=lambda e: e['name'])
+#     all_exps = [{'id': e.expert_id, 'name': e.last_name + ' ' + e.first_name + ' ' + e.patronymic}
+#                 for e in Experts.query.filter(Experts.year == curr_year).all()]
+#     all_exps = sorted(all_exps, key=lambda e: e['name'])
 
-    for cat in cats:
-        cat_experts = []
-        exps = [e.expert_id for e in CatExperts.query.filter(CatExperts.cat_id == cat['id']).all()]
-        for e in exps:
-            e_db = db.session.query(Experts).filter(Experts.expert_id == e).first()
-            e_t_db = db.session.query(CatExperts).filter(CatExperts.cat_id == cat['id']) \
-                .filter(CatExperts.expert_id == e).first()
-            if e_t_db:
-                if e_t_db.day_1_started is not None:
-                    day_1_start = e_t_db.day_1_started.strftime('%H:%M')
-                else:
-                    day_1_start = ''
-                if e_t_db.day_1_finished is not None:
-                    day_1_end = e_t_db.day_1_finished.strftime('%H:%M')
-                else:
-                    day_1_end = ''
-                if e_t_db.day_2_started is not None:
-                    day_2_start = e_t_db.day_2_started.strftime('%H:%M')
-                else:
-                    day_2_start = ''
-                if e_t_db.day_2_finished is not None:
-                    day_2_end = e_t_db.day_2_finished.strftime('%H:%M')
-                else:
-                    day_2_end = ''
-                if e_t_db.day_3_started is not None:
-                    day_3_start = e_t_db.day_3_started.strftime('%H:%M')
-                else:
-                    day_3_start = ''
-                if e_t_db.day_3_finished is not None:
-                    day_3_end = e_t_db.day_3_finished.strftime('%H:%M')
-                else:
-                    day_3_end = ''
-            else:
-                day_1_start = ''
-                day_1_end = ''
-                day_2_start = ''
-                day_2_end = ''
-                day_3_start = ''
-                day_3_end = ''
-            cat_experts.append({'expert_id': e_db.expert_id,
-                                'last_name': e_db.last_name,
-                                'first_name': e_db.first_name,
-                                'patronymic': e_db.patronymic,
-                                'email': e_db.email,
-                                'degree': e_db.degree,
-                                'place_of_work': e_db.place_of_work,
-                                'day_1_start': day_1_start,
-                                'day_1_end': day_1_end,
-                                'day_2_start': day_2_start,
-                                'day_2_end': day_2_end,
-                                'day_3_start': day_3_start,
-                                'day_3_end': day_3_end})
-        cat_experts = sorted(cat_experts, key=lambda e: e['first_name'])
-        cat_experts = sorted(cat_experts, key=lambda e: e['last_name'])
-        cat['experts'] = cat_experts
+#     for cat in cats:
+#         cat_experts = []
+#         exps = [e.expert_id for e in CatExperts.query.filter(CatExperts.cat_id == cat['id']).all()]
+#         for e in exps:
+#             e_db = db.session.query(Experts).filter(Experts.expert_id == e).first()
+#             e_t_db = db.session.query(CatExperts).filter(CatExperts.cat_id == cat['id']) \
+#                 .filter(CatExperts.expert_id == e).first()
+#             if e_t_db:
+#                 if e_t_db.day_1_started is not None:
+#                     day_1_start = e_t_db.day_1_started.strftime('%H:%M')
+#                 else:
+#                     day_1_start = ''
+#                 if e_t_db.day_1_finished is not None:
+#                     day_1_end = e_t_db.day_1_finished.strftime('%H:%M')
+#                 else:
+#                     day_1_end = ''
+#                 if e_t_db.day_2_started is not None:
+#                     day_2_start = e_t_db.day_2_started.strftime('%H:%M')
+#                 else:
+#                     day_2_start = ''
+#                 if e_t_db.day_2_finished is not None:
+#                     day_2_end = e_t_db.day_2_finished.strftime('%H:%M')
+#                 else:
+#                     day_2_end = ''
+#                 if e_t_db.day_3_started is not None:
+#                     day_3_start = e_t_db.day_3_started.strftime('%H:%M')
+#                 else:
+#                     day_3_start = ''
+#                 if e_t_db.day_3_finished is not None:
+#                     day_3_end = e_t_db.day_3_finished.strftime('%H:%M')
+#                 else:
+#                     day_3_end = ''
+#             else:
+#                 day_1_start = ''
+#                 day_1_end = ''
+#                 day_2_start = ''
+#                 day_2_end = ''
+#                 day_3_start = ''
+#                 day_3_end = ''
+#             cat_experts.append({'expert_id': e_db.expert_id,
+#                                 'last_name': e_db.last_name,
+#                                 'first_name': e_db.first_name,
+#                                 'patronymic': e_db.patronymic,
+#                                 'email': e_db.email,
+#                                 'degree': e_db.degree,
+#                                 'place_of_work': e_db.place_of_work,
+#                                 'day_1_start': day_1_start,
+#                                 'day_1_end': day_1_end,
+#                                 'day_2_start': day_2_start,
+#                                 'day_2_end': day_2_end,
+#                                 'day_3_start': day_3_start,
+#                                 'day_3_end': day_3_end})
+#         cat_experts = sorted(cat_experts, key=lambda e: e['first_name'])
+#         cat_experts = sorted(cat_experts, key=lambda e: e['last_name'])
+#         cat['experts'] = cat_experts
 
-        c_dates = {}
-        if cat['id'] in [c.cat_id for c in ReportDates.query.all()]:
-            dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
-            if dates_db.day_1:
-                c_dates['d_1'] = days[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
-            else:
-                c_dates['d_1'] = None
-            if dates_db.day_2:
-                c_dates['d_2'] = days[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d.%m')
-            else:
-                c_dates['d_2'] = None
-            if dates_db.day_3:
-                c_dates['d_3'] = days[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d.%m')
-            else:
-                c_dates['d_3'] = None
-        else:
-            c_dates['day_1'] = None
-            c_dates['day_2'] = None
-            c_dates['day_3'] = None
-            # cat_dates.append(c_dates)
-        cat['c_dates'] = c_dates
+#         c_dates = {}
+#         if cat['id'] in [c.cat_id for c in ReportDates.query.all()]:
+#             dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat['id']).first()
+#             if dates_db.day_1:
+#                 c_dates['d_1'] = days[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d.%m')
+#             else:
+#                 c_dates['d_1'] = None
+#             if dates_db.day_2:
+#                 c_dates['d_2'] = days[dates_db.day_2.strftime('%w')] + ', ' + dates_db.day_2.strftime('%d.%m')
+#             else:
+#                 c_dates['d_2'] = None
+#             if dates_db.day_3:
+#                 c_dates['d_3'] = days[dates_db.day_3.strftime('%w')] + ', ' + dates_db.day_3.strftime('%d.%m')
+#             else:
+#                 c_dates['d_3'] = None
+#         else:
+#             c_dates['day_1'] = None
+#             c_dates['day_2'] = None
+#             c_dates['day_3'] = None
+#             # cat_dates.append(c_dates)
+#         cat['c_dates'] = c_dates
 
-    if expert_to_edit:
-        exp = int(expert_to_edit)
-        e_db = db.session.query(Experts).filter(Experts.expert_id == exp).first()
-        expert_to_edit = {'expert_id': e_db.expert_id,
-                          'last_name': e_db.last_name,
-                          'first_name': e_db.first_name,
-                          'patronymic': e_db.patronymic,
-                          'email': e_db.email,
-                          'degree': e_db.degree,
-                          'place_of_work': e_db.place_of_work}
+#     if expert_to_edit:
+#         exp = int(expert_to_edit)
+#         e_db = db.session.query(Experts).filter(Experts.expert_id == exp).first()
+#         expert_to_edit = {'expert_id': e_db.expert_id,
+#                           'last_name': e_db.last_name,
+#                           'first_name': e_db.first_name,
+#                           'patronymic': e_db.patronymic,
+#                           'email': e_db.email,
+#                           'degree': e_db.degree,
+#                           'place_of_work': e_db.place_of_work}
 
-    all_days = set(
-        d.day_1 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_1 is not None)
-    all_days.update(
-        set(d.day_2 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_2 is not None))
-    all_days.update(
-        set(d.day_3 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_3 is not None))
-    a_days = sorted(all_days)
-    all_days = [days[a.strftime('%w')] + ', ' + a.strftime('%d.%m') for a in a_days]
-    return render_template('supervisors/experts.html', expert_to_edit=expert_to_edit, cats=cats, all_days=all_days,
-                           all_exps=all_exps, cat_id=cat_id)
-
-
-@app.route('/expert_time/<cat_id>', methods=['POST'])
-def expert_time(cat_id):
-    cat_id = int(cat_id)
-    for expert in [e.expert_id for e in CatExperts.query.filter(CatExperts.cat_id == cat_id).all()]:
-        if 'day_1_start/' + str(expert) in request.form.keys() and request.form['day_1_start/' + str(expert)] != '':
-            day_1_start = datetime.datetime.strptime(request.form['day_1_start/' + str(expert)], '%H:%M').time()
-        else:
-            day_1_start = None
-        if 'day_1_end/' + str(expert) in request.form.keys() and request.form['day_1_end/' + str(expert)] != '':
-            day_1_end = datetime.datetime.strptime(request.form['day_1_end/' + str(expert)], '%H:%M').time()
-        else:
-            day_1_end = None
-        if 'day_2_start/' + str(expert) in request.form.keys() and request.form['day_2_start/' + str(expert)] != '':
-            day_2_start = datetime.datetime.strptime(request.form['day_2_start/' + str(expert)], '%H:%M').time()
-        else:
-            day_2_start = None
-        if 'day_2_end/' + str(expert) in request.form.keys() and request.form['day_2_end/' + str(expert)] != '':
-            day_2_end = datetime.datetime.strptime(request.form['day_2_end/' + str(expert)], '%H:%M').time()
-        else:
-            day_2_end = None
-        if 'day_3_start/' + str(expert) in request.form.keys() and request.form['day_3_start/' + str(expert)] != '':
-            day_3_start = datetime.datetime.strptime(request.form['day_3_start/' + str(expert)], '%H:%M').time()
-        else:
-            day_3_start = None
-        if 'day_3_end/' + str(expert) in request.form.keys() and request.form['day_3_end/' + str(expert)] != '':
-            day_3_end = datetime.datetime.strptime(request.form['day_3_end/' + str(expert)], '%H:%M').time()
-        else:
-            day_3_end = None
-        c_e = CatExperts(expert, cat_id, day_1_start, day_1_end, day_2_start, day_2_end, day_3_start, day_3_end)
-        if c_e not in CatExperts.query.all():
-            db.session.query(CatExperts).filter(CatExperts.cat_id == cat_id).filter(CatExperts.expert_id == expert) \
-                .update({CatExperts.day_1_started: day_1_start,
-                         CatExperts.day_1_finished: day_1_end,
-                         CatExperts.day_2_started: day_2_start,
-                         CatExperts.day_2_finished: day_2_end,
-                         CatExperts.day_3_started: day_3_start,
-                         CatExperts.day_3_finished: day_3_end})
-            db.session.commit()
-    return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
+#     all_days = set(
+#         d.day_1 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_1 is not None)
+#     all_days.update(
+#         set(d.day_2 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_2 is not None))
+#     all_days.update(
+#         set(d.day_3 for d in ReportDates.query.all() if d.cat_id in [c['id'] for c in cats] and d.day_3 is not None))
+#     a_days = sorted(all_days)
+#     all_days = [days[a.strftime('%w')] + ', ' + a.strftime('%d.%m') for a in a_days]
+#     return render_template('supervisors/experts.html', expert_to_edit=expert_to_edit, cats=cats, all_days=all_days,
+#                            all_exps=all_exps, cat_id=cat_id)
 
 
-@app.route('/save_expert/<cat_id>', methods=['POST'])
-def save_expert(cat_id):
-    cat_id = int(cat_id)
-    last_name = request.form['last_name']
-    first_name = request.form['first_name']
-    patronymic = request.form['patronymic']
-    email = request.form['email']
-    degree = request.form['degree']
-    place_of_work = request.form['place_of_work']
-    expert = Experts(last_name=last_name, first_name=first_name, patronymic=patronymic, email=email, degree=degree,
-                     place_of_work=place_of_work, year=curr_year)
-    if 'expert_id' in request.form.keys():
-        expert_id = int(request.form['expert_id'])
-        if expert not in Experts.query.filter(Experts.expert_id == expert_id).all():
-            db.session.query(Experts).filter(Experts.expert_id == expert_id) \
-                .update({Experts.last_name: last_name,
-                         Experts.first_name: first_name,
-                         Experts.patronymic: patronymic,
-                         Experts.email: email,
-                         Experts.degree: degree,
-                         Experts.place_of_work: place_of_work,
-                         Experts.year: curr_year})
-            db.session.commit()
-    else:
-        db.session.add(expert)
-        db.session.flush()
-        db.session.commit()
-        expert_id = expert.expert_id
-    cat_expert = CatExperts(expert_id, cat_id, None, None, None, None, None, None)
-    if expert_id in [e.expert_id for e in CatExperts.query.all()]:
-        if cat_id not in [e.cat_id for e in CatExperts.query.filter(CatExperts.expert_id == expert_id).all()]:
-            db.session.query(CatExperts).filter(CatExperts.expert_id == expert_id).update({CatExperts.cat_id: cat_id})
-            db.session.commit()
-    else:
-        db.session.add(cat_expert)
-        db.session.commit()
-    return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
+# @app.route('/expert_time/<cat_id>', methods=['POST'])
+# def expert_time(cat_id):
+#     cat_id = int(cat_id)
+#     for expert in [e.expert_id for e in CatExperts.query.filter(CatExperts.cat_id == cat_id).all()]:
+#         if 'day_1_start/' + str(expert) in request.form.keys() and request.form['day_1_start/' + str(expert)] != '':
+#             day_1_start = datetime.datetime.strptime(request.form['day_1_start/' + str(expert)], '%H:%M').time()
+#         else:
+#             day_1_start = None
+#         if 'day_1_end/' + str(expert) in request.form.keys() and request.form['day_1_end/' + str(expert)] != '':
+#             day_1_end = datetime.datetime.strptime(request.form['day_1_end/' + str(expert)], '%H:%M').time()
+#         else:
+#             day_1_end = None
+#         if 'day_2_start/' + str(expert) in request.form.keys() and request.form['day_2_start/' + str(expert)] != '':
+#             day_2_start = datetime.datetime.strptime(request.form['day_2_start/' + str(expert)], '%H:%M').time()
+#         else:
+#             day_2_start = None
+#         if 'day_2_end/' + str(expert) in request.form.keys() and request.form['day_2_end/' + str(expert)] != '':
+#             day_2_end = datetime.datetime.strptime(request.form['day_2_end/' + str(expert)], '%H:%M').time()
+#         else:
+#             day_2_end = None
+#         if 'day_3_start/' + str(expert) in request.form.keys() and request.form['day_3_start/' + str(expert)] != '':
+#             day_3_start = datetime.datetime.strptime(request.form['day_3_start/' + str(expert)], '%H:%M').time()
+#         else:
+#             day_3_start = None
+#         if 'day_3_end/' + str(expert) in request.form.keys() and request.form['day_3_end/' + str(expert)] != '':
+#             day_3_end = datetime.datetime.strptime(request.form['day_3_end/' + str(expert)], '%H:%M').time()
+#         else:
+#             day_3_end = None
+#         c_e = CatExperts(expert, cat_id, day_1_start, day_1_end, day_2_start, day_2_end, day_3_start, day_3_end)
+#         if c_e not in CatExperts.query.all():
+#             db.session.query(CatExperts).filter(CatExperts.cat_id == cat_id).filter(CatExperts.expert_id == expert) \
+#                 .update({CatExperts.day_1_started: day_1_start,
+#                          CatExperts.day_1_finished: day_1_end,
+#                          CatExperts.day_2_started: day_2_start,
+#                          CatExperts.day_2_finished: day_2_end,
+#                          CatExperts.day_3_started: day_3_start,
+#                          CatExperts.day_3_finished: day_3_end})
+#             db.session.commit()
+#     return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
 
 
-@app.route('/add_existing_expert/<cat_id>/<expert_id>')
-def add_existing_expert(cat_id, expert_id):
-    cat_id = int(cat_id)
-    expert_id = int(expert_id)
-    c_e = CatExperts(expert_id, cat_id, None, None, None, None, None, None)
-    if expert_id in [e.expert_id for e in Experts.query.all()]:
-        if expert_id in [e.expert_id for e in CatExperts.query.all()]:
-            if cat_id not in [e.cat_id for e in CatExperts.query.filter(CatExperts.expert_id == expert_id).all()]:
-                db.session.add(c_e)
-                db.session.commit()
-        else:
-            db.session.add(c_e)
-            db.session.commit()
-    return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
+# @app.route('/save_expert/<cat_id>', methods=['POST'])
+# def save_expert(cat_id):
+#     cat_id = int(cat_id)
+#     last_name = request.form['last_name']
+#     first_name = request.form['first_name']
+#     patronymic = request.form['patronymic']
+#     email = request.form['email']
+#     degree = request.form['degree']
+#     place_of_work = request.form['place_of_work']
+#     expert = Experts(last_name=last_name, first_name=first_name, patronymic=patronymic, email=email, degree=degree,
+#                      place_of_work=place_of_work, year=curr_year)
+#     if 'expert_id' in request.form.keys():
+#         expert_id = int(request.form['expert_id'])
+#         if expert not in Experts.query.filter(Experts.expert_id == expert_id).all():
+#             db.session.query(Experts).filter(Experts.expert_id == expert_id) \
+#                 .update({Experts.last_name: last_name,
+#                          Experts.first_name: first_name,
+#                          Experts.patronymic: patronymic,
+#                          Experts.email: email,
+#                          Experts.degree: degree,
+#                          Experts.place_of_work: place_of_work,
+#                          Experts.year: curr_year})
+#             db.session.commit()
+#     else:
+#         db.session.add(expert)
+#         db.session.flush()
+#         db.session.commit()
+#         expert_id = expert.expert_id
+#     cat_expert = CatExperts(expert_id, cat_id, None, None, None, None, None, None)
+#     if expert_id in [e.expert_id for e in CatExperts.query.all()]:
+#         if cat_id not in [e.cat_id for e in CatExperts.query.filter(CatExperts.expert_id == expert_id).all()]:
+#             db.session.query(CatExperts).filter(CatExperts.expert_id == expert_id).update({CatExperts.cat_id: cat_id})
+#             db.session.commit()
+#     else:
+#         db.session.add(cat_expert)
+#         db.session.commit()
+#     return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
 
 
-@app.route('/delete_expert/<cat_id>/<expert_id>')
-def delete_expert(cat_id, expert_id):
-    cat_id = int(cat_id)
-    expert_id = int(expert_id)
-    if expert_id in [e.expert_id for e in CatExperts.query.all()]:
-        if cat_id in [e.cat_id for e in CatExperts.query.filter(CatExperts.expert_id == expert_id).all()]:
-            to_del = db.session.query(CatExperts).filter(CatExperts.expert_id == expert_id) \
-                .filter(CatExperts.cat_id == cat_id).first()
-            db.session.delete(to_del)
-            db.session.commit()
-    return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
+# @app.route('/add_existing_expert/<cat_id>/<expert_id>')
+# def add_existing_expert(cat_id, expert_id):
+#     cat_id = int(cat_id)
+#     expert_id = int(expert_id)
+#     c_e = CatExperts(expert_id, cat_id, None, None, None, None, None, None)
+#     if expert_id in [e.expert_id for e in Experts.query.all()]:
+#         if expert_id in [e.expert_id for e in CatExperts.query.all()]:
+#             if cat_id not in [e.cat_id for e in CatExperts.query.filter(CatExperts.expert_id == expert_id).all()]:
+#                 db.session.add(c_e)
+#                 db.session.commit()
+#         else:
+#             db.session.add(c_e)
+#             db.session.commit()
+#     return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
+
+
+# @app.route('/delete_expert/<cat_id>/<expert_id>')
+# def delete_expert(cat_id, expert_id):
+#     cat_id = int(cat_id)
+#     expert_id = int(expert_id)
+#     if expert_id in [e.expert_id for e in CatExperts.query.all()]:
+#         if cat_id in [e.cat_id for e in CatExperts.query.filter(CatExperts.expert_id == expert_id).all()]:
+#             to_del = db.session.query(CatExperts).filter(CatExperts.expert_id == expert_id) \
+#                 .filter(CatExperts.cat_id == cat_id).first()
+#             db.session.delete(to_del)
+#             db.session.commit()
+#     return redirect(url_for('.experts', cat_id=cat_id, expert_to_edit=None))
 
 
 @app.route('/discount_and_participation_mode/<part_id>')
