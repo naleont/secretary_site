@@ -10,7 +10,7 @@
 
 <table width="100%">
     <tr>
-        <td rowspan="4">
+        <td rowspan="5">
             {{ category['contest'] }}<br>
             Направление: {{ category['direction'] }}<br>
             {% if category['tg_channel'] %}
@@ -52,6 +52,11 @@
         or (session['online_secretary'] == True and category['id'] in session['cat_id']) %}
             <td width="auto" valign="middle"><a href="/button_works/{{ category['id'] }}">
                 <button>Обновить работы секции</button>
+            </a></td>
+    </tr>
+    <tr>
+            <td width="auto" valign="middle"><a href="/view_works/{{ category['id'] }}">
+                <button>Синхронизированные работы</button>
             </a></td>
     </tr>
     <tr>

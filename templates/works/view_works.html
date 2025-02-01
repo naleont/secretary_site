@@ -16,7 +16,7 @@
     {% for c in cats %}
     <tr>
         <td colspan="2">
-            <b>{{ c['cat_name'] }}</b>
+            <b>{{ c['cat_name'] }} (допущенных работ: {{ c['works']|length }})</b>
         </td>
     </tr>
     {% for w in c['works'] %}

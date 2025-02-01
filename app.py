@@ -1476,7 +1476,9 @@ def main_page():
     else:
         access = 0
     access_list = [i for i in access_types.keys() if access_types[i] <= access]
-    return render_template('main.html', news=news, access_list=access_list)
+    if session['type'] in ['admin', 'org', 'manager']:
+        without_cat = len([w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == 0).all()])
+    return render_template('main.html', news=news, access_list=access_list, without_cat=without_cat)
 
 
 @app.route('/photo_archive')
@@ -3580,6 +3582,7 @@ def button_works(cat_id):
     tz_regions = {t.region.lower(): t.tz for t in TimeZones.query.all()}
     tz_areas = {t.area.lower(): t.tz for t in TimeZones.query.filter(TimeZones.area != 0).all()}
     tz_countries = {t.country.lower(): t.tz for t in TimeZones.query.filter(TimeZones.region == 0).all()}
+    works_pulled = []
 
     for n in response:
         if int(n['section']['id']) in cats:
@@ -3593,6 +3596,7 @@ def button_works(cat_id):
             country = n['organization']['country']
             region = n['organization']['region']
             city = n['organization']['city']
+            works_pulled.append(work_id)
             if city.lower() in tz_regions.keys() and city != '':
                 timeshift = tz_regions[city.lower()]
             elif region.lower() in tz_regions.keys() and region != '':
@@ -3744,6 +3748,11 @@ def button_works(cat_id):
                 db.session.add(w)
                 db.session.commit()
 
+    for w in work_id_list:
+        if w not in works_pulled:
+            db.session.query(WorkCategories).filter(WorkCategories.work_id == w).update({WorkCategories.cat_id: 0})
+            db.session.commit()
+
     if type(url) == list and 'category_page' in url:
         # errs = 'Обновлено успешно'
         if url[1] != '':
@@ -3768,7 +3777,9 @@ def view_works(cat):
                                                                                          Categories.cat_name).all()
         for c in categories:
             curr_cat = {'cat_id': c.cat_id, 'cat_name': c.cat_name}
-            works_db = Works.query.join(WorkCategories, WorkCategories.work_id == Works.work_id).filter(WorkCategories.cat_id == c.cat_id).all()
+            works_db = Works.query.join(WorkCategories, WorkCategories.work_id == Works.work_id)\
+            .join(WorkStatuses, WorkStatuses.work_id == Works.work_id).filter(WorkStatuses.status_id == 2)\
+            .filter(WorkCategories.cat_id == c.cat_id).all()
             curr_cat['works'] = [{'work_id': w.work_id, 'name': w.work_name} for w in works_db]
             cats.append(curr_cat)
     else:
