@@ -72,12 +72,35 @@
     </tr>
 </table>
 
+<h4>Чек-лист по работе секций на I туре</h4>
+<ul class="marked">
+    <li>
+        Рецензирование работ - <i>до 1 марта</i>
+        <span class="comment">(<a target="_blank" href="../../static/files/knowledge_files/direct_for_review_guide.pdf">инструкция по направлению на рецензирование</a>)</span>
+    </li>
+    <li>
+        Выбор работ для включения в сборник - <i>до 1 марта</i>
+    </li>
+    <li>
+        <!-- <a href="#fee-free">Выбор работ для участия без оргвзноса ("топ-100")</a> - <i>до 1 марта</i> -->
+        Выбор работ для участия без оргвзноса ("топ-100") - <i>до 1 марта</i>
+        <span class="comment">(в форме ниже)</span>
+    </li>
+    <li>
+        Выставление оценок руководителя секции - <i>до 1 марта</i>
+        <span class="comment">(см. в конце<a target="_blank" href="../../static/files/knowledge_files/direct_for_review_guide.pdf">инструкции по направлению на рецензирование</a>)</span>
+    </li>
+    <li>
+        <a href="/analysis_works/{{ category['id'] }}">Анализ рецензий региональных туров</a> - <i>до 1 апреля</i>
+    </li>
+</ul>
+
 
 {% if show_top_100 == True %}
 {% if session['type'] in ['admin', 'org', 'manager']
 or (session['supervisor'] == True and category['id'] in session['cat_id'])
 or (session['secretary'] == True and category['id'] in session['cat_id']) %}
-<h3>Работы, участвующие без оргвзноса</h3>
+<h3 id="-a-name-fee-free-a-1-"><a name="fee-free"></a>Работы, участвующие без оргвзноса</h3>
 <p>1-3 лучшие работы от каждой секции получат возможность участвовать во 2 туре Конкурса без оплаты оргвзноса.
     Добавьте работы ниже, чтобы включить их в список.
     <b>Работы региональных туров в список не включаются и от оргвзноса не освобождаются</b>.</p>

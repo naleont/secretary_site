@@ -301,6 +301,12 @@
           text-align: center;
           font-weight: bold;
       }
+    .marked li::before {
+      content: url(../static/svg/list-arrow.svg);
+    }
+    .marked li + li {
+      padding-top: 5px;
+    }
       .above {
           margin: -7px;
           padding: -7px;
@@ -420,7 +426,7 @@
 <!--&lt;!&ndash;        <li><a href="https://gymnasium.msu.ru/courses/294" target="_blank">Canvas</a></li>&ndash;&gt;-->
 <!--        <li><a href="https://vk.com/vernadsky_org_news" target="_blank">Группа VK</a></li>-->
       {% if session['secretary'] == True or session['type'] in ['manager', 'org', 'admin'] %}
-                <a href="https://t.me/+lGe828iUZhdkM2Ey" target="_blank">
+                <a href="https://t.me/+jAZLxGerVwBiNDdi" target="_blank">
         <div class="well">
             <p>Чат секретарей</p>
         </div>
@@ -428,7 +434,7 @@
 <!--      <li><a href="https://t.me/+lGe828iUZhdkM2Ey" target="_blank">Чат секретарей</a></li>-->
       {% endif %}
       {% if session['type'] in ['team', 'admin', 'org', 'manager'] %}
-                <a href="https://t.me/+QR-Z_TW4Ktg1YTQ6" target="_blank">
+                <a href="https://t.me/+-BMcPkBby5kyMmYy" target="_blank">
         <div class="well">
             <p>Чат волонтеров</p>
         </div>

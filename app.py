@@ -3754,6 +3754,34 @@ def button_works(cat_id):
         return redirect(url_for('.add_works', works_added=works_added, works_edited=works_edited))
 
 
+@app.route('/view_works', defaults={'cat': 'all'})
+@app.route('/view_works/<cat>')
+def view_works(cat):
+    if cat == 'all':
+        cats = []
+        categories = db.session.query(Categories
+                                      ).filter(Categories.year == curr_year
+                                               ).join(CatDirs
+                                                      ).join(Directions).join(Contests
+                                                                              ).order_by(CatDirs.dir_id,
+                                                                                         CatDirs.contest_id,
+                                                                                         Categories.cat_name).all()
+        for c in categories:
+            curr_cat = {'cat_id': c.cat_id, 'cat_name': c.cat_name}
+            works_db = Works.query.join(WorkCategories, WorkCategories.work_id == Works.work_id).filter(WorkCategories.cat_id == c.cat_id).all()
+            curr_cat['works'] = [{'work_id': w.work_id, 'name': w.work_name} for w in works_db]
+            cats.append(curr_cat)
+    else:
+        cats = []
+        c = Categories.query.filter(Categories.cat_id == int(cat)).first()
+        curr_cat = {'cat_id': c.cat_id, 'cat_name': c.cat_name}
+        works_db = Works.query.join(WorkCategories, WorkCategories.work_id == Works.work_id).filter(WorkCategories.cat_id == int(cat)).all()
+        curr_cat['works'] = [{'work_id': w.work_id, 'name': w.work_name} for w in works_db]
+        cats.append(curr_cat)
+    return render_template('works/view_works.html', cats = cats)
+
+
+
 @app.route('/timezones', defaults={'e': None})
 @app.route('/timezones/<e>')
 def timezones(e):
