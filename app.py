@@ -1478,6 +1478,8 @@ def main_page():
     access_list = [i for i in access_types.keys() if access_types[i] <= access]
     if 'type' in session.keys() and session['type'] in ['admin', 'org', 'manager']:
         without_cat = len([w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == 0).all()])
+    else:
+        without_cat = []
     return render_template('main.html', news=news, access_list=access_list, without_cat=without_cat)
 
 
