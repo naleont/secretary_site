@@ -4557,6 +4557,8 @@ def reports_order(cat_id):
         works.update(
             get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
         approved_for_2 += len(works)
+        if not dates_db:
+            return redirect(url_for('.set_report_dates'))
         if dates_db.day_1:
             d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
                    'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
