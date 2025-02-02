@@ -1476,7 +1476,7 @@ def main_page():
     else:
         access = 0
     access_list = [i for i in access_types.keys() if access_types[i] <= access]
-    if session['type'] in ['admin', 'org', 'manager']:
+    if 'type' in session.keys() and session['type'] in ['admin', 'org', 'manager']:
         without_cat = len([w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == 0).all()])
     return render_template('main.html', news=news, access_list=access_list, without_cat=without_cat)
 
@@ -3556,16 +3556,28 @@ def button_works(cat_id):
     works_edited = 0
     if cat_id == 'all':
         cats = [c.cat_site_id for c in Categories.query.filter(Categories.year == curr_year).all()]
+        work_cats_list = []
+        for cat in cats:
+            work_cats_list.extend([w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat).all()])
     elif cat_id == 'en':
         cats = [c.cat_site_id for c in Categories.query.join(CatDirs, Categories.cat_id == CatDirs.cat_id)
         .join(Directions, CatDirs.dir_id == Directions.direction_id).filter(Categories.year == curr_year)
         .filter(Directions.dir_name == 'Естественнонаучное').all()]
+        work_cats_list = []
+        for cat in cats:
+            work_cats_list.extend([w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat).all()])
     elif cat_id == 'gum':
         cats = [c.cat_site_id for c in Categories.query.join(CatDirs, Categories.cat_id == CatDirs.cat_id)
         .join(Directions, CatDirs.dir_id == Directions.direction_id).filter(Categories.year == curr_year)
         .filter(Directions.dir_name == 'Гуманитарное').all()]
+        work_cats_list = []
+        for cat in cats:
+            work_cats_list.extend([w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat).all()])
     else:
         cats = [Categories.query.filter(Categories.cat_id == int(cat_id)).first().cat_site_id]
+        work_cats_list = []
+        for cat in cats:
+            work_cats_list.extend([w.work_id for w in WorkCategories.query.filter(WorkCategories.cat_id == cat).all()])
 
     work_id_list = [w.work_id for w in Works.query.all()]
     status_id_list = [s.status_id for s in ParticipationStatuses.query.all()]
@@ -3748,7 +3760,7 @@ def button_works(cat_id):
                 db.session.add(w)
                 db.session.commit()
 
-    for w in work_id_list:
+    for w in work_cats_list:
         if w not in works_pulled:
             db.session.query(WorkCategories).filter(WorkCategories.work_id == w).update({WorkCategories.cat_id: 0})
             db.session.commit()
