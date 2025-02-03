@@ -46,6 +46,10 @@
 </form>
 {% endif %}
 
+{% if tasks is None or tasks == [] %}
+<h4>Задачи можно будет выбрать позже </h4>
+{% endif %}
+
 <form action="/choose_volunteer_tasks" method="post">
     <fieldset>
 

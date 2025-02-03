@@ -2244,12 +2244,16 @@ def view_applications():
     renew_session()
     secretaries = [a['user_id'] for a in appl.values() if a['role'] == 'secretary']
     volunteers = [a['user_id'] for a in appl.values() if a['role'] == 'volunteer']
-    source = [{'user_id': u.user_id, 'involved': u.involved, 'occupation': u.occupation} for u in Profile.query
+    source = [{'user_id': u.user_id, 'involved': u.involved, 'occupation': u.occupation, 'grade': u.grade} for u in Profile.query
     .join(Application, Profile.user_id == Application.user_id).filter(Application.year == curr_year).all()]
     msu_school = [a['user_id'] for a in source if a['involved'] == 'MSU_School' and a['occupation'] == 'scholar']
     lyceum = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'scholar']
     graduates = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'student']
     unseen = [a['user_id'] for a in appl.values() if a['considered'] == 'False']
+    for s in source:
+        appl[s['user_id']]['occupation'] = s['occupation']
+        appl[s['user_id']]['involved'] = s['involved']
+        appl[s['user_id']]['grade'] = s['grade']
     return render_template('application management/view_applications.html', applications=appl, year=curr_year,
                            users=users, secretaries=secretaries, volunteers=volunteers, msu_school=msu_school,
                            lyceum=lyceum, graduates=graduates, unseen=unseen)

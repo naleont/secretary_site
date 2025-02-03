@@ -31,7 +31,7 @@
         <td rowspan="2" align="center"><b>Роль</b></td>
         <td colspan="3" align="center" width="50%"><b>Секция</b></td>
         <td rowspan="2" align="center"><b>Любая</b></td>
-        <td rowspan="2" align="center"><b>Участвовал</b></td>
+        <td rowspan="2" align="center"><b>Опыт</b></td>
         <td rowspan="2" align="center" width="3%">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-smile" viewBox="0 0 16 16">
               <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -51,22 +51,31 @@
             bgcolor="#D6FFEE"
             {% endif %}>
         <td>
-            <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
+            <div class="flex-stretch">
+                <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
+                {% if applications[key]['occupation']  == 'scholar' %}
+                    {% if applications[key]['involved']  == '1553' %}
+                    <span>Л{{applications[key]['grade']}}</span>
+                    {% elif applications[key]['involved']  == 'MSU_School' %}
+                    <span>УГ{{applications[key]['grade']}}</span>
+                    {% endif %}
+                {% endif %}
+            </div>
         </td>
 <!--        <td align="center">-->
 <!--            {% if users[applications[key]['user_id']]['secretary'] == True %}-->
 <!--            Да-->
 <!--            {% endif %}-->
 <!--        </td>-->
-        <td>
+        <td align="center">
             {% if applications[key]['role'] == 'secretary' %}
-            Секретарь
+            С
             {% elif applications[key]['role'] == 'volunteer' %}
-            Волонтер
+            В
             {% elif applications[key]['role'] == 'other' %}
-            Другое
+            Др
             {% elif applications[key]['role'] == 'not_sure' %}
-            Не знаю
+            ?
             {% elif applications[key]['role'] == None %}
             {% endif %}
 
@@ -104,11 +113,11 @@
         </td>
         <td align="center">
             {% if applications[key]['taken_part'] == "volunteer" %}
-            волонтером
+            В
             {% elif applications[key]['taken_part'] == "secretary" %}
-            секретарем
+            С
             {% else %}
-            нет
+            -
             {% endif %}
         </td>
         <td align="center">
