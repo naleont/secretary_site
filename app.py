@@ -1592,8 +1592,13 @@ def reset_password():
 @app.route('/logging', defaults={'url': ''})
 @app.route('/logging/<url>')
 def logging(url):
-    if '[' in url:
-        url = json.loads(url.replace("'", "\""))
+    try:
+        if 'team_application' in url:
+            url = 'team_application'
+        elif '[' in url:
+            url = json.loads(url.replace("'", "\""))
+    except json.decoder.JSONDecodeError:
+        url = ''
     if type(url) == list:
         if 'change_pwd' in url:
             u = ''
