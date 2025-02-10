@@ -4,7 +4,6 @@
 
 {% block content %}
 <h2>Сайт команды Конкурса им. В. И. Вернадского</h2><br>
-<h4>check_it</h4>
 {% if session['type'] in ['admin', 'org', 'manager'] %}
 {% if without_cat != 0 %}
 <h4 class="alarm">Работ без секции: {{ without_cat }}</h4>
