@@ -5,5 +5,3 @@ import datetime
 
 db = SQLAlchemy()
 db_name = 'yais_db.db'
-
-#hi
