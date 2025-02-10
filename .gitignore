@@ -32,3 +32,5 @@ lesson_shedule.xlsx
 personal_schedule.py
 .DS_Store
 yais_models.py
+passenger_wsgi.py
+
