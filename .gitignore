@@ -34,3 +34,4 @@ personal_schedule.py
 yais_models.py
 passenger_wsgi.py
 credentials.json
+token.json
