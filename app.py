@@ -29,6 +29,8 @@ import random
 import string
 from bs4 import BeautifulSoup
 
+from gmail_sender import *
+
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
@@ -251,18 +253,23 @@ def decrypt(encrypted_message):
 def send_email(email):
     user_id = db.session.query(Users).filter(Users.email == email).first().user_id
     link = request.url_root + 'approve/' + str(user_id)
-    msg = Message(subject='Подтверждение e-mail',
-                  body='Это подтверждение вашей регистрации на сайте для секретарей Конкурса им. В. И.'
-                       'Вернадского. Перейдите по ссылке для подтверждения email: ' + link,
-                  sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
-                  recipients=[email])
-    mail.send(msg)
 
+    sender = "team@vernadsky.info"  # Здесь можно указать просто адрес.
+    # Или "Команда Конкурса им. В. И. Вернадского <team@vernadsky.info>".
+    subject = "Подтверждение e-mail"
+    body = (
+        "Это подтверждение вашей регистрации на сайте для секретарей Конкурса им. В. И. Вернадского.\n"
+        f"Перейдите по ссылке для подтверждения email: {link}"
+    )
+
+    service = get_service()
+    message = create_message_text(sender, email, subject, body)
+    send_message(service, "me", message)
 
 def find_user(user_got):
     tel = re.sub(
         r'(^\+7|^8|^7|^9)(-|\(|\)|\s)*(?P<a>\d+)(-|\(|\)|\s)*(?P<b>\d+)(-|\(|\)|\s)*(?P<c>\d+)(-|\(|\)|\s)*(?P<d>\d+)',
-        '+7\g<a>\g<b>\g<c>\g<d>', user_got)
+        r'+7\g<a>\g<b>\g<c>\g<d>', user_got)
     if user_got in [user.email for user in Users.query.all()]:
         user = db.session.query(Users).filter(Users.email == user_got).first()
     elif tel in [user.tel for user in Users.query.all()]:
@@ -1580,11 +1587,26 @@ def reset_password():
         db.session.add(r)
         db.session.commit()
         link = request.url_root + 'new_password/' + str(user.user_id) + '/' + reset_key
-        msg = Message(subject='Сброс пароля',
-                      html=render_template('mails/user_management/mail_reset_password.html', link=link),
-                      sender=('Команда Конкурса им. В. И. Вернадского', 'info@vernadsky.info'),
-                      recipients=[user.email])
-        mail.send(msg)
+
+        # Генерируем HTML-содержимое письма
+        html_body = render_template('mails/user_management/mail_reset_password.html', link=link)
+
+        # Параметры письма
+        subject = 'Сброс пароля'
+        sender = 'info@vernadsky.info'  # адрес, от которого отправляем
+
+        # Получаем сервис Gmail API и формируем сообщение
+        service = get_service()
+        message = create_message_html(
+            sender=sender,
+            to=user.email,
+            subject=subject,
+            html_body=html_body
+        )
+
+        # Отправляем письмо
+        send_message(service, "me", message)
+
     return redirect(url_for('.login', wrong='sent'))
 
 
@@ -2432,7 +2454,7 @@ def search_user():
     query = request.values.get('query', str)
     tel = re.sub(
         r'(^\+7|^8|^7|^9)(-|\(|\)|\s)*(?P<a>\d+)(-|\(|\)|\s)*(?P<b>\d+)(-|\(|\)|\s)*(?P<c>\d+)(-|\(|\)|\s)*(?P<d>\d+)',
-        '+7\g<a>\g<b>\g<c>\g<d>', query)
+        r'+7\g<a>\g<b>\g<c>\g<d>', query)
     users = []
     if tel in [u.tel for u in Users.query.all()]:
         users.extend([u.user_id for u in Users.query.filter(Users.tel == tel).order_by(Users.user_id.desc()).all()])
@@ -6252,6 +6274,9 @@ def sending_diplomas(send_type, w_c_id):
     payed.extend([w.work_id for w in Discounts.query.filter(Discounts.payment == 0).all()])
 
     dir = 'static/files/uploaded_files/diplomas_online_' + str(curr_year) + '/'
+
+    service = get_service()
+
     for w_id in works:
         # try:
         if w_id in payed:
@@ -6260,28 +6285,65 @@ def sending_diplomas(send_type, w_c_id):
                 mails = [(m.mail_id, m.email) for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
                 .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
                 if mails:
-                    for a in mails:
-                        m = a[1]
-                        if m != 0 and m != '0' and m != '':
-                            attachments = []
+                    for mail_record in mails:
+                        mail_id, recipient_email = mail_record
+                        if recipient_email not in ('0', 0, ''):
+                            # Формируем attachments_list
+                            attachments_list = []
                             for f in files:
-                                fi = dir + '/' + f
+                                fi = os.path.join(dir, f)
                                 with app.open_resource(fi) as file:
-                                    attachments.append(Attachment(filename=os.path.basename(fi),
-                                                                  content_type=mimetypes.guess_type(fi)[0],
-                                                                  data=file.read()))
+                                    file_data = file.read()
+                                attachments_list.append({
+                                    'filename': os.path.basename(fi),
+                                    'data': file_data
+                                })
 
-                            msg = Message(subject='Наградные документы ' + str(w_id),
-                                          html=render_template('diplomas_mail.html', work_id=w_id),
-                                          attachments=attachments,
-                                          sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
-                                          recipients=[m])
-                            mail.send(msg)
+                            # Формируем письмо
+                            html_body = render_template('diplomas_mail.html', work_id=w_id)
+                            subject = 'Наградные документы ' + str(w_id)
+                            sender = 'team@vernadsky.info'
 
-                            db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
-                                WorkMail.mail_id == a[0]) \
+                            message = create_message_with_attachments(
+                                sender=sender,
+                                to=recipient_email,
+                                subject=subject,
+                                html_body=html_body,
+                                attachments=attachments_list
+                            )
+
+                            # Отправляем
+                            send_message(service, "me", message)
+
+                            # Обновляем WorkMail.sent
+                            db.session.query(WorkMail) \
+                                .filter(WorkMail.work_id == w_id) \
+                                .filter(WorkMail.mail_id == mail_id) \
                                 .update({WorkMail.sent: True})
                             db.session.commit()
+                # if mails:
+                #     for a in mails:
+                #         m = a[1]
+                #         if m != 0 and m != '0' and m != '':
+                #             attachments = []
+                #             for f in files:
+                #                 fi = dir + '/' + f
+                #                 with app.open_resource(fi) as file:
+                #                     attachments.append(Attachment(filename=os.path.basename(fi),
+                #                                                   content_type=mimetypes.guess_type(fi)[0],
+                #                                                   data=file.read()))
+                #
+                #             msg = Message(subject='Наградные документы ' + str(w_id),
+                #                           html=render_template('diplomas_mail.html', work_id=w_id),
+                #                           attachments=attachments,
+                #                           sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
+                #                           recipients=[m])
+                #             mail.send(msg)
+                #
+                #             db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
+                #                 WorkMail.mail_id == a[0]) \
+                #                 .update({WorkMail.sent: True})
+                #             db.session.commit()
                             # if w_id in [w.work_id for w in Diplomas.query.all()]:
                             #     to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
                             #     db.session.delete(to_del)
@@ -6313,6 +6375,9 @@ def sending_left_diplomas(send_type, w_c_id):
         cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
 
     dir = 'static/files/uploaded_files/diplomas_' + str(curr_year) + '/'
+
+    service = get_service()
+
     for w_id in works:
         # try:
         files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
@@ -6321,29 +6386,65 @@ def sending_left_diplomas(send_type, w_c_id):
             .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
             if mails:
                 for m in mails:
-                    if m != 0 and m != '0' and m != '':
-                        attachments = []
+                    if m not in (0, '0', ''):
+                        attachments_list = []
                         for f in files:
-                            fi = dir + '/' + f
+                            fi = os.path.join(dir, f)
                             with app.open_resource(fi) as file:
-                                attachments.append(Attachment(filename=os.path.basename(fi),
-                                                              content_type=mimetypes.guess_type(fi)[0],
-                                                              data=file.read()))
+                                file_data = file.read()
+                            attachments_list.append({
+                                'filename': os.path.basename(fi),
+                                'data': file_data
+                            })
 
-                        msg = Message(subject='Наградные документы ' + str(w_id),
-                                      html=render_template('diplomas_mail.html', work_id=w_id),
-                                      attachments=attachments,
-                                      sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
-                                      recipients=[m],
-                                      bcc=['info@vernadsky.info'],
-                                      reply_to='info@vernadsky.info')
-                        mail.send(msg)
-                        a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
+                        html_body = render_template('diplomas_mail.html', work_id=w_id)
+                        subject = 'Наградные документы ' + str(w_id)
+                        sender = 'team@vernadsky.info'
+
+                        message = create_message_with_attachments(
+                            sender=sender,
+                            to=m,
+                            subject=subject,
+                            html_body=html_body,
+                            attachments=attachments_list,
+                            bcc='info@vernadsky.info',
+                            reply_to='info@vernadsky.info'
+                        )
+                        send_message(service, "me", message)
+
+                        # Обновляем WorkMail
+                        a = [x.mail_id for x in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
                         for b in a:
-                            db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
-                                WorkMail.mail_id == b) \
+                            db.session.query(WorkMail).filter(WorkMail.work_id == w_id) \
+                                .filter(WorkMail.mail_id == b) \
                                 .update({WorkMail.sent: True})
                             db.session.commit()
+
+            # if mails:
+            #     for m in mails:
+            #         if m != 0 and m != '0' and m != '':
+            #             attachments = []
+            #             for f in files:
+            #                 fi = dir + '/' + f
+            #                 with app.open_resource(fi) as file:
+            #                     attachments.append(Attachment(filename=os.path.basename(fi),
+            #                                                   content_type=mimetypes.guess_type(fi)[0],
+            #                                                   data=file.read()))
+            #
+            #             msg = Message(subject='Наградные документы ' + str(w_id),
+            #                           html=render_template('diplomas_mail.html', work_id=w_id),
+            #                           attachments=attachments,
+            #                           sender=('Команда Конкурса им. В. И. Вернадского', 'team@vernadsky.info'),
+            #                           recipients=[m],
+            #                           bcc=['info@vernadsky.info'],
+            #                           reply_to='info@vernadsky.info')
+            #             mail.send(msg)
+            #             a = [a.mail_id for a in WorkMail.query.filter(WorkMail.work_id == w_id).all()]
+            #             for b in a:
+            #                 db.session.query(WorkMail).filter(WorkMail.work_id == w_id).filter(
+            #                     WorkMail.mail_id == b) \
+            #                     .update({WorkMail.sent: True})
+            #                 db.session.commit()
                         # if w_id in [w.work_id for w in Diplomas.query.all()]:
                         #     to_del = db.session.query(Diplomas).filter(Diplomas.work_id == w_id).first()
                         #     db.session.delete(to_del)
