@@ -17,17 +17,7 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 SERVICE_ACCOUNT_FILE = 'credentials.json'
 
 def get_service():
-    creds = None
-    # Если существует токен, загружаем его
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # Если нет токена или он недействителен, запускаем авторизацию
-    if not creds or not creds.valid:
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=0)
-        # Сохраняем токен для будущих запусков
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+    creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
     service = build('gmail', 'v1', credentials=creds)
     return service
 
