@@ -1565,7 +1565,7 @@ def registration_res():
     try:
         # Отправка письма для подтверждения регистрации
         send_email(user['email'])
-    except ValueError:
+    except BaseException:
         user = db.session.query(Users).filter(Users.user_id == int(session['user_id'])).first()
         user.approved = True
         db.session.commit()
@@ -1613,10 +1613,9 @@ def reset_password():
         # Отправляем письмо
         try:
             send_message(service, "me", message)
-        except ValueError:
+            return redirect(url_for('.login', wrong='sent'))
+        except BaseException:
             return redirect(url_for('.login', wrong='mail_failed'))
-
-    return redirect(url_for('.login', wrong='sent'))
 
 
 # Обработка данных формы авторизации
