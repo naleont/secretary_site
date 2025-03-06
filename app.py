@@ -3919,7 +3919,7 @@ def many_applications():
     works_applied = []
     participants = []
     organisations = []
-    for n in response:
+    for n in w:
         organisation = {'organisation_id': int(n['organization']['id']), 'name': n['organization']['name'],
                         'city': n['organization']['city'], 'country': n['organization']['country'],
                         'appl_no': int(n['id']), 'arrived': bool(n['arrival'])}
