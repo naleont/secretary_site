@@ -1,9 +1,9 @@
 import os
 import base64
-# from email.mime.text import MIMEText
-from google.oauth2.credentials import Credentials
-# from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
+#from email.mime.text import MIMEText
+#from google.oauth2.credentials import Credentials
+#from google.auth.transport.requests import Request
+#from google_auth_oauthlib.flow import InstalledAppFlow
 # from googleapiclient.discovery import build
 # import mimetypes
 from email.mime.multipart import MIMEMultipart
@@ -16,20 +16,33 @@ from googleapiclient.discovery import build
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 SERVICE_ACCOUNT_FILE = 'credentials.json'
 
+IMPERSONATED_USER = 'info@vernadsky.info'
+
 def get_service():
-    creds = None
-    # Если существует токен, загружаем его
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # Если нет токена или он недействителен, запускаем авторизацию
-    if not creds or not creds.valid:
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=0)
-        # Сохраняем токен для будущих запусков
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-    service = build('gmail', 'v1', credentials=creds)
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    )
+
+    # Domain-wide delegation
+    delegated_creds = creds.with_subject(IMPERSONATED_USER)
+
+    service = build('gmail', 'v1', credentials=delegated_creds)
     return service
+
+# def get_service():
+#     creds = None
+#     # Если существует токен, загружаем его
+#     if os.path.exists('token.json'):
+#         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+#     # Если нет токена или он недействителен, запускаем авторизацию
+#     if not creds or not creds.valid:
+#         flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+#         creds = flow.run_local_server(port=0)
+#         # Сохраняем токен для будущих запусков
+#         with open('token.json', 'w') as token:
+#             token.write(creds.to_json())
+#     service = build('gmail', 'v1', credentials=creds)
+#     return service
 
 def create_message_text(sender, to, subject, body):
     """Создаёт простое текстовое письмо и кодирует его в Base64."""
