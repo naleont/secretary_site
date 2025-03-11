@@ -1560,10 +1560,16 @@ def registration_res():
     user['approved'] = False
     # Запись полученных данных пользователя в БД, таблица users
     write_user(user)
-    # Отправка письма для подтверждения регистрации
-    send_email(user['email'])
     # Запись сессии пользователя
     session['user_id'] = db.session.query(Users).filter(Users.email == user['email']).first().user_id
+    try:
+        # Отправка письма для подтверждения регистрации
+        send_email(user['email'])
+    except BaseException:
+        user = db.session.query(Users).filter(Users.user_id == int(session['user_id'])).first()
+        user.approved = True
+        db.session.commit()
+        return redirect(url_for('.profile_info'))
     # Вывод страницы с информацией профиля
     return redirect(url_for('.profile_info', message='first_time'))
 
@@ -1605,9 +1611,11 @@ def reset_password():
         )
 
         # Отправляем письмо
-        send_message(service, "me", message)
-
-    return redirect(url_for('.login', wrong='sent'))
+        try:
+            send_message(service, "me", message)
+            return redirect(url_for('.login', wrong='sent'))
+        except BaseException:
+            return redirect(url_for('.login', wrong='mail_failed'))
 
 
 # Обработка данных формы авторизации
@@ -3911,7 +3919,7 @@ def many_applications():
     works_applied = []
     participants = []
     organisations = []
-    for n in response:
+    for n in w:
         organisation = {'organisation_id': int(n['organization']['id']), 'name': n['organization']['name'],
                         'city': n['organization']['city'], 'country': n['organization']['country'],
                         'appl_no': int(n['id']), 'arrived': bool(n['arrival'])}

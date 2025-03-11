@@ -55,9 +55,9 @@
                 <a href="/one_application/{{ year }}/{{ applications[key]['user_id'] }}">{{ applications[key]['user'] }}</a>
                 {% if applications[key]['occupation']  == 'scholar' %}
                     {% if applications[key]['involved']  == '1553' %}
-                    <span>Л{{applications[key]['grade']}}</span>
+                    <span>Л-{{applications[key]['grade']}}</span>
                     {% elif applications[key]['involved']  == 'MSU_School' %}
-                    <span>УГ{{applications[key]['grade']}}</span>
+                    <span>УГ-{{applications[key]['grade']}}</span>
                     {% endif %}
                 {% endif %}
             </div>
