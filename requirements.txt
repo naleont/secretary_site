@@ -7,6 +7,7 @@ google-api-python-client>=2.162.0
 google-auth>=2.38.0
 google-auth-oauthlib>=1.2.1
 numpy>=1.24.4
+openpyxl>=3.1.5
 pandas>=2.0.3
 pip>=21.1.1
 python-docx>=1.1.2

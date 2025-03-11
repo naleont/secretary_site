@@ -68,10 +68,10 @@ def send_message(service, user_id, message):
     """Отправляет сообщение через Gmail API."""
     try:
         sent_message = service.users().messages().send(userId=user_id, body=message).execute()
-        print(f'Message Id: {sent_message["id"]}')
+        # print(f'Message Id: {sent_message["id"]}')
         return sent_message
     except Exception as e:
-        print(f'An error occurred: {e}')
+        # print(f'An error occurred: {e}')
         return None
 
 def create_message_with_attachment(sender, to, subject, html_body, attachments=None):
