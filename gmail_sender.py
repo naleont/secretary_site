@@ -22,6 +22,7 @@ def get_service():
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES
     )
+    print("SERVICE ACCOUNT EMAIL = ", creds.service_account_email) 
 
     # Domain-wide delegation
     delegated_creds = creds.with_subject(IMPERSONATED_USER)
@@ -159,7 +160,7 @@ def create_message_with_attachments(sender, to, subject, html_body, attachments,
 if __name__ == '__main__':
     service = get_service()
     message = create_message_text(
-        sender="team@vernadsky.info",      # замени на свой Gmail
+        sender="info@vernadsky.info",      # замени на свой Gmail
         to="shelexovivan@gmail.com",           # замени на email получателя
         subject="Тестовое письмо",
         body="Привет!"

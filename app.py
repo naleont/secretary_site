@@ -254,7 +254,7 @@ def send_email(email):
     user_id = db.session.query(Users).filter(Users.email == email).first().user_id
     link = request.url_root + 'approve/' + str(user_id)
 
-    sender = "team@vernadsky.info"  # Здесь можно указать просто адрес.
+    sender = "info@vernadsky.info"  # Здесь можно указать просто адрес.
     # Или "Команда Конкурса им. В. И. Вернадского <team@vernadsky.info>".
     subject = "Подтверждение e-mail"
     body = (
@@ -6310,7 +6310,7 @@ def sending_diplomas(send_type, w_c_id):
                             # Формируем письмо
                             html_body = render_template('diplomas_mail.html', work_id=w_id)
                             subject = 'Наградные документы ' + str(w_id)
-                            sender = 'team@vernadsky.info'
+                            sender = 'info@vernadsky.info'
 
                             message = create_message_with_attachments(
                                 sender=sender,
@@ -6407,7 +6407,7 @@ def sending_left_diplomas(send_type, w_c_id):
 
                         html_body = render_template('diplomas_mail.html', work_id=w_id)
                         subject = 'Наградные документы ' + str(w_id)
-                        sender = 'team@vernadsky.info'
+                        sender = 'info@vernadsky.info'
 
                         message = create_message_with_attachments(
                             sender=sender,
