@@ -22,7 +22,6 @@ def get_service():
     creds = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES
     )
-    print("SERVICE ACCOUNT EMAIL = ", creds.service_account_email) 
 
     # Domain-wide delegation
     delegated_creds = creds.with_subject(IMPERSONATED_USER)

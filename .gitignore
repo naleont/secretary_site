@@ -13,6 +13,7 @@ DROP_annual.py
 works.py
 categories.json
 works.json
+works.txt
 team_db.db-journal
 vernadsky.info.json
 check.ipynb

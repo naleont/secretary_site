@@ -1562,14 +1562,8 @@ def registration_res():
     write_user(user)
     # Запись сессии пользователя
     session['user_id'] = db.session.query(Users).filter(Users.email == user['email']).first().user_id
-    try:
         # Отправка письма для подтверждения регистрации
-        send_email(user['email'])
-    except BaseException:
-        user = db.session.query(Users).filter(Users.user_id == int(session['user_id'])).first()
-        user.approved = True
-        db.session.commit()
-        return redirect(url_for('.profile_info'))
+    send_email(user['email'])
     # Вывод страницы с информацией профиля
     return redirect(url_for('.profile_info', message='first_time'))
 
@@ -2283,7 +2277,7 @@ def view_applications():
     .join(Application, Profile.user_id == Application.user_id).filter(Application.year == curr_year).all()]
     msu_school = [a['user_id'] for a in source if a['involved'] == 'MSU_School' and a['occupation'] == 'scholar']
     lyceum = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'scholar']
-    graduates = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'student']
+    graduates = [a['user_id'] for a in source if a['occupation'] == 'student']
     unseen = [a['user_id'] for a in appl.values() if a['considered'] == 'False']
     for s in source:
         appl[s['user_id']]['occupation'] = s['occupation']
