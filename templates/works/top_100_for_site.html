@@ -19,7 +19,12 @@
             {{ work['name'] }}
         </td>
         <td align="center">
-            {{ work['works'] }}
+            {% if work['works'] %}
+                {{ work['works'] }}
+            {% else %}
+                Не выдвинуты работы для участия без оргвзноса
+            {% endif %}
         </td>
+    </tr>
     {% endfor %}
 </table>
