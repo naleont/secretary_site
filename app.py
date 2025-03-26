@@ -3744,10 +3744,12 @@ def button_works(cat_id):
                 db.session.add(d)
                 works_added += 1
                 db.session.commit()
+                work_id_list.append(work_id)
             if status_id not in status_id_list:
                 part_status = ParticipationStatuses(status_id, status_name)
                 db.session.add(part_status)
                 db.session.commit()
+                status_id_list.append(status_id)
             if work_id in work_statuses_list:
                 if work_statuses[work_id]:
                     db.session.query(WorkStatuses).filter(WorkStatuses.work_id == work_id
@@ -3758,6 +3760,7 @@ def button_works(cat_id):
                 s = WorkStatuses(work_id, status_id)
                 db.session.add(s)
                 db.session.commit()
+                work_statuses_list.append(work_id)
             w_cat = WorkCategories(work_id, cat_id)
             if w_cat not in work_cats.keys():
                 if work_id in work_categories_list:
