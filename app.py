@@ -31,6 +31,8 @@ from bs4 import BeautifulSoup
 
 from gmail_sender import *
 
+from urllib.parse import unquote
+
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
@@ -5970,6 +5972,8 @@ def id_payments(mode, length, page):
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})
 @app.route('/set_payee/<payment_id>/<payee>')
 def set_payee(payment_id, payee):
+    if '%' in payee:
+        payee = unquote(payee)
     access = check_access(8)
     if access is not True:
         return access
