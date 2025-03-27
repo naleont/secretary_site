@@ -5972,8 +5972,7 @@ def id_payments(mode, length, page):
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})
 @app.route('/set_payee/<payment_id>/<payee>')
 def set_payee(payment_id, payee):
-    print(payee)
-    if payee and type(payee) == str and '%' in payee:
+    if payee != None and type(payee) == str and '%' in payee:
         payee = unquote(payee)
     access = check_access(8)
     if access is not True:
