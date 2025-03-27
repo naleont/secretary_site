@@ -56,7 +56,7 @@ tel_unneeded = '-() '
 curr_year = 2025
 # curr_year = 2024
 # curr_year = 2023
-fee = 5000
+fee = 5500
 tour_fee = 4000
 
 days = {'1': 'Пн', '2': 'Вт', '3': 'Ср', '4': 'Чт', '5': 'Пт', '6': 'Сб', '0': 'Вс'}
@@ -876,7 +876,7 @@ def work_info(work_id, additional_info=False, site_id=False, reports_info=False,
                 work['part_offline'] = True
                 work['format'] = 'face-to-face'
             else:
-                if work_id in applied_for_online:
+                if work_id in appl_for_online:
                     work['part_offline'] = False
                 else:
                     work['part_offline'] = None

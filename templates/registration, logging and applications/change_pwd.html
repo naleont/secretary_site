@@ -27,7 +27,7 @@
         {% if mode == 'change' %}
         <span class="required">Старый пароль</span><br>
             <input size="30" name="old_password" type="password"
-                   pattern="[A-Za-z0-9\(\)\.,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{8,50}" required><br><br>
+                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}" required><br><br>
             <input name="user_id" type="hidden" value="{{ session['user_id'] }}">
         {% elif mode == 'reset' %}
         <input name="valid_key" type="hidden" value="True">
@@ -36,10 +36,10 @@
         <span class="required">Новый пароль</span><br>
         <span class="comment">От 8 символов, может содержать латинские буквы, цифры и знаки препинания.</span><br>
             <input size="30" name="new_password" type="password"
-                   pattern="[A-Za-z0-9\(\)\.,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{8,50}" required><br><br>
+                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}" required><br><br>
         <span class="required">Подтверждение пароля</span><br>
             <input size="30" name="confirm_password" type="password"
-                   pattern="[A-Za-z0-9\(\)\.,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{8,50}" required><br><br>
+                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}" required><br><br>
         <input class="button" type="submit" value="Поменять пароль">
     </fieldset>
 </form>
