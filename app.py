@@ -5972,12 +5972,6 @@ def id_payments(mode, length, page):
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})
 @app.route('/set_payee/<payment_id>/<payee>')
 def set_payee(payment_id, payee):
-    if payee is None:
-        pass
-    elif type(payee) == str and '%' in payee:
-        payee = unquote(payee)
-    else:
-        pass
     access = check_access(8)
     if access is not True:
         return access
@@ -6010,6 +6004,8 @@ def set_payee(payment_id, payee):
             else:
                 participant = {'type': None, 'participant': payee}
         except ValueError:
+            if type(payee) == str and '%' in payee:
+                payee = unquote(payee)
             parts = [u.participant_id for u in ParticipantsApplied.query.all()
                      if payee.lower() == u.last_name.lower()[:len(payee)]]
             parts.extend([u.participant_id for u in ParticipantsApplied.query.all()
@@ -6038,7 +6034,7 @@ def set_payee(payment_id, payee):
             if not parts and not works:
                 participant = {'type': None, 'participant': payee}
     else:
-        participant = {'type': None, 'participant': payee}
+        participant = {'type': None, 'participant': None}
     p_types = set(p.payment_type for p in PaymentTypes.query.all())
     return render_template('participants_and_payment/set_payee.html', payment=payment, participant=participant,
                            query=payee, p_types=p_types, double=double)
