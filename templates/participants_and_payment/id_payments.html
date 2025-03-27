@@ -26,6 +26,9 @@
   </tr>
 </table>
 
+<p>Актуальный оргвзнос: {{ fee }}</p>
+<p>Для туров: {{ tour_fee }}</p>
+
 {% include 'include/iterate_pages.html' %}
 
 {% if mode != 'all' and mode != 'unset' and statement == [] %}

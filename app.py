@@ -5964,7 +5964,7 @@ def id_payments(mode, length, page):
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
     return render_template('participants_and_payment/id_payments.html', statement=statement, pages=n, page=page,
-                           length=length, link='id_payments/' + mode, mode=mode, p_l=p_l)
+                           length=length, link='id_payments/' + mode, mode=mode, p_l=p_l, fee=fee, tour_fee=tour_fee)
 
 
 @app.route('/set_payee/<payment_id>', defaults={'payee': None})
