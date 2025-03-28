@@ -6006,8 +6006,8 @@ def set_payee(payment_id, payee):
             else:
                 participant = {'type': None, 'participant': payee}
         except ValueError:
-            if type(payee) == str and '%' in payee:
-                payee = unquote(payee)
+            # if type(payee) == str and '%' in payee:
+            #     payee = unquote(payee)
             parts = [u.participant_id for u in ParticipantsApplied.query.all()
                      if payee.lower() == u.last_name.lower()[:len(payee)]]
             parts.extend([u.participant_id for u in ParticipantsApplied.query.all()
@@ -6050,7 +6050,7 @@ def application_payment(payment_id, payee):
     return redirect(url_for('.set_payee', payment_id=payment_id, payee=payee))
 
 
-@app.route('/сheck_payees/<payment_id>/<appl>')
+@app.route('/check_payees/<payment_id>/<appl>')
 def сheck_payees(payment_id, appl):
     access = check_access(8)
     if access is not True:
