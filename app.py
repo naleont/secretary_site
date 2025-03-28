@@ -6051,7 +6051,7 @@ def application_payment(payment_id, payee):
 
 
 @app.route('/check_payees/<payment_id>/<appl>')
-def сheck_payees(payment_id, appl):
+def check_payees(payment_id, appl):
     access = check_access(8)
     if access is not True:
         return access
