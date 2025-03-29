@@ -4436,6 +4436,8 @@ def works_for_free(cat_id):
     errs = ''
     if errors != {}:
         for work, error in errors.items():
+            if isinstance(error, str) and '%' in error:
+                error = unquote(error)
             errs += str(work) + ' - ' + error + '\n'
     else:
         errs = None
