@@ -6050,14 +6050,14 @@ def application_payment(payment_id, payee):
     return redirect(url_for('.set_payee', payment_id=payment_id, payee=payee))
 
 
-@app.route('/a/<payment_id>/<appl>')
-def a(payment_id, appl):
+@app.route('/check_payees/<payment_id>/<appl>')
+def check_payees(payment_id, appl):
     access = check_access(8)
     if access is not True:
         return access
     payment = payment_info(payment_id)
     application = application_2_tour(appl)
-    return render_template('participants_and_payment/a.html', payment=payment, appl=application)
+    return render_template('participants_and_payment/check_payees.html', payment=payment, appl=application)
 
 
 @app.route('/set_payment/<payment_id>/<payee>', methods=['POST'])
