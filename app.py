@@ -2432,6 +2432,8 @@ def confirm_online_assignment(user, category):
 @app.route('/users_list', defaults={'query': 'all', 'length': 50, 'page': 1})
 @app.route('/users_list/<query>/<length>/<page>')
 def users_list(query, length, page):
+    if isinstance(query, str) and '%' in query:
+        query = unquote(query)
     access = check_access(8)
     if access is not True:
         return access
@@ -5035,6 +5037,8 @@ def reported(cat_id, work_id, action):
 @app.route('/search_participant', defaults={'query': 'sear'})
 @app.route('/search_participant/<query>')
 def search_participant(query):
+    if isinstance(query, str) and '%' in query:
+        query = unquote(query)
     access = check_access(3)
     if access is not True:
         return access
