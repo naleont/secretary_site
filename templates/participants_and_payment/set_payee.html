@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+    <button>Назначить платеж заявке</button></a>
 {% block content %}
 
 <table width="100%">
@@ -231,6 +232,7 @@
         <table>
             <tr>
                 <td width="70%">
+                    <!-- <input type="checkbox" name="None" checked hidden> -->
                     <input type="checkbox" name="{{ work['work_id'] }}" checked>
                     <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}

@@ -6072,7 +6072,10 @@ def set_payment(payment_id, payee):
         #             PaymentRegistration.query.filter(PaymentRegistration.participant == participant).delete()
         #             db.session.commit()
         # else:
-        data = request.form[str(participant)]
+        if len(request.form) > 0:
+            data = request.form[str(participant)]
+        else:
+            data = 'off'
         if data == 'on':
             if participant in [p.participant for p in PaymentRegistration.query.all()]:
                 if payment_id not in [p.payment_id for p in
