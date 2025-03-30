@@ -46,7 +46,7 @@
 </form>
 {% endif %}
 
-{% if tasks is None or tasks == [] %}
+{% if tasks == [] or tasks == 'None' or tasks == None  %}
 <h4>Задачи можно будет выбрать позже </h4>
 {% endif %}
 
