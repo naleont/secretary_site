@@ -7,14 +7,14 @@
         <td>
             <h1>Мои волонтерские задачи</h1>
         </td>
-        <td>
+        <!-- <td>
             <a href="/get_runner"><button>Получить бегунок</button></a>
-        </td>
+        </td> -->
     </tr>
 </table>
 
-
 {% if involved == '1553' %}
+<h4>Перед выбором задач проверьте, что верно указаны ваша школа и класс:</h4>
 <p>Я учусь в Школе им. В. И. Вернадского. <a href="/edit_profile/{{ session['user_id'] }}">Исправить</a></p>
 <form action="/set_class" method="post">
     <fieldset>
@@ -30,6 +30,7 @@
     </fieldset>
 </form>
 {% elif involved == 'MSU_School' %}
+<h4>Перед выбором задач проверьте, что верно указаны ваша школа и класс:</h4>
 <p>Я учусь в Университетской гимназии МГУ. <a href="/edit_profile/{{ session['user_id'] }}">Исправить</a></p>
 <form action="/set_class" method="post">
     <fieldset>
@@ -46,9 +47,9 @@
 </form>
 {% endif %}
 
-{% if tasks %}
+<!-- {% if tasks %}
 <h4>Задачи можно будет выбрать позже </h4>
-{% endif %}
+{% endif %} -->
 
 <form action="/choose_volunteer_tasks" method="post">
     <fieldset>

@@ -6669,6 +6669,14 @@ def my_volunteer_tasks():
 @app.route('/set_class', methods=['POST'])
 def set_class():
     class_id = int(request.form['class_id'])
+    class_name = SchoolClasses.query.filter(SchoolClasses.class_id == class_id).first().class_name
+    n = len(class_name)
+    while n >= 0:
+        try:
+            class_num = int(class_name[0:n])
+            break
+        except BaseException:
+            n -= 1
     user_id = int(session['user_id'])
     if user_id in [u.user_id for u in StudentClass.query.filter(StudentClass.year == curr_year).all()]:
         db.session.query(StudentClass).filter(StudentClass.year == curr_year).filter(StudentClass.user_id == user_id) \
@@ -6676,6 +6684,8 @@ def set_class():
     else:
         u_c = StudentClass(user_id, class_id, curr_year)
         db.session.add(u_c)
+    db.session.commit()
+    db.session.query(Profile).filter(Profile.user_id == user_id).update({Profile.grade: class_num})
     db.session.commit()
     return redirect(url_for('.my_volunteer_tasks'))
 
