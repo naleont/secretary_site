@@ -6706,6 +6706,23 @@ def pick_task(task_id, action):
         db.session.commit()
     else:
         pass
+    if user_id in [u.user_id for u in StudentClass.query.filter(StudentClass.year == curr_year).all()]:
+        pass
+    else:
+        profile = Profile.query.filter(Profile.user_id == user_id).first()
+        involved = profile.involved
+        class_num = profile.grade
+        if involved == '1553':
+            try:
+                class_db = SchoolClasses.query.filter(SchoolClasses.year == curr_year).filter(SchoolClasses.school == '1553')\
+                    .filter(SchoolClasses.class_type == 'class').filter(SchoolClasses.class_name == str(class_num)).first()
+                u_c = StudentClass(user_id, class_db.class_id, curr_year)
+                db.session.add(u_c)
+                db.session.commit()
+            except Exception:
+                pass
+        else:
+            pass
     return redirect(url_for('.my_volunteer_tasks'))
 
 
