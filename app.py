@@ -2314,9 +2314,9 @@ def download_team_contacts():
         o = vcard.add('url')
         o.value = 'org.vernadsky.info/user_page/' + str(p['user_id'])
 
-        with open('static/files/generated_files/team_vcards.vcf', 'a') as file:
+        with open('static/files/generated_files/team_vcards_' + str(curr_year) + '.vcf', 'a') as file:
             file.write(vcard.serialize())
-    return send_file('static/files/generated_files/team_vcards.vcf', as_attachment=True)
+    return send_file('static/files/generated_files/team_vcards_' + str(curr_year) + '.vcf', as_attachment=True)
 
 
 @app.route('/one_application/<year>/<user>')
