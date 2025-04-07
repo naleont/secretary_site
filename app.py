@@ -5965,6 +5965,7 @@ def id_payments(mode, length, page):
         .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
         p_l = len(payments)
     else:
+        mode = unquote(mode)
         all_payments = {p.payment_id: (str(p.payment_id) + str(p.debit) + p.organisation + p.payment_comment +
                                        str(p.order_id)).lower().replace(' ', '')
                         for p in BankStatement.query.all()}
