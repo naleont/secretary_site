@@ -39,9 +39,9 @@
             {% endif %}
         <b>Работа {{ response['works']['work_id'] }}
                     {% if response['works']['part_offline'] == True %}
-                        <span class="alarm">Очно</span>
+                        <span class="face-to-face">Очно</span>
                     {% elif response['works']['part_offline'] == False %}
-                        <span class="green-text">Дистанционно</span>
+                        <span class="online">Дистанционно</span>
                     {% endif %}
             <a href="/discount_and_participation_mode/{{ response['works']['work_id'] }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -95,9 +95,9 @@
                 {% for work in response['value']['works'] %}
                 Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm"><b>О</b></span>
+                        <span class="face-to-face"><b>О</b></span>
                     {% elif work['part_offline'] == False %}
-                        <span class="green-text">Д</span>
+                        <span class="online">Д</span>
                     {% endif %} -
                 {{ work['work_name'] }}
                     {% if work['reg_tour'] %}
@@ -168,9 +168,9 @@
                     {% endif %}
             <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm">О</span>
+                        <span class="face-to-face">О</span>
                     {% elif work['part_offline'] == False %}
-                        <span class="green-text">Д</span>
+                        <span class="online">Д</span>
                     {% endif %}
             <a href="/discount_and_participation_mode/{{ work['work_id'] }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
@@ -228,9 +228,9 @@
                 {% for work in appl['works'] %}
                 Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm"><b>О</b></span>
+                        <span class="face-to-face"><b>О</b></span>
                     {% elif work['part_offline'] == False %}
-                        <span class="green-text">Д</span>
+                        <span class="online">Д</span>
                     {% endif %} -
                 {{ work['work_name'] }}
                     {% if work['reg_tour'] %}

@@ -133,9 +133,9 @@
                     <input type="checkbox" name="{{ participant['works']['work_id'] }}" checked>
                     <b>Работа {{ participant['works']['work_id'] }}
                     {% if participant['works']['part_offline'] == True %}
-                        <span class="alarm">Очно</span>
+                        <span class="face-to-face">Очно</span>
                     {% elif participant['works']['part_offline'] == False %}
-                        <span class="green-text">Дистанционно</span>
+                        <span class="online">Дистанционно</span>
                     {% endif %}</b><br>
                         {{ participant['works']['work_name'] }}
                         {% if participant['works']['reg_tour'] %}
@@ -182,9 +182,9 @@
                 <i>Работа {{ work['work_id'] }}</i>
                 {{ work['work_name'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm">Очно</span>
+                        <span class="face-to-face">Очно</span>
                     {% elif work['part_offline'] == False %}
-                        <span class="green-text">Дистанционно</span>
+                        <span class="online">Дистанционно</span>
                     {% endif %}
                 {% if work['reg_tour'] %}
                 <span class="alarm">{{ work['reg_tour'] }} тур</span>
@@ -236,9 +236,9 @@
                     <input type="checkbox" name="{{ work['work_id'] }}" checked>
                     <b>Работа {{ work['work_id'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm">Очно</span>
+                        <span class="face-to-face">Очно</span>
                     {% elif work['part_offline'] == False %}
-                        <span class="green-text">Дистанционно</span>
+                        <span class="online">Дистанционно</span>
                     {% endif %}</b><br>
                         {{ work['work_name'] }}
                         {% if work['reg_tour'] %}
@@ -284,9 +284,9 @@
                 <i>Работа {{ work['work_id'] }}</i>
                 {{ work['work_name'] }}
                     {% if work['part_offline'] == True %}
-                        <span class="alarm">Очно</span>
+                        <span class="face-to-face">Очно</span>
                     {% elif work['part_offline'] == False %}
-                        <span class="green-text">Дистанционно</span>
+                        <span class="online">Дистанционно</span>
                     {% endif %}
                 {% if work['reg_tour'] %}
                 <span class="alarm">{{ work['reg_tour'] }} тур</span>
