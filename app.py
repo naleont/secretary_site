@@ -5959,12 +5959,14 @@ def download_payments(p_type):
 
 @app.route('/set_payment_types', methods=['POST'])
 def set_payment_types():
+    all_payments = PaymentTypes.query.all()
+    payment_ids = [p.payment_id for p in all_payments]
     for payment in [p.payment_id for p in BankStatement.query.all()]:
         if 'payment_type/' + str(payment) in request.form.keys():
             p_type = request.form['payment_type/' + str(payment)]
             dict_type = {'payment_id': payment, 'payment_type': p_type}
-            if PaymentTypes(dict_type['payment_id'], dict_type['payment_type']) not in PaymentTypes.query.all():
-                if dict_type['payment_id'] in [p.payment_id for p in PaymentTypes.query.all()]:
+            if PaymentTypes(dict_type['payment_id'], dict_type['payment_type']) not in all_payments:
+                if dict_type['payment_id'] in payment_ids:
                     db.session.query(PaymentTypes).filter(PaymentTypes.payment_id == dict_type['payment_id']) \
                         .update({PaymentTypes.payment_type: dict_type['payment_type']})
                     db.session.commit()
