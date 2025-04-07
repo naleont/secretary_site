@@ -65,6 +65,8 @@
               <option class="container-fluid bg-2" value="None">Выберите тип</option>
               <option class="container-fluid bg-2" selected="true" {% if payment['payment_type'] == 'Чтения Вернадского' %}
                       selected="true" {% endif %} value="Чтения Вернадского">Чтения Вернадского</option>
+              <option class="container-fluid bg-2" {% if payment['payment_type'] == 'Экскурсия ЧВ' %}
+                      selected="true" {% endif %} value="Чтения Вернадского">Экскурсия ЧВ</option>
               <option class="container-fluid bg-2" {% if payment['payment_type'] == 'Целевой взнос' %}
                       selected="true" {% endif %} value="Целевой взнос">Целевой взнос</option>
               <option class="container-fluid bg-2" {% if payment['payment_type'] == 'Я - Исследователь' %}

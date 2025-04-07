@@ -2325,6 +2325,35 @@ def download_team_contacts():
     return send_file('static/files/generated_files/team_vcards_' + str(curr_year) + '.vcf', as_attachment=True)
 
 
+@app.route('/download_contact/<user>')
+def download_contact(user):
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    user_info = get_user_info(int(user))
+
+    vcard = vobject.vCard()
+    o = vcard.add('fn')
+    o.value = user_info['last_name'] + ' ' + user_info['first_name'] + ' ' + user_info['patronymic']
+
+    o = vcard.add('n')
+    o.value = vobject.vcard.Name(family=user_info['last_name'], given=user_info['first_name'], additional=user_info['patronymic'])
+
+    o = vcard.add('tel')
+    o.type_param = "cell"
+    o.value = user_info['tel']
+
+    o = vcard.add('email')
+    o.type_param = "work"
+    o.value = user_info['email']
+
+    o = vcard.add('url')
+    o.value = 'org.vernadsky.info/user_page/' + str(user_info['user_id'])
+
+    with open('static/files/generated_files/one_vcard.vcf', 'a') as file:
+        file.write(vcard.serialize())
+    return send_file('static/files/generated_files/one_vcard.vcf', as_attachment=True)
+
+
 @app.route('/one_application/<year>/<user>')
 def see_one_application(year, user):
     user = int(user)
