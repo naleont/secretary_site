@@ -2299,6 +2299,8 @@ def download_team_contacts():
     if not os.path.isdir('static/files/generated_files'):
         os.mkdir('static/files/generated_files')
     team = [get_user_info(u.user_id) for u in Application.query.filter(Application.year == curr_year).all()]
+    with open('static/files/generated_files/team_vcards_' + str(curr_year) + '.vcf', 'w') as file:
+            file.write('')
     for p in team:
         vcard = vobject.vCard()
         o = vcard.add('fn')
