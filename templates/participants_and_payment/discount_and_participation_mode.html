@@ -8,8 +8,8 @@
     <form action="/set_fee/{{ info['id'] }}" method = 'POST'>
         <fieldset>
             {% for part in info['participants'] %}
-            <b>{{ part['role'] }} {{ part['id'] }}:</b>
-                {{ part['last_name'] }} {{ part['first_name'] }} {{ part['patronymic_name'] }}<br>
+            <i>{{ part['role'] }} {{ part['id'] }}:</i><br>
+                <b>{{ part['last_name'] }} {{ part['first_name'] }} {{ part['patronymic_name'] }}</b><br>
                         <span class="required">Размер оргвзноса:</span><br>
                             <p><select name="{{ part['id'] }};fee" required>
                                 <option class="container-fluid bg-2" {% if part['fee'] == full_fee %} selected="true" {% endif %}
