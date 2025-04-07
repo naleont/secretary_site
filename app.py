@@ -1234,6 +1234,10 @@ def application_2_tour(appl):
                                                                          participant['id']).first().payment_id
         else:
             participant['payed'] = False
+        if participant['id'] in [d.participant_id for d in Discounts.query.filter(Discounts.payment == 0).all()]:
+            participant['payed'] = True
+        else:
+            pass
         application['participants'].append(participant)
     return application
 
