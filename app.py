@@ -2349,7 +2349,7 @@ def download_contact(user):
     o = vcard.add('url')
     o.value = 'org.vernadsky.info/user_page/' + str(user_info['user_id'])
 
-    with open('static/files/generated_files/one_vcard.vcf', 'a') as file:
+    with open('static/files/generated_files/one_vcard.vcf', 'w') as file:
         file.write(vcard.serialize())
     return send_file('static/files/generated_files/one_vcard.vcf', as_attachment=True)
 
