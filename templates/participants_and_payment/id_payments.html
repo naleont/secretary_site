@@ -64,22 +64,22 @@
   bgcolor="#FFEE91"
   {% endif %}>
     <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['payment_id'] }}
+      <div class="whole-link">{{ payment['payment_id'] }}</div>
     </a></td>
     <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['date'] }}
+      <div class="whole-link">{{ payment['date'] }}</div>
     </a></td>
     <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['debit'] }} р.
+      <div class="whole-link">{{ payment['debit'] }} р.</div>
     </a></td>
     <td align="center"><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['remainder'] }} р.
+      <div class="whole-link">{{ payment['remainder'] }} р.</div>
     </a></td>
     <td><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['comment'] }}
+      <div class="whole-link">{{ payment['comment'] }}</div>
     </a></td>
     <td><a href="/set_payee/{{ payment['payment_id'] }}">
-      {{ payment['organisation'] }}
+      <div class="whole-link">{{ payment['organisation'] }}</div>
     </a></td>
   </tr>
 
