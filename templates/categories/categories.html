@@ -9,7 +9,9 @@
             <h2>Секции Конкурса</h2>
         </td>
         <td align="right">
+            {% if session['type'] != 'user' and session['type'] %}
             <a href="/download_categories"><button>Скачать список этого года</button></a>
+            {% endif %}
         </td>
     </tr>
 </table>

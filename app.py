@@ -1939,6 +1939,9 @@ def categories_list():
 
 @app.route('/download_categories')
 def download_categories():
+    access = check_access(8)
+    if access is not True:
+        return access
     cats_count, cats = categories_info()
     categories = []
     for c in cats:
