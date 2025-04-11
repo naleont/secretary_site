@@ -3884,7 +3884,6 @@ def view_works(cat):
     return render_template('works/view_works.html', cats = cats)
 
 
-
 @app.route('/timezones', defaults={'e': None})
 @app.route('/timezones/<e>')
 def timezones(e):
@@ -4957,6 +4956,60 @@ def download_schedule(cat_id):
                                    ' – ' + work['authors'], style='Normal')
 
     document.save(path)
+    return send_file(path, as_attachment=True)
+
+
+@app.route('/download_reviews', defaults={'cat_id': 'all'})
+@app.route('/download_reviews/<cat_id>')
+def download_reviews(cat_id):
+    access = check_access(8)
+    if access is not True:
+        return access
+    if not os.path.isdir('static/files/generated_files/reviews'):
+        os.mkdir('static/files/generated_files/reviews')
+    if not os.path.isdir('static/files/generated_files/reviews/' + str(curr_year)):
+        os.mkdir('static/files/generated_files/reviews/' + str(curr_year))
+
+    if cat_id == 'all':
+        cats = {c.cat_id: c.short_name for c in Categories.query.filter(Categories.year == curr_year).all()}
+    else:
+        cats = {int(cat_id): Categories.query.filter(Categories.cat_id == int(cat_id)).first().short_name}
+
+    works_reviews = {}
+    works_with_reviews = []
+    for w in WorkReviews.query.all():
+        revs = [r.review_id for r in WorkReviews.query.filter(WorkReviews.work_id == w.work_id).all()]
+        works_reviews[w.work_id] = revs
+        works_with_reviews.append(w.work_id)
+    
+    for cat in cats.keys():
+        cat_works = [{'work_id': w.work_id, 'work_name': w.work_name} for w in 
+                     db.session.query(Works).join(WorkStatuses, Works.work_id == WorkStatuses.work_id)\
+                        .join(WorkCategories, WorkCategories.work_id == Works.work_id)\
+                            .filter(WorkCategories.cat_id == cat).filter(WorkStatuses.status_id >= 6).all()]
+                
+        path = 'static/files/generated_files/reviews/' + str(curr_year) + '/' + 'Рецензии ' + cats[cat] + '.docx'
+        document = document_set()
+
+        for work in cat_works:
+            section = document.sections[0]
+            header = section.header
+            paragraph = header.paragraphs[0]
+            # paragraph.text = 'Рецензии секции ' + cats[cat]
+            # paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            document.add_heading(str(work['work_id']) + ' ' + work['work_name'], level=1)
+
+            if work['work_id'] in works_reviews.keys():
+                for rewiew in works_reviews[work['work_id']]:
+                    soup = BeautifulSoup(requests.post(url='https://vernadsky.info/review/' + str(rewiew),
+                                            headers=mail_data.headers).text, 'html.parser')
+                    text = str(soup).replace('<br/><br/>', '\n')
+                    # print(text)
+                    document.add_paragraph(text, style='Normal')
+
+            else:
+                document.add_paragraph('Нет рецензии', style='Normal')
+        document.save(path)
     return send_file(path, as_attachment=True)
 
 

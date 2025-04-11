@@ -10,7 +10,7 @@
 
 <table width="100%">
     <tr>
-        <td rowspan="5">
+        <td rowspan="6">
             {{ category['contest'] }}<br>
             Направление: {{ category['direction'] }}<br>
             {% if category['tg_channel'] %}
@@ -59,6 +59,11 @@
     <tr>
             <td width="auto" valign="middle"><a href="/view_works/{{ category['id'] }}">
                 <button>Синхронизированные работы</button>
+            </a></td>
+    </tr>
+    <tr>
+            <td width="auto" valign="middle"><a href="/download_reviews/{{ category['id'] }}">
+                <button>Рецензии на допущенные работы</button>
             </a></td>
     </tr>
     <tr>
