@@ -5003,9 +5003,10 @@ def download_reviews(cat_id):
                 for rewiew in works_reviews[work['work_id']]:
                     soup = BeautifulSoup(requests.post(url='https://vernadsky.info/review/' + str(rewiew),
                                             headers=mail_data.headers).text, 'html.parser')
-                    text = str(soup).replace('<br/><br/>', '\n')
+                    text = str(soup).split('<br/><br/>')
                     # print(text)
-                    document.add_paragraph(text, style='Normal')
+                    for t in text:
+                        document.add_paragraph(t, style='Normal')
 
             else:
                 document.add_paragraph('Нет рецензии', style='Normal')
