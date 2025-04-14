@@ -1382,13 +1382,13 @@ def document_set():
     # Настройка стиля для Header (если используется)
     header_style = document.styles['Header']
     header_style.font.name = 'Times New Roman'
-    header_style.font.size = Pt(12)
+    header_style.font.size = Pt(14)
     header_style.font.bold = True
 
     # Настройка стиля для заголовка (Heading 1)
     heading1 = document.styles['Heading 1']
     heading1.font.name = 'Times New Roman'
-    heading1.font.size = Pt(12)
+    heading1.font.size = Pt(14)
     heading1.font.bold = True
     heading1.font.color.rgb = RGBColor(0, 0, 0)
     heading1.paragraph_format.space_before = Pt(6)         # Интервал перед абзацем
@@ -1397,6 +1397,7 @@ def document_set():
 
     # Настройка стиля для основного текста (Normal)
     normal_style = document.styles['Normal']
+    normal_style.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     normal_style.font.name = 'Times New Roman'
     normal_style.font.size = Pt(12)
     normal_style.font.bold = False
