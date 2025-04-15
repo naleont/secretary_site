@@ -1406,6 +1406,37 @@ def document_set():
     normal_style.paragraph_format.space_after = Pt(3)       # Меньший интервал после абзаца
     normal_style.paragraph_format.first_line_indent = Inches(0.3)  # Отступ первой строки
 
+    # def document_set():
+    # document = Document()
+
+    # style = document.styles['Header']
+    # style.font.name = 'Calibri Light'
+    # style.font.size = Pt(16)
+    # style.font.bold = True
+
+    # style = document.styles['Heading 1']
+    # style.font.name = 'Calibri Light'
+    # style.font.size = Pt(16)
+    # style.font.color.rgb = RGBColor(0, 0, 0)
+    # style.paragraph_format.space_before = Pt(12)
+    # style.paragraph_format.space_after = Pt(12)
+    # style.paragraph_format.left_indent = Pt(0)
+
+    # style = document.styles['Normal']
+    # style.font.name = 'Calibri Light'
+    # style.font.size = Pt(14)
+    # style.font.color.rgb = RGBColor(0, 0, 0)
+    # style.paragraph_format.space_before = Pt(6)
+    # style.paragraph_format.space_after = Pt(6)
+    # style.paragraph_format.left_indent = Pt(30)
+
+    # # style = document.styles['Normal']
+    # # style.font.name = 'Calibri Light'
+    # # style.font.size = Pt(14)
+    # # style.font.color.rgb = RGBColor(0, 0, 0)
+    # # style.paragraph_format.left_indent = Pt(36)
+
+
     return document
 
 
@@ -4969,7 +5000,7 @@ def download_schedule(cat_id):
 @app.route('/download_reviews', defaults={'cat_id': 'all'})
 @app.route('/download_reviews/<cat_id>')
 def download_reviews(cat_id):
-    access = check_access(8)
+    access = check_access(5)
     if access is not True:
         return access
     if not os.path.isdir('static/files/generated_files/reviews'):
