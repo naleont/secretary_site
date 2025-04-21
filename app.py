@@ -4594,7 +4594,7 @@ def set_report_dates(message):
             c_dates['day_3_date'] = None
         cat_dates.append(c_dates)
     create_report_dates_html(cat_dates)
-    return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=unquote(message))
+    return render_template('online_reports/set_report_dates.html', cat_dates=cat_dates, message=message)
 
 
 @app.route('/save_report_dates', methods=['POST'])
