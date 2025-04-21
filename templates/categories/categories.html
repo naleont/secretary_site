@@ -47,9 +47,9 @@
         <td align="center" width="20%">
             <b>Секретарь</b>
         </td>
-        <!-- <td align="center" width="20%">
+        <td align="center" width="20%">
             <b>Секретарь <br>на онлайне</b>
-        </td> -->
+        </td>
     </tr>
 {% for cat in categories %}
     <tr
@@ -74,9 +74,9 @@
         <td>
             <a href="/user_page/{{ cat['secretary_id'] }}">{{ cat['secretary'] }}</a>
         </td>
-        <!-- <td>
+        <td>
             <a href="/user_page/{{ cat['online_secretary_id'] }}">{{ cat['online_secretary'] }}</a>
-        </td> -->
+        </td>
     </tr>
 {% endfor %}
 </table>
