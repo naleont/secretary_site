@@ -2018,7 +2018,7 @@ def download_categories():
 def edit_category(cat_id):
     if cat_id is None:
         cat_id = ''
-    access = check_access(10)
+    access = check_access(8)
     if access is not True:
         return access
     sups = get_supervisors()
