@@ -6411,19 +6411,20 @@ def send_left_diplomas(cat_id, wrong):
 
 @app.route('/sending_diplomas/<send_type>/<w_c_id>')
 def sending_diplomas(send_type, w_c_id):
-    # if send_type == 'cat':
-    #     cat_id = int(w_c_id)
-    #     works = [w.work_id for w in Works.query
-    #     .join(WorkCategories, Works.work_id == WorkCategories.work_id).filter(WorkCategories.cat_id == cat_id)
-    #     .filter(Works.reported == 1).all()]
-    # else:
-    work_id = int(w_c_id)
-    works = [w.work_id for w in Works.query.filter(Works.work_id == work_id).all()]
-    cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+    if send_type == 'cat':
+        cat_id = int(w_c_id)
+        works = [w.work_id for w in Works.query
+        .join(WorkCategories, Works.work_id == WorkCategories.work_id).filter(WorkCategories.cat_id == cat_id)
+        .filter(Works.reported == 1).all()]
+    else:
+        work_id = int(w_c_id)
+        works = [w.work_id for w in Works.query.filter(Works.work_id == work_id)
+        .filter(Works.reported == 1).all()]
+        cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
 
-    # payed = [p.participant for p in PaymentRegistration.query.all()]
-    # payed.extend([w.work_id for w in WorksNoFee.query.all()])
-    # payed.extend([w.work_id for w in Discounts.query.filter(Discounts.payment == 0).all()])
+    payed = [p.participant for p in PaymentRegistration.query.all()]
+    payed.extend([w.work_id for w in WorksNoFee.query.all()])
+    payed.extend([w.work_id for w in Discounts.query.filter(Discounts.payment == 0).all()])
 
     dir = 'static/files/uploaded_files/diplomas_online_' + str(curr_year) + '/'
 
@@ -6431,49 +6432,49 @@ def sending_diplomas(send_type, w_c_id):
 
     for w_id in works:
         # try:
-        # if w_id in payed:
-        files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
-        if files:
-            mails = [1, 'n.leontovich@oodi.ru']
-            # mails = [(m.mail_id, m.email) for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
-            # .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
-            if mails:
-                for mail_record in mails:
-                    mail_id, recipient_email = mail_record
-                    if recipient_email not in ('0', 0, ''):
-                        # Формируем attachments_list
-                        attachments_list = []
-                        for f in files:
-                            fi = os.path.join(dir, f)
-                            with app.open_resource(fi) as file:
-                                file_data = file.read()
-                            attachments_list.append({
-                                'filename': os.path.basename(fi),
-                                'data': file_data
-                            })
+        if w_id in payed:
+            files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
+            if files:
+                mails = [1, 'n.leontovich@oodi.ru']
+                # mails = [(m.mail_id, m.email) for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
+                # .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
+                if mails:
+                    for mail_record in mails:
+                        mail_id, recipient_email = mail_record
+                        if recipient_email not in ('0', 0, ''):
+                            # Формируем attachments_list
+                            attachments_list = []
+                            for f in files:
+                                fi = os.path.join(dir, f)
+                                with app.open_resource(fi) as file:
+                                    file_data = file.read()
+                                attachments_list.append({
+                                    'filename': os.path.basename(fi),
+                                    'data': file_data
+                                })
 
-                        # Формируем письмо
-                        html_body = render_template('diplomas_mail.html', work_id=w_id)
-                        subject = 'Наградные документы ' + str(w_id)
-                        sender = 'info@vernadsky.info'
+                            # Формируем письмо
+                            html_body = render_template('diplomas_mail.html', work_id=w_id)
+                            subject = 'Наградные документы ' + str(w_id)
+                            sender = 'info@vernadsky.info'
 
-                        message = create_message_with_attachments(
-                            sender=sender,
-                            to=recipient_email,
-                            subject=subject,
-                            html_body=html_body,
-                            attachments=attachments_list
-                        )
+                            message = create_message_with_attachments(
+                                sender=sender,
+                                to=recipient_email,
+                                subject=subject,
+                                html_body=html_body,
+                                attachments=attachments_list
+                            )
 
-                        # Отправляем
-                        send_message(service, "me", message)
+                            # Отправляем
+                            send_message(service, "me", message)
 
-                        # Обновляем WorkMail.sent
-                        db.session.query(WorkMail) \
-                            .filter(WorkMail.work_id == w_id) \
-                            .filter(WorkMail.mail_id == mail_id) \
-                            .update({WorkMail.sent: True})
-                        db.session.commit()
+                            # Обновляем WorkMail.sent
+                            db.session.query(WorkMail) \
+                                .filter(WorkMail.work_id == w_id) \
+                                .filter(WorkMail.mail_id == mail_id) \
+                                .update({WorkMail.sent: True})
+                            db.session.commit()
                 # if mails:
                 #     for a in mails:
                 #         m = a[1]
