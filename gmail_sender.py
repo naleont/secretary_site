@@ -5,7 +5,8 @@ import base64
 #from google.auth.transport.requests import Request
 #from google_auth_oauthlib.flow import InstalledAppFlow
 # from googleapiclient.discovery import build
-# import mimetypes
+import mimetypes
+from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -127,6 +128,7 @@ def create_message_with_attachments(sender, to, subject, html_body, attachments,
     """
     # Создаём "контейнер" письма
     message = MIMEMultipart()
+    # message = EmailMessage()
     message['to'] = to
     message['from'] = sender
     message['subject'] = subject
@@ -143,15 +145,17 @@ def create_message_with_attachments(sender, to, subject, html_body, attachments,
 
     # Прикрепляем файлы
     for attach in attachments:
+        print(attach["filename"])
         mime_part = MIMEBase('application', 'octet-stream')
         mime_part.set_payload(attach['data'])
         encoders.encode_base64(mime_part)
         mime_part.add_header(
             'Content-Disposition',
-            f'attachment; filename="{attach["filename"]}"'
+            'attachment', 
+            filename=attach["filename"]
         )
         message.attach(mime_part)
-
+        
     # Кодируем всё это в Base64, чтобы Gmail API смог принять
     raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
     return {'raw': raw}

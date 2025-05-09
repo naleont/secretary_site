@@ -6421,7 +6421,7 @@ def sending_diplomas(send_type, w_c_id):
         works = [w.work_id for w in Works.query.filter(Works.work_id == work_id)
         .filter(Works.reported == 1).all()]
         cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
-
+    print(works)
     payed = [p.participant for p in PaymentRegistration.query.all()]
     payed.extend([w.work_id for w in WorksNoFee.query.all()])
     payed.extend([w.work_id for w in Discounts.query.filter(Discounts.payment == 0).all()])
@@ -6435,9 +6435,9 @@ def sending_diplomas(send_type, w_c_id):
         if w_id in payed:
             files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
             if files:
-                mails = [1, 'n.leontovich@oodi.ru']
-                # mails = [(m.mail_id, m.email) for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
-                # .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
+                # mails = [1, 'n.leontovich@oodi.ru']
+                mails = [(m.mail_id, m.email) for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
+                .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
                 if mails:
                     for mail_record in mails:
                         mail_id, recipient_email = mail_record
@@ -6446,6 +6446,8 @@ def sending_diplomas(send_type, w_c_id):
                             attachments_list = []
                             for f in files:
                                 fi = os.path.join(dir, f)
+                                print(fi)
+                                print(f)
                                 with app.open_resource(fi) as file:
                                     file_data = file.read()
                                 attachments_list.append({
@@ -6465,6 +6467,7 @@ def sending_diplomas(send_type, w_c_id):
                                 html_body=html_body,
                                 attachments=attachments_list
                             )
+                            print(recipient_email)
 
                             # Отправляем
                             send_message(service, "me", message)
@@ -6517,16 +6520,16 @@ def sending_diplomas(send_type, w_c_id):
 
 @app.route('/sending_left_diplomas/<send_type>/<w_c_id>')
 def sending_left_diplomas(send_type, w_c_id):
-    if send_type == 'cat':
-        cat_id = int(w_c_id)
-        works = [work_info(work_id=w.work_id, mail_info=True, w_payment_info=True) for w in Works.query
-        .join(WorkCategories, Works.work_id == WorkCategories.work_id)
-        .join(ParticipatedWorks, Works.work_id == ParticipatedWorks.work_id)
-        .filter(WorkCategories.cat_id == cat_id).all()]
-    else:
-        work_id = int(w_c_id)
-        works = [w.work_id for w in Works.query.filter(Works.work_id == work_id).all()]
-        cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+    # if send_type == 'cat':
+    #     cat_id = int(w_c_id)
+    #     works = [work_info(work_id=w.work_id, mail_info=True, w_payment_info=True) for w in Works.query
+    #     .join(WorkCategories, Works.work_id == WorkCategories.work_id)
+    #     .join(ParticipatedWorks, Works.work_id == ParticipatedWorks.work_id)
+    #     .filter(WorkCategories.cat_id == cat_id).all()]
+    # else:
+    work_id = int(w_c_id)
+    works = [w.work_id for w in Works.query.filter(Works.work_id == work_id).all()]
+    cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
 
     dir = 'static/files/uploaded_files/diplomas_' + str(curr_year) + '/'
 
@@ -6536,6 +6539,7 @@ def sending_left_diplomas(send_type, w_c_id):
         # try:
         files = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f)) if f[:6] == str(w_id)]
         if files:
+            # mails = ['n.leontovich@oodi.ru']
             mails = [m.email for m in Mails.query.join(WorkMail, Mails.mail_id == WorkMail.mail_id)
             .filter(WorkMail.work_id == w_id).filter(WorkMail.sent == 0).all()]
             if mails:
@@ -6561,7 +6565,7 @@ def sending_left_diplomas(send_type, w_c_id):
                             subject=subject,
                             html_body=html_body,
                             attachments=attachments_list,
-                            bcc='info@vernadsky.info',
+                            # bcc='info@vernadsky.info',
                             reply_to='info@vernadsky.info'
                         )
                         send_message(service, "me", message)
