@@ -6298,6 +6298,10 @@ def add_emails(success):
         return access
     return render_template('online_reports/add_emails.html', success=success)
 
+@app.route('/download_emails_sample')
+def download_emails_sample():
+    return send_file('static/files/sample_files/work_mail.txt', as_attachment=True)
+
 
 @app.route('/save_emails', methods=['POST'])
 def save_emails():
