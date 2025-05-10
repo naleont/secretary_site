@@ -3724,8 +3724,8 @@ def button_works(cat_id):
             region = n['organization']['region']
             city = n['organization']['city']
             works_pulled.append(work_id)
-            if city.lower() in tz_regions.keys() and city != '':
-                timeshift = tz_regions[city.lower()]
+            if city.lower() in tz_areas.keys() and city != '':
+                timeshift = tz_areas[city.lower()]
             elif region.lower() in tz_regions.keys() and region != '':
                 timeshift = tz_regions[region.lower()]
             elif country.lower() in tz_countries and country != '':
