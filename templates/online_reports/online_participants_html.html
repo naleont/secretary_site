@@ -1,14 +1,14 @@
 {% for cat in cats %}
 {% if cat['online_participants']|length > 0 %}
-<h3 align="center"><b>{{ cat['name'] }}<br>({{ cat['dates'] }})</b></h3>
+<h3 align="center"><b>{{ cat['name'] }}<br>({% if cat['dates'] %}{{ cat['dates'] }}{ else %}Дата будет назначена в ближайшее время{% endif %})</b></h3>
 <p>Ниже представлен список работ, заявленных на Дополнительный онлайн-конкурс.
     <b>Список не является порядком выступлений.</b>
     Порядок выступлений участников будет опубликован накануне заседания секции.</p>
 <p>Для получения оперативной информации о работе секции подпишитесь на
     <a href="https://t.me/{{ cat['tg_channel'] }}">Telegram-канал секции</a>.</p>
-<p>За сутки до заседания секции ваша презентация должна быть загружена <a href="{{ cat['drive_link'] }}">
+<p>За сутки до заседания секции ваша презентация должна быть загружена <a href="{% if cat['drive_link'] %}{{ cat['drive_link'] }}{ else %}#{% endif %}">
     в облачную папку секции</a>. Требования к презентациям представлены
-    <a href="https://drive.google.com/file/d/1_YQGjNFfQ2A8Hxo8C1Jaa7gEfhl8hXKD/view?usp=share_link">в
+    <a href="https://drive.google.com/file/d/1ugLfjH9SlB5bAmP8Ofg-rnLS5fRK3ggl/view?usp=share_link">в
         инфописьме</a>.</p>
 <table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
     <tr>
