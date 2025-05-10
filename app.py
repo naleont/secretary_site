@@ -3937,6 +3937,21 @@ def timezones(e):
         edit = None
     return render_template('online_reports/timezones.html', tz=tz, edit=edit)
 
+@app.route('/download_timezones')
+def download_timezones():
+    all_t = [{'tz_id': t.tz_id, 'country': t.country, 'region': t.region, 'area': t.area, 'tz': t.tz}
+             for t in TimeZones.query.all()]
+    tz = sorted(all_t, key=lambda x: x['area'])
+    all_t = sorted(tz, key=lambda x: x['region'])
+    tz = sorted(all_t, key=lambda x: x['country'])
+
+    df = pd.DataFrame(data=tz)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/timezones.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Часовые пояса')
+    return send_file('static/files/generated_files/timezones.xlsx', as_attachment=True)
+
 
 @app.route('/save_a_timezone', methods=['POST'])
 def save_a_timezone():
@@ -5308,7 +5323,7 @@ def download_online_participants():
              if str(w.work_id)[:2] == str(curr_year)[-2:]]
     file = [{'Номер работы': w['work_id'], 'Название работы': w['work_name'], 'Авторы': w['authors'],
              'Руководитель': w['supervisor'], 'email': w['email'],
-             'Название секции': w['cat_name'], 'Оргвзнос оплачен': w['payed'], 'Выступил': w['reported']}
+             'Название секции': w['cat_name'], 'Время': w['timeshift'], 'Оргвзнос оплачен': w['payed'], 'Выступил': w['reported']}
             for w in works]
 
     df = pd.DataFrame(data=file)
