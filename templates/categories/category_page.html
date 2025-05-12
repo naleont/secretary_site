@@ -43,6 +43,16 @@
             {% if category['dates'] %}
             Даты дистанционного заседания секции: {{ category['dates'] }}<br>
             {% endif %}
+            {% if category['union'] %}
+            Заседание совместно с:<br>
+                <ul class="marked">
+                {% for uni_cat in category['union'] %}
+                    <li>
+                    {{ uni_cat['short_name'] }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
             {% if category['drive_link'] %}
             <a href="{{ category['drive_link'] }}" target="_blank">Папка с презентациями секции</a>
             {% endif %}

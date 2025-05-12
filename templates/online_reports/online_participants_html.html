@@ -4,8 +4,20 @@
 <p>Ниже представлен список работ, заявленных на Дополнительный онлайн-конкурс.
     <b>Список не является порядком выступлений.</b>
     Порядок выступлений участников будет опубликован накануне заседания секции.</p>
+{% if cat['union'] %}
+    {% if cat['union']|length > 1 %}
+        <span>Заседание проводится совместно с секциями:</span>
+            <ul>
+                {% for uni_cat in cat['union'] %}
+                    <li>{{ uni_cat['cat_name'] }}</li>
+                {% endfor %}
+            </ul>
+    {% else %}
+        <p>Заседание проводится совместно с секцией {{ cat['union'][0]['cat_name'] }}</p>
+    {% endif %}
+{% endif %}
 <p>Время начала работы секции и другая оперативная информация о работе секции будет публиковаться
-    <a target="_blank" href="https://t.me/{{ cat['tg_channel'] }}">Telegram-канал секции</a>.</p>
+    <a target="_blank" href="https://t.me/{{ cat['tg_channel'] }}">Telegram-канале секции</a>.</p>
 <p>За сутки до заседания секции ваша презентация должна быть загружена <a target="_blank" href="{% if cat['drive_link'] %}{{ cat['drive_link'] }}{% else %}#{% endif %}">
     в облачную папку секции</a>. Требования к презентациям представлены
     <a target="_blank" href="https://drive.google.com/file/d/1O4C3lyth6qt7K5VZ7xKZjq11xJ4nhhGU/view?usp=share_link">в

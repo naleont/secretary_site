@@ -556,10 +556,56 @@ def one_category(categ):
             dates.append(days[dates_db.day_3.strftime('%w')] + ' ' + dates_db.day_3.strftime('%d') + ' ' +
                          months_full[dates_db.day_3.strftime('%m')])
         cat['dates'] = ', '.join(dates)
+
+    union_cort = [(u.union_id, u.cat_id) for u in CategoryUnions.query.filter(CategoryUnions.year == curr_year).all()]
+    union_ids = set(u[0] for u in union_cort)
+    unions = {u: [] for u in union_ids}
+    unions_by_cat = {u[1]: u[0] for u in union_cort}
+
+    for uni_from_dict in unions.keys():
+        for u in union_cort:
+            if u[0] == uni_from_dict:
+                unions[uni_from_dict].append(u[1])
+            else:
+                pass
+
+    if union_cort:
+        cats_basic = [{'cat_id': c.cat_id, 'cat_name': c.cat_name, 'short_name': c.short_name} 
+                      for c in Categories.query.filter(Categories.year == curr_year).all() 
+                      if c.cat_id in unions_by_cat.keys()]
+    else:
+        cats_basic = []
+
+    if cat_id in unions_by_cat.keys():
+        union_id = unions_by_cat[cat_id]
+        other_cats = unions[union_id]
+        # other_cats.remove(cat_id)
+        cat['union'] = []
+        for c in cats_basic:
+            if c['cat_id'] in other_cats and c['cat_id'] != cat_id:
+                cat['union'].append(c)
     return cat
 
 
 def categories_info(cat_id='all'):
+    union_cort = [(u.union_id, u.cat_id) for u in CategoryUnions.query.filter(CategoryUnions.year == curr_year).all()]
+    union_ids = set(u[0] for u in union_cort)
+    unions = {u: [] for u in union_ids}
+    unions_by_cat = {u[1]: u[0] for u in union_cort}
+    for uni_from_dict in unions.keys():
+        for u in union_cort:
+            if u[0] == uni_from_dict:
+                unions[uni_from_dict].append(u[1])
+            else:
+                pass
+
+    if union_cort:
+        cats_basic = [{'cat_id': c.cat_id, 'cat_name': c.cat_name, 'short_name': c.short_name} 
+                      for c in Categories.query.filter(Categories.year == curr_year).all() 
+                      if c.cat_id in unions_by_cat.keys()]
+    else:
+        cats_basic = []
+
     if cat_id == 'all':
         categories = db.session.query(Categories
                                       ).filter(Categories.year == curr_year
@@ -633,10 +679,29 @@ def categories_info(cat_id='all'):
                                  months_full[dates_db.day_3.strftime('%m')])
                 cat['dates'] = '; '.join(dates)
 
+            if cat_id in unions_by_cat.keys():
+                union_id = unions_by_cat[cat_id]
+                other_cats = unions[union_id]
+                # other_cats.remove(cat_id)
+                cat['union'] = []
+                for c in cats_basic:
+                    if c['cat_id'] in other_cats and c['cat_id'] != cat_id:
+                        cat['union'].append(c)
+
             cats.append(cat)
     else:
         category = db.session.query(Categories).filter(Categories.cat_id == cat_id).first()
         cats = one_category(category)
+        cat = cats[0]
+
+        if cat_id in unions_by_cat.keys():
+            union_id = unions_by_cat[cat_id]
+            other_cats = unions[union_id]
+            # other_cats.remove(cat_id)
+            cat['union'] = []
+            for c in cats_basic:
+                if c['cat_id'] in other_cats and c['cat_id'] != cat_id:
+                    cat['union'].append(c)
     cats_count = len(cats)
     return cats_count, cats
 
@@ -5057,7 +5122,6 @@ def download_reviews(cat_id):
                     soup = BeautifulSoup(requests.post(url='https://vernadsky.info/review/' + str(rewiew),
                                             headers=mail_data.headers).text, 'html.parser')
                     text = str(soup).split('<br/><br/>')
-                    # print(text)
                     for t in text:
                         document.add_paragraph(t, style='Normal')
 
@@ -6440,7 +6504,6 @@ def sending_diplomas(send_type, w_c_id):
         works = [w.work_id for w in Works.query.filter(Works.work_id == work_id)
         .filter(Works.reported == 1).all()]
         cat_id = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
-    print(works)
     payed = [p.participant for p in PaymentRegistration.query.all()]
     payed.extend([w.work_id for w in WorksNoFee.query.all()])
     payed.extend([w.work_id for w in Discounts.query.filter(Discounts.payment == 0).all()])
@@ -6465,8 +6528,6 @@ def sending_diplomas(send_type, w_c_id):
                             attachments_list = []
                             for f in files:
                                 fi = os.path.join(dir, f)
-                                print(fi)
-                                print(f)
                                 with app.open_resource(fi) as file:
                                     file_data = file.read()
                                 attachments_list.append({
@@ -6486,7 +6547,6 @@ def sending_diplomas(send_type, w_c_id):
                                 html_body=html_body,
                                 attachments=attachments_list
                             )
-                            print(recipient_email)
 
                             # Отправляем
                             send_message(service, "me", message)
