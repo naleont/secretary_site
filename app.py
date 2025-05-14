@@ -692,16 +692,6 @@ def categories_info(cat_id='all'):
     else:
         category = db.session.query(Categories).filter(Categories.cat_id == cat_id).first()
         cats = one_category(category)
-        cat = cats[0]
-
-        if cat_id in unions_by_cat.keys():
-            union_id = unions_by_cat[cat_id]
-            other_cats = unions[union_id]
-            # other_cats.remove(cat_id)
-            cat['union'] = []
-            for c in cats_basic:
-                if c['cat_id'] in other_cats and c['cat_id'] != cat_id:
-                    cat['union'].append(c)
     cats_count = len(cats)
     return cats_count, cats
 
