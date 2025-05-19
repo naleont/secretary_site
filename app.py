@@ -5337,11 +5337,25 @@ def works_participated():
     access = check_access(5)
     if access is not True:
         return access
-    wks = [w.work_id for w in ParticipatedWorks.query.all()]
-    works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    works_db = ParticipatedWorks.query.all()
+    works = [work_info(w.work_id) for w in works_db if str(w.work_id)[:2] == str(curr_year)[-2:]]
+    # works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
     for work in works:
         work['link_name'] = work['work_name'].strip('?')
     return render_template('works/works_participated.html', works=works)
+
+
+@app.route('/download_offline_participated')
+def download_offline_participated():
+    wks = [work_info(w.work_id, additional_info=True) for w in ParticipatedWorks.query.all() if str(w.work_id)[:2] == str(curr_year)[-2:]]
+    # works = [work_info(w) for w in wks if str(w)[:2] == str(curr_year)[-2:]]
+    works = [{'Номер работы': w['work_id'], 'Название': w['work_name'], 'e-mail': w['email']} for w in wks]
+    df = pd.DataFrame(data=works)
+    if not os.path.isdir('static/files/generated_files'):
+        os.mkdir('static/files/generated_files')
+    with pd.ExcelWriter('static/files/generated_files/offline_participated.xlsx') as writer:
+        df.to_excel(writer, sheet_name='Работы, участвовавшие очно')
+    return send_file('static/files/generated_files/offline_participated.xlsx', as_attachment=True)
 
 
 @app.route('/delete_participated_work/<work_id>')
