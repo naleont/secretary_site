@@ -4813,9 +4813,13 @@ def switch_for_reports(cat_id):
                 db.session.commit()
             else:
                 pass
-            to_add = SwitchForReports(work_id, cat_id)
-            db.session.add(to_add)
-            db.session.commit()
+            if switched_cat:
+                db.session.query(SwitchForReports).filter(SwitchForReports.work_id == work_id).update({SwitchForReports.cat_id: cat_id})
+                db.session.commit()
+            else:
+                to_add = SwitchForReports(work_id, cat_id)
+                db.session.add(to_add)
+                db.session.commit()
         else:
             pass
     else:
@@ -5040,12 +5044,17 @@ def download_schedule(cat_id):
     works = {}
     c_dates = []
     categories = []
+    switched_works = []
+
     for cat_id in cats:
+        switched_works.extend([w.work_id for w in SwitchForReports.query.filter(SwitchForReports.cat_id == cat_id).all()])
         cat = Categories.query.filter(Categories.cat_id == cat_id).first()
         categories.append({'cat_id': cat_id, 'cat_name': cat.cat_name, 'short_name': cat.short_name})
         dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
         works.update(
             get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        for w in switched_works:
+            works[w] = work_info(w, site_id=True, reports_info=True, w_payment_info=True, appl_info=True)
         if dates_db.day_1:
             d_1 = {'d': 'day_1', 'day': days[dates_db.day_1.strftime('%w')],
                    'day_full': days_full[dates_db.day_1.strftime('%w')] + ', ' + dates_db.day_1.strftime('%d') + ' ' + \
