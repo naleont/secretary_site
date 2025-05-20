@@ -4736,13 +4736,17 @@ def reports_order(cat_id):
     works = {}
     appl_for_online = [w.work_id for w in AppliedForOnline.query.all()]
     reported = [w.work_id for w in ReportOrder.query.all()]
+    switched_works = []
 
     for cat_id in cats:
+        switched_works.extend([w.work_id for w in SwitchForReports.query.filter(SwitchForReports.cat_id == cat_id).all()])
         dates_db = db.session.query(ReportDates).filter(ReportDates.cat_id == cat_id).first()
         cat_name = Categories.query.filter(Categories.cat_id == cat_id).first().cat_name
         categories.append({'cat_id': cat_id, 'cat_name': cat_name})
         works.update(
             get_works(cat_id, 2, 'online', appl_info=True, w_payment_info=True, reports_info=True, site_id=True))
+        for w in switched_works:
+            works[w] = work_info(w, site_id=True, reports_info=True, w_payment_info=True, appl_info=True)
         approved_for_2 += len(works)
         if not dates_db:
             return redirect(url_for('.set_report_dates'))
@@ -4784,6 +4788,37 @@ def reports_order(cat_id):
     return render_template('online_reports/reports_order.html', works_unordered=works_unordered,
                            participating=participating, c_dates=c_dates, approved_for_2=approved_for_2,
                            categories=categories, union=union)
+
+
+@app.route('/switch_for_reports/<cat_id>', methods=['POST'])
+def switch_for_reports(cat_id):
+    cat_id = int(cat_id)
+    work_id = int(request.form['work_id'].strip())
+    switched = SwitchForReports.query.filter(SwitchForReports.work_id == work_id).first()
+    if switched:
+        switched_cat = switched.cat_id
+    if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
+        union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
+        uni_cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
+    else:
+        uni_cats = [cat_id]
+    old_cat = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
+    if old_cat not in uni_cats:
+        if switched_cat not in uni_cats:
+            if work_id in [w.work_id for w in ReportOrder.query.all()]:
+                work = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
+                db.session.delete(work)
+                db.session.commit()
+            else:
+                pass
+            to_add = SwitchForReports(work_id, cat_id)
+            db.session.add(to_add)
+            db.session.commit()
+        else:
+            pass
+    else:
+        pass
+    return redirect(url_for('.reports_order', cat_id=cat_id))
 
 
 @app.route('/works_list_schedule/<cat_id>')

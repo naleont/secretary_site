@@ -829,6 +829,18 @@ class CategoryUnions(db.Model):
         self.cat_id = cat_id
 
 
+class SwitchForReports(db.Model):
+    __tablename__ = 'switch_for_reports'
+    __table_args__ = (PrimaryKeyConstraint('work_id', 'cat_id'),)
+
+    work_id = db.Column('work_id', db.Integer, ForeignKey('works.work_id'))
+    cat_id = db.Column('cat_id', db.Integer, ForeignKey('categories.cat_id'))
+
+    def __init__ (self, work_id, cat_id):
+        self.work_id = work_id
+        self.cat_id = cat_id
+
+
 class Experts(db.Model):
     __tablename__ = 'experts'
 

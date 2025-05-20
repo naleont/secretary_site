@@ -114,13 +114,13 @@
             {% endif %}
         <td align="center">
             {% if work['reported'] in [False, None] %}
-            <a href="/reported/{{ work['cat_id'] }}/{{ work['work_id'] }}/check">
+            <a href="/reported/{{ categories[0]['cat_id'] }}/{{ work['work_id'] }}/check">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-square" viewBox="0 0 16 16">
               <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
             </svg>
             </a>
             {% elif work['reported'] == True %}
-            <a href="/reported/{{ work['cat_id'] }}/{{ work['work_id'] }}/uncheck">
+            <a href="/reported/{{ categories[0]['cat_id'] }}/{{ work['work_id'] }}/uncheck">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-square" viewBox="0 0 16 16">
               <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
               <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
@@ -129,7 +129,7 @@
             {% endif %}
         </td>
         <td align="center">
-            <a class="alarm" href="/unorder/{{ work['cat_id'] }}/{{ work['work_id'] }}">
+            <a class="alarm" href="/unorder/{{ categories[0]['cat_id'] }}/{{ work['work_id'] }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                   <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
                   <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
@@ -145,6 +145,13 @@
 <h2>Нераспределенные работы</h2>
 Работ заявлено: <b>{{ participating }}</b><br><br>
 <a href="/works_list_schedule/{{ categories[0]['cat_id'] }}"><button>Назначить день нескольким работам сразу</button></a><br>
+<form action="/switch_for_reports/{{ categories[0]['cat_id'] }}" method="post">
+    <fieldset>
+        <p>Добавить работу с другой секции</p>
+        <input type="text" name="work_id" size="20">
+        <input type="button" value="submit">
+    </fieldset>
+</form><br>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
         <td align="center">
@@ -192,7 +199,7 @@
         </td>
         <td align="center">
             {% for day in c_dates %}
-                <a href="/work_date/{{ work['cat_id'] }}/{{ work['work_id'] }}/{{ day['d'] }}/reports_order">
+                <a href="/work_date/{{ categories[0]['cat_id'] }}/{{ work['work_id'] }}/{{ day['d'] }}/reports_order">
                     <button class="blue">{{ day['day'] }}</button></a>
             {% endfor %}
         </td>
