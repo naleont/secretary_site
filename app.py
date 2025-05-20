@@ -4797,6 +4797,8 @@ def switch_for_reports(cat_id):
     switched = SwitchForReports.query.filter(SwitchForReports.work_id == work_id).first()
     if switched:
         switched_cat = switched.cat_id
+    else:
+        switched_cat = None
     if cat_id in [c.cat_id for c in CategoryUnions.query.all()]:
         union = CategoryUnions.query.filter(CategoryUnions.cat_id == cat_id).first().union_id
         uni_cats = [c.cat_id for c in CategoryUnions.query.filter(CategoryUnions.union_id == union).all()]
@@ -4804,7 +4806,7 @@ def switch_for_reports(cat_id):
         uni_cats = [cat_id]
     old_cat = WorkCategories.query.filter(WorkCategories.work_id == work_id).first().cat_id
     if old_cat not in uni_cats:
-        if switched_cat not in uni_cats:
+        if not switched_cat or switched_cat not in uni_cats:
             if work_id in [w.work_id for w in ReportOrder.query.all()]:
                 work = ReportOrder.query.filter(ReportOrder.work_id == work_id).first()
                 db.session.delete(work)
