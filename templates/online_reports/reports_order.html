@@ -145,13 +145,6 @@
 <h2>Нераспределенные работы</h2>
 Работ заявлено: <b>{{ participating }}</b><br><br>
 <a href="/works_list_schedule/{{ categories[0]['cat_id'] }}"><button>Назначить день нескольким работам сразу</button></a><br>
-<form action="/switch_for_reports/{{ categories[0]['cat_id'] }}" method="post">
-    <fieldset>
-        <p>Добавить работу с другой секции</p>
-        <input type="text" name="work_id" size="20">
-        <input type="button" value="submit">
-    </fieldset>
-</form><br>
 <table frame="void" border="2px" bordercolor="#4962A4">
     <tr>
         <td align="center">
@@ -206,5 +199,12 @@
     </tr>
     {% endfor %}
 </table><br>
+<form action="/switch_for_reports/{{ categories[0]['cat_id'] }}" method="post">
+    <fieldset>
+        <legend>Добавить работу с другой секции</legend>
+        <input type="text" name="work_id" size="20">
+        <input class="button" type="submit" value="Добавить">
+    </fieldset>
+</form><br>
 
 {% endblock %}
