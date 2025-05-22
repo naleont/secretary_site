@@ -6437,37 +6437,67 @@ def save_emails():
     data = request.files['file'].read().decode('mac_cyrillic').replace('\xa0', ' ')
     lines = data.split('\n')
     mail_data = []
-    all_works = [w.work_id for w in Works.query.all()]
+
     for line in lines[1:]:
         if line != '':
-            sta = {name.strip().strip('\r'): value.strip().strip('\r')
+            sta = {name.strip().strip('\r'): value.strip().strip('\r').lower()
                    for name, value in zip(lines[0].split('\t'), line.split('\t'))}
             mail_data.append(sta)
+    
+    to_add = [int(work['work_id']) for work in mail_data]
+
+    prewritten_work_mails = {w.work_id: set() for w in Works.query.all() if w.work_id in to_add}
+    work_mails = {w.work_id: {w.email.lower()} for w in Works.query.all() if w.work_id in to_add}
+    added_mails = [(w.work_id, w.mail_id) for w in WorkMail.query.all() if w.work_id in to_add]
+    all_mails = {m.email.lower(): m.mail_id for m in Mails.query.all()}
+    mail_reverse = {m.mail_id: m.email.lower() for m in Mails.query.all()}
+    for w, m in work_mails.items():
+        for mail in m:
+            if mail in all_mails:
+                mail_id = all_mails[mail]
+            else:
+                m_to_wr = Mails(mail)
+                db.session.add(m_to_wr)
+                db.session.flush()
+                db.session.commit()
+                mail_id = m_to_wr.mail_id
+                all_mails[mail] = mail_id
+        prewritten_work_mails[w].add(mail_id)
+    for w_m in added_mails:
+        work_mails[w_m[0]].add(mail_reverse[w_m[1]].lower())
+        prewritten_work_mails[w_m[0]].add(w_m[1])
+
     for work in mail_data:
         if work['work_id'] != '':
             work_id = int(work['work_id'])
-            if work_id in all_works:
+            if work_id in work_mails:
                 indices = ['email' + str(i) for i in range(1, len(work))]
                 mls = [work[ind] for ind in indices if work[ind] != '' and work[ind] is not None]
-                work_mail = Works.query.filter(Works.work_id == work_id).first().email
-                mls.append(work_mail)
-                mails = set(mls)
-                for mail in mails:
-                    if mail in [m.email for m in Mails.query.all()]:
-                        mail_id = Mails.query.filter(Mails.email == mail).first().mail_id
-                    else:
-                        m = Mails(mail)
-                        db.session.add(m)
-                        db.session.flush()
-                        db.session.commit()
-                        mail_id = m.mail_id
-                    w_m = WorkMail(work_id, mail_id, False)
-                    if work_id not in [w.work_id for w in WorkMail.query.all()]:
-                        db.session.add(w_m)
-                        db.session.commit()
-                    elif mail_id not in [w.mail_id for w in WorkMail.query.filter(WorkMail.work_id == work_id).all()]:
-                        db.session.add(w_m)
-                        db.session.commit()
+                work_mails[work_id].update(mls)
+
+    for work in work_mails.keys():
+        for mail in work_mails[work]:
+            work_id = work
+            if mail in all_mails:
+                mail_id = all_mails[mail]
+            else:
+                m = Mails(mail)
+                db.session.add(m)
+                db.session.flush()
+                db.session.commit()
+                mail_id = m.mail_id
+                all_mails[mail] = mail_id
+            w_m = WorkMail(work_id, mail_id, False)
+            if work_id not in prewritten_work_mails.keys():
+                db.session.add(w_m)
+                db.session.commit()
+                prewritten_work_mails[work_id] = {mail_id}
+            elif mail_id not in prewritten_work_mails[work_id]:
+                db.session.add(w_m)
+                db.session.commit()
+                prewritten_work_mails[work_id].add(mail_id)
+            else:
+                pass
     success = True
     return redirect(url_for('.add_emails', success=success))
 
