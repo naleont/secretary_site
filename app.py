@@ -6161,6 +6161,8 @@ def payment_types(length, page):
 
 @app.route('/download_payments/<p_type>')
 def download_payments(p_type):
+    if isinstance(p_type, str) and '%' in p_type:
+        p_type = unquote(p_type)
     if p_type == 'all':
         payments = db.session.query(BankStatement).order_by(BankStatement.date).all()
     else:
@@ -6408,6 +6410,8 @@ def delete_payment(del_id):
 @app.route('/reset_payment_type/<payment_id>/<payment_type>')
 def reset_payment_type(payment_id, payment_type):
     payment_id = int(payment_id)
+    if isinstance(payment_type, str) and '%' in payment_type:
+        payment_type = unquote(payment_type)
     if payment_id in [p.payment_id for p in PaymentTypes.query.all()]:
         db.session.query(PaymentTypes).filter(PaymentTypes.payment_id == payment_id) \
             .update({PaymentTypes.payment_type: payment_type})
