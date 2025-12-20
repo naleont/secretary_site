@@ -37,3 +37,8 @@ passenger_wsgi.py
 credentials.json
 token.json
 secret.json
+.DS_Store
+static/.DS_Store
+static/files/.DS_Store
+static/files/financial/.DS_Store
+
