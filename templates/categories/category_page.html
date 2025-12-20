@@ -53,6 +53,7 @@
                 {% endfor %}
                 </ul>
             {% endif %}
+
             {% if category['drive_link'] %}
             <a href="{{ category['drive_link'] }}" target="_blank">Папка с презентациями секции</a>
             {% endif %}
@@ -72,14 +73,14 @@
             </a></td>
     </tr>
     <tr>
-            <td width="auto" valign="middle"><a href="/download_reviews/{{ category['id'] }}">
+            <!-- <td width="auto" valign="middle"><a href="/download_reviews/{{ category['id'] }}">
                 <button>Рецензии на допущенные работы</button>
-            </a></td>
+            </a></td> -->
     </tr>
     <tr>
-            <td width="auto" valign="middle"><a href="/reports_order/{{ category['id'] }}">
+            <!-- <td width="auto" valign="middle"><a href="/reports_order/{{ category['id'] }}">
                 <button>Порядок выступлений</button>
-            </a></td>
+            </a></td> -->
     </tr>
     <tr>
             <td width="auto" valign="middle"><a href="/analysis_works/{{ category['id'] }}">
@@ -94,7 +95,7 @@
     </tr>
 </table>
 
-<!-- <h4>Чек-лист по работе секций на I туре</h4>
+<h4>Чек-лист по работе секций на I туре</h4>
 <ul class="marked">
     <li>
         Рецензирование работ - <i>до 1 марта</i>
@@ -114,7 +115,7 @@
     <li>
         <a href="/analysis_works/{{ category['id'] }}">Анализ рецензий региональных туров</a> - <i>до 1 апреля</i>
     </li>
-</ul> -->
+</ul>
 
 <!-- <h4>Чек-лист по подготовке ко II туру</h4>
 <ul class="marked">
@@ -125,7 +126,7 @@
     <li>Если кому-нибудь из экспертов нужно письмо-вызов, можно заказать его <a href="https://forms.gle/8vHwRJRDN3zVJcP9A" target="_blank">в этой форме</a>.</li>
 </ul> -->
 
-<h4>Чек-лист по подготовке ко Дополнительному онлайн-конкурсу</h4>
+<!-- <h4>Чек-лист по подготовке ко Дополнительному онлайн-конкурсу</h4>
 <ul class="marked">
     <li>
         <a href="/set_report_dates">Выбор дат</a> дистанционных заседаний секции в диппазоне с 14 по 20 мая - <i>до 30 апреля</i>
@@ -133,7 +134,7 @@
     <li>
         <a href="/analysis_works/{{ category['id'] }}">Анализ рецензий региональных туров</a> - <i>ну пожалуйста, очень надо</i>
     </li>
-</ul>
+</ul> -->
 
 
 {% if show_top_100 == True %}
