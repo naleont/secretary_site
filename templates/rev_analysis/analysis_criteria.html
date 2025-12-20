@@ -1,58 +1,49 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <h2>Критерии анализа рецензий</h2>
 <table>
-    <tr>
-        <td width="60%">
-            <a href="/add_criteria"><button>Добавить критерии</button></a><br><br>
-            <a href="/add_values"><button>Добавить значения критериев</button></a><br><br>
-        </td>
-        <td width="40%">
-            <a href="/download_criteria"><button>Скачать критерии прошлого года</button></a><br><br>
-            <a href="/download_values"><button>Скачать значения прошлого года</button></a><br><br>
-        </td>
-    </tr>
+  <tr>
+    <td width="60%">
+      <a href="/add_criteria"><button>Добавить критерии</button></a><br /><br />
+      <a href="/add_values"><button>Добавить значения критериев</button></a
+      ><br /><br />
+    </td>
+    <td width="40%">
+      <a href="/download_criteria"
+        ><button>Скачать критерии прошлого года</button></a
+      ><br /><br />
+      <a href="/download_values"
+        ><button>Скачать значения прошлого года</button></a
+      ><br /><br />
+    </td>
+  </tr>
 </table>
 <table frame="void" border="2px" bordercolor="#4962A4">
-    <tr>
-        <td align="center"><b>
-            Вес
-        </b></td>
-        <td align="center"><b>
-            Название критерия
-        </b></td>
-        <td align="center"><b>
-            Описание критерия
-        </b></td>
-        <td align="center"><b>
-            Значение критерия
-        </b></td>
-        <td align="center"><b>
-            Вес
-        </b></td>
-    </tr>
-    {% for key in criteria %}
-    {% for k in criteria[key]['values'] %}
-    <tr>
-        <td align="center"><b>
-            {{ criteria[key]['weight'] }}
-        </b></td>
-        <td><a href="/edit_criterion/{{ criteria[key]['id'] }}">
-            {{ criteria[key]['name'] }}
-        </a></td>
-        <td>
-            {{ criteria[key]['description'] }}
-        </td>
-        <td><a href="/edit_value/{{ criteria[key]['values'][k]['value_id'] }}">
-            {{ criteria[key]['values'][k]['val_name'] }}
-        </a></td>
-        <td align="center"><b>
-            {{ criteria[key]['values'][k]['val_weight'] }}
-        </b></td>
-    </tr>
-    {% endfor %}
-    {% endfor %}
+  <tr>
+    <td align="center"><b> Вес </b></td>
+    <td align="center"><b> Название критерия </b></td>
+    <td align="center"><b> Описание критерия </b></td>
+    <td align="center"><b> Значение критерия </b></td>
+    <td align="center"><b> Вес </b></td>
+  </tr>
+  {% for key in criteria %} {% for k in criteria[key]['values'] %}
+  <tr>
+    <td align="center"><b> {{ criteria[key]['weight'] }} </b></td>
+    <td>
+      <a href="/edit_criterion/{{ criteria[key]['id'] }}">
+        {{ criteria[key]['name'] }}
+      </a>
+    </td>
+    <td>{{ criteria[key]['description'] }}</td>
+    <td>
+      <a href="/edit_value/{{ criteria[key]['values'][k]['value_id'] }}">
+        {{ criteria[key]['values'][k]['val_name'] }}
+      </a>
+    </td>
+    <td align="center">
+      <b> {{ criteria[key]['values'][k]['val_weight'] }} </b>
+    </td>
+  </tr>
+  {% endfor %} {% endfor %}
 </table>
 
 {% endblock %}

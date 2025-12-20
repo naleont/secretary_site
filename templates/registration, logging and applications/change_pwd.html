@@ -1,47 +1,63 @@
-{% extends 'base.html' %}
-
-{% block title %} Смена пароля {% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %} Смена пароля {% endblock %} {% block
+content %}
 <!--Страница смены пароля. Переменная success = True / unmatched / wrong_old-->
 
-<legend><h2><b>Смена пароля</b></h2></legend>
+<legend>
+  <h2><b>Смена пароля</b></h2>
+</legend>
 <div class="alarm">
-    {% if success == 'unmatched' %}
-    <br>Новый пароль не совпадает с подтверждением пароля.
-    {% elif success == 'wrong_old' %}
-    <br>Неправильный старый пароль
-    {% endif %}
+  {% if success == 'unmatched' %}
+  <br />Новый пароль не совпадает с подтверждением пароля. {% elif success ==
+  'wrong_old' %} <br />Неправильный старый пароль {% endif %}
 </div>
 
 <div class="success">
-    {% if success == True or success == 'True' %}
-    <br>Пароль успешно изменен
-    {% endif %}
+  {% if success == True or success == 'True' %}
+  <br />Пароль успешно изменен {% endif %}
 </div>
 
-<form action="/new_pwd" method = 'GET'>
-    <fieldset>
-        <p>Пароль должен быть длиной от 8 до 14 символов, может содержать латинские символы,
-            цифры и пунктуационные знаки.</p>
-        {% if mode == 'change' %}
-        <span class="required">Старый пароль</span><br>
-            <input size="30" name="old_password" type="password"
-                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}" required><br><br>
-            <input name="user_id" type="hidden" value="{{ session['user_id'] }}">
-        {% elif mode == 'reset' %}
-        <input name="valid_key" type="hidden" value="True">
-        <input name="user_id" type="hidden" value="{{ user_id }}">
-        {% endif %}
-        <span class="required">Новый пароль</span><br>
-        <span class="comment">От 8 символов, может содержать латинские буквы, цифры и знаки препинания.</span><br>
-            <input size="30" name="new_password" type="password"
-                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}" required><br><br>
-        <span class="required">Подтверждение пароля</span><br>
-            <input size="30" name="confirm_password" type="password"
-                   pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}" required><br><br>
-        <input class="button" type="submit" value="Поменять пароль">
-    </fieldset>
+<form action="/new_pwd" method="GET">
+  <fieldset>
+    <p>
+      Пароль должен быть длиной от 8 до 14 символов, может содержать латинские
+      символы, цифры и пунктуационные знаки.
+    </p>
+    {% if mode == 'change' %}
+    <span class="required">Старый пароль</span><br />
+    <input
+      size="30"
+      name="old_password"
+      type="password"
+      pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}"
+      required
+    /><br /><br />
+    <input name="user_id" type="hidden" value="{{ session['user_id'] }}" />
+    {% elif mode == 'reset' %}
+    <input name="valid_key" type="hidden" value="True" />
+    <input name="user_id" type="hidden" value="{{ user_id }}" />
+    {% endif %}
+    <span class="required">Новый пароль</span><br />
+    <span class="comment"
+      >От 8 символов, может содержать латинские буквы, цифры и знаки
+      препинания.</span
+    ><br />
+    <input
+      size="30"
+      name="new_password"
+      type="password"
+      pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}"
+      required
+    /><br /><br />
+    <span class="required">Подтверждение пароля</span><br />
+    <input
+      size="30"
+      name="confirm_password"
+      type="password"
+      pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}"
+      required
+    /><br /><br />
+    <input class="button" type="submit" value="Поменять пароль" />
+  </fieldset>
 </form>
 
 {% endblock %}

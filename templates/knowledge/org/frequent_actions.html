@@ -1,70 +1,216 @@
-{% extends 'knowledge.html' %}
+{% extends 'knowledge.html' %} {% block content %}
 
-{% block content %}
-  
-	<div class="content">
-		<h1 id="частые-действия">Частые действия</h1>
+<div class="content">
+  <h1 id="частые-действия">Частые действия</h1>
 
-<div style="margin:20px;">
-<a href="#search_work">Поиск работы</a><br>
-{% if session['type'] in ['manager', 'org', 'admin'] %}
-	<a href="#edit_work">Редактирование работы</a><br>
-	<a href="#search_user">Поиск пользователя</a><br>
-	<a href="#edit_user">Редактирование пользователя</a><br>
-	<a href="#"></a>
-{% endif %}
+  <div style="margin: 20px">
+    <a href="#search_work">Поиск работы</a><br />
+    {% if session['type'] in ['manager', 'org', 'admin'] %}
+    <a href="#edit_work">Редактирование работы</a><br />
+    <a href="#search_user">Поиск пользователя</a><br />
+    <a href="#edit_user">Редактирование пользователя</a><br />
+    <a href="#"></a>
+    {% endif %}
+  </div>
+
+  <h3><a name="search_work">Поиск работы</a></h3>
+
+  <p>
+    Перейдите:
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge"
+          >Личный кабинет</code
+        ></em
+      ></strong
+    >
+    -
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge"
+          >Поиск работ</code
+        ></em
+      ></strong
+    >
+    или
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge"
+          >Администрирование</code
+        ></em
+      ></strong
+    >
+    -
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge"
+          >Поиск работ</code
+        ></em
+      ></strong
+    >. Выберите, по чему будете искать работу: доступны варианты по номеру,
+    названию, автору, руководителю, городу, организации, e-mail или ID
+    пользователя. Кроме того, можно выставить фильтр по региональному туру.
+  </p>
+
+  <p>
+    <img
+      src="static/images/frequent_actions_img/search_work-01.png"
+      alt=""
+      style="height: 200px; margin: 15px"
+    />
+  </p>
+
+  <p>
+    <img
+      src="static/images/frequent_actions_img/search_work-02.png"
+      alt=""
+      style="height: 300px; float: right; margin: 15px"
+    />
+  </p>
+
+  <p>
+    Введите данные для поиска и нажмите
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge">Искать</code></em
+      ></strong
+    >.
+  </p>
+
+  <p>
+    Обратите внимание: если вы искали работу по номеру, поиск выдаст все работы
+    с таким номером за все годы. Например, при поиске по номеру 180150 сверху
+    вниз будут отображаться работы 200150, 190150, 180150, 170150 и т.д.
+  </p>
+
+  {% if session['type'] in ['manager', 'org', 'admin'] %}
+  <h4><a name="edit_work">Редактирование работы</a></h4>
+
+  <p>
+    <a href="https://vernadsky.info/personal_office/admin_work_search"
+      >Найдите работу.</a
+    >
+    Для изменения информации о работе нажмите значок-<strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge">карандаш</code></em
+      ></strong
+    >
+    напротив нужной работы. Будьте внимательны: не внесите лишних правок. Кроме
+    информации о работе, вы можете изменить её файлы. Для этого перейдите на
+    вкладку
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge"
+          >Файлы работы</code
+        ></em
+      ></strong
+    >.
+  </p>
+
+  <p>
+    После редактирования информации не забудьте нажать кнопку
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge">Сохранить</code></em
+      ></strong
+    >.
+  </p>
+
+  <p>
+    <img
+      src="static/images/frequent_actions_img/search_work-03.png"
+      alt=""
+      style="height: 300px; margin: 15px"
+    />
+  </p>
+
+  <h3><a name="search_user">Поиск пользователя</a></h3>
+
+  <p>
+    <img
+      src="static/images/frequent_actions_img/search_user-01.png"
+      alt=""
+      style="height: 100px; float: left; margin: 15px"
+    />
+  </p>
+
+  <p>
+    Перейдите в <a href="https://vernadsky.info/admin/users">раздел</a>
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge"
+          >Администрирование</code
+        ></em
+      ></strong
+    >
+    –
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge"
+          >Пользователи</code
+        ></em
+      ></strong
+    >.
+  </p>
+
+  <p>
+    <img
+      src="static/images/frequent_actions_img/search_user-02.png"
+      alt=""
+      style="height: 250px; margin: 15px"
+    />
+  </p>
+
+  <p>
+    Перед поиском нужно выбрать из раскрывающегося списка, по чему будет
+    производиться поиск.
+  </p>
+
+  <p>
+    <img
+      src="static/images/frequent_actions_img/search_user-03.png"
+      alt=""
+      style="height: 150px; margin: 15px"
+    />
+  </p>
+
+  <p>
+    Попробуйте найти пользователя по e-mail, с которого пришло письмо, или по
+    фамилии. Если это не удалось, запросите у пользователя логин, который он
+    придумал при регистрации на сайте, и выполните поиск по нему.
+  </p>
+
+  <p>
+    <img
+      src="static/images/frequent_actions_img/search_user-04.png"
+      alt=""
+      style="height: 150px; float: right; margin: 15px"
+    />
+  </p>
+
+  <h4><a name="edit_user">Редактирование пользователя</a></h4>
+
+  <p>
+    <a href="/frequent_actions#search_user">Найдите пользователя.</a> Нажмите на
+    значок-«визитку», чтобы перейти в режим редактирования контакта. Будьте
+    внимательны: не отредактируйте какое-нибудь лишнее поле.
+  </p>
+
+  <p>
+    После редактирования информации не забудьте нажать кнопку
+    <strong
+      ><em
+        ><code class="language-plaintext highlighter-rouge">Сохранить</code></em
+      ></strong
+    >
+  </p>
+
+  <h3><a name=""></a></h3>
+
+  <h3><a name=""></a></h3>
+
+  <h3><a name=""></a></h3>
+  {% endif %}
 </div>
-
-<h3><a name="search_work">Поиск работы</a></h3>
-
-<p>Перейдите: <strong><em><code class="language-plaintext highlighter-rouge">Личный кабинет</code></em></strong> - <strong><em><code class="language-plaintext highlighter-rouge">Поиск работ</code></em></strong> или <strong><em><code class="language-plaintext highlighter-rouge">Администрирование</code></em></strong> - <strong><em><code class="language-plaintext highlighter-rouge">Поиск работ</code></em></strong>. Выберите, по чему будете искать работу: доступны варианты по номеру, названию, автору, руководителю, городу, организации, e-mail или ID пользователя. Кроме того, можно выставить фильтр по региональному туру.</p>
-
-<p><img src="static/images/frequent_actions_img/search_work-01.png" alt="" style="height:200px; margin:15px;"></p>
-
-<p><img src="static/images/frequent_actions_img/search_work-02.png" alt="" style="height:300px; float:right; margin:15px;"></p>
-
-<p>Введите данные для поиска и нажмите <strong><em><code class="language-plaintext highlighter-rouge">Искать</code></em></strong>.</p>
-
-<p>Обратите внимание: если вы искали работу по номеру, поиск выдаст все работы с таким номером за все годы. Например, при поиске по номеру 180150 сверху вниз будут отображаться работы 200150, 190150, 180150, 170150 и т.д.</p>
-
-{% if session['type'] in ['manager', 'org', 'admin'] %}
-	<h4><a name="edit_work">Редактирование работы</a></h4>
-
-	<p><a href="https://vernadsky.info/personal_office/admin_work_search">Найдите работу.</a> Для изменения информации о работе нажмите значок-<strong><em><code class="language-plaintext highlighter-rouge">карандаш</code></em></strong> напротив нужной работы. Будьте внимательны: не внесите лишних правок. Кроме информации о работе, вы можете изменить её файлы. Для этого перейдите на вкладку <strong><em><code class="language-plaintext highlighter-rouge">Файлы работы</code></em></strong>.</p>
-
-	<p>После редактирования информации не забудьте нажать кнопку <strong><em><code class="language-plaintext highlighter-rouge">Сохранить</code></em></strong>.</p>
-
-	<p><img src="static/images/frequent_actions_img/search_work-03.png" alt="" style="height:300px; margin:15px;"></p>
-
-	<h3><a name="search_user">Поиск пользователя</a></h3>
-
-	<p><img src="static/images/frequent_actions_img/search_user-01.png" alt="" style="height:100px; float:left; margin:15px;"></p>
-
-	<p>Перейдите в <a href="https://vernadsky.info/admin/users">раздел</a> <strong><em><code class="language-plaintext highlighter-rouge">Администрирование</code></em></strong> – <strong><em><code class="language-plaintext highlighter-rouge">Пользователи</code></em></strong>.</p>
-
-	<p><img src="static/images/frequent_actions_img/search_user-02.png" alt="" style="height:250px; margin:15px;"></p>
-
-	<p>Перед поиском нужно выбрать из раскрывающегося списка, по чему будет производиться поиск.</p>
-
-	<p><img src="static/images/frequent_actions_img/search_user-03.png" alt="" style="height:150px; margin:15px;"></p>
-
-	<p>Попробуйте найти пользователя по e-mail, с которого пришло письмо, или по фамилии. Если это не удалось, запросите у пользователя логин, который он придумал при регистрации на сайте, и выполните поиск по нему.</p>
-
-	<p><img src="static/images/frequent_actions_img/search_user-04.png" alt="" style="height:150px; float:right; margin:15px;"></p>
-
-	<h4><a name="edit_user">Редактирование пользователя</a></h4>
-
-	<p><a href="/frequent_actions#search_user">Найдите пользователя.</a> Нажмите на значок-«визитку», чтобы перейти в режим редактирования контакта. Будьте внимательны: не отредактируйте какое-нибудь лишнее поле.</p>
-
-	<p>После редактирования информации не забудьте нажать кнопку <strong><em><code class="language-plaintext highlighter-rouge">Сохранить</code></em></strong></p>
-
-	<h3><a name=""></a></h3>
-
-	<h3><a name=""></a></h3>
-
-	<h3><a name=""></a></h3>
-{% endif %}
-
-	</div>
 
 {% endblock %}

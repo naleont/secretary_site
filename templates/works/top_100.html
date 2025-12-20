@@ -1,54 +1,44 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h2>Работы, участвующие без оргвзноса</h2>
 <a href="/top_100_excel"><button>Скачать excel</button></a>
 
-<p>1-3 лучшие работы от каждой секции получат возможность участвовать во 2 туре Конкурса без оплаты оргвзноса.
-    Перейдите на страницу секции для добавления работ в список.
-    Работы региональных туров в список не включаются и от оргвзноса не освобождаются.</p>
+<p>
+  1-3 лучшие работы от каждой секции получат возможность участвовать во 2 туре
+  Конкурса без оплаты оргвзноса. Перейдите на страницу секции для добавления
+  работ в список. Работы региональных туров в список не включаются и от
+  оргвзноса не освобождаются.
+</p>
 
-<h4>Всего для бесплатного участия отмечено <b>{{ total }}</b>
-    {% if total % 10 == 1 and total != 11 %}
-    работа.
-    {% elif total % 10 in [2, 3, 4] and total not in [12, 13, 14] %}
-    работы.
-    {% elif total % 10 in [5, 6, 7, 8, 9, 0] or total in [11, 12, 13, 14] %}
-    работ.
-    {% endif %}</h4>
-<br>
+<h4>
+  Всего для бесплатного участия отмечено <b>{{ total }}</b> {% if total % 10 ==
+  1 and total != 11 %} работа. {% elif total % 10 in [2, 3, 4] and total not in
+  [12, 13, 14] %} работы. {% elif total % 10 in [5, 6, 7, 8, 9, 0] or total in
+  [11, 12, 13, 14] %} работ. {% endif %}
+</h4>
+<br />
 
 <table frame="void" border="2px" bordercolor="#4962A4">
-    <tr>
-        <td align="center"><b>
-            Секция
-        </b></td>
-        <td align="center"><b>
-            Отмечено
-        </b></td>
-        <td align="center"><b>
-            Список работ
-        </b></td>
-    </tr>
-    {% for work in no_fee %}
-    <tr>
-        <td>
-            {% if session['type'] in ['admin', 'org', 'manager']
-            or (session['supervisor'] == True and  session['cat_id'] == work['cat_id'])
-            or (session['secretary'] == True and  session['cat_id'] == work['cat_id']) %}
-                <a href="/category_page/{{ work['id'] }}">{{ work['name'] }}</a>
-            {% else %}
-                <a href="/category_page/{{ work['id'] }}">{{ work['name'] }}</a>
-            {% endif %}
-        </td>
-        <td align="center">
-            {{ work['works_no'] }}
-        </td>
-        <td align="center">
-            {{ work['works'] }}
-        </td>
+  <tr>
+    <td align="center"><b> Секция </b></td>
+    <td align="center"><b> Отмечено </b></td>
+    <td align="center"><b> Список работ </b></td>
+  </tr>
+  {% for work in no_fee %}
+  <tr>
+    <td>
+      {% if session['type'] in ['admin', 'org', 'manager'] or
+      (session['supervisor'] == True and session['cat_id'] == work['cat_id']) or
+      (session['secretary'] == True and session['cat_id'] == work['cat_id']) %}
+      <a href="/category_page/{{ work['id'] }}">{{ work['name'] }}</a>
+      {% else %}
+      <a href="/category_page/{{ work['id'] }}">{{ work['name'] }}</a>
+      {% endif %}
+    </td>
+    <td align="center">{{ work['works_no'] }}</td>
+    <td align="center">{{ work['works'] }}</td>
     {% endfor %}
+  </tr>
 </table>
-<br>
+<br />
 {% endblock %}

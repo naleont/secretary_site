@@ -1,126 +1,120 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <h2>Админка</h2>
 
-<br>
+<br />
 
 <ul class="menu-grid">
-    <li class="drop dropping men">
+  <li class="drop dropping men">
     Платежи
-      <div class="dropped">
-        <a href="/alternative_payments">Альтернативные платежи</a>
-        <a href="/id_payments">Внести платежи</a>
-        <a href="/load_statement">Загрузить выписку</a>
-        <a href="/manage_payments">Управлять платежами</a>
-        <a href="/payment_stats">Статистика оплат</a>
-        <a href="/payment_types">Типы платежей</a>
-      </div>
-    </li>
+    <div class="dropped">
+      <a href="/alternative_payments">Альтернативные платежи</a>
+      <a href="/id_payments">Внести платежи</a>
+      <a href="/load_statement">Загрузить выписку</a>
+      <a href="/manage_payments">Управлять платежами</a>
+      <a href="/payment_stats">Статистика оплат</a>
+      <a href="/payment_types">Типы платежей</a>
+    </div>
+  </li>
 
-    <li class="drop dropping men">
+  <li class="drop dropping men">
     Пользователи и команда
-      <div class="dropped">
-        <a href="/volunteer_tasks">Задачи волонтеров</a>
-        <a href="/view_applications">Заявки в команду</a>
-        <a href="/volunteer_applications">Заявки волонтеров</a>
-        <a href="/school_classes">Классы наших школ</a>
-        <a href="/set_orgcom">Оргкомитет</a>
-        <a href="/responsibilities">Оргкомитет - Зоны ответственности</a>
-        <a href="/users_list">Пользователи</a>
-      </div>
-    </li>
+    <div class="dropped">
+      <a href="/volunteer_tasks">Задачи волонтеров</a>
+      <a href="/view_applications">Заявки в команду</a>
+      <a href="/volunteer_applications">Заявки волонтеров</a>
+      <a href="/school_classes">Классы наших школ</a>
+      <a href="/set_orgcom">Оргкомитет</a>
+      <a href="/responsibilities">Оргкомитет - Зоны ответственности</a>
+      <a href="/users_list">Пользователи</a>
+    </div>
+  </li>
 
-    <li class="drop dropping men">
+  <li class="drop dropping men">
     Анализ рецензий
     <div class="dropped">
       <a href="/analysis_criteria">Критерии анализа</a>
       <a href="/analysis_state">Состояние анализа</a>
       <a href="/rev_analysis_results">Итоги анализа</a>
     </div>
-    </li>
+  </li>
 
-    <li class="drop dropping men">
+  <li class="drop dropping men">
     Анализ внутренних рецензий
-      <div class="dropped">
-        <a href="/add_reviews">Добавить рецензентов</a>
-<!--        <a href="/reviewers_to_review">Кого читать?</a>-->
-        <a href="/internal_results">Итоги анализа</a>
-        <a href="/internal_reviews">Сидим, читаем</a>
-      </div>
-    </li>
+    <div class="dropped">
+      <a href="/add_reviews">Добавить рецензентов</a>
+      <!--        <a href="/reviewers_to_review">Кого читать?</a>-->
+      <a href="/internal_results">Итоги анализа</a>
+      <a href="/internal_reviews">Сидим, читаем</a>
+    </div>
+  </li>
 
-    <li class="drop dropping men">
+  <li class="drop dropping men">
     Заседания секций
-      <div class="dropped">
-        <a href="/add_cities">Добавить города</a>
-        <a href="/set_report_dates">Назначить даты заседаний секций</a>
-        <a href="/category_unions">Объениненные секции</a>
-        <a href="/timezones">Часовые пояса</a>
-      </div>
-    </li>
+    <div class="dropped">
+      <a href="/add_cities">Добавить города</a>
+      <a href="/set_report_dates">Назначить даты заседаний секций</a>
+      <a href="/category_unions">Объениненные секции</a>
+      <a href="/timezones">Часовые пояса</a>
+    </div>
+  </li>
 
-    <li class="drop dropping men">
+  <li class="drop dropping men">
     Информация о работах
-      <div class="dropped">
-        <a href="/add_works">Загрузить информацию о работах</a>
-        <a href="/view_works">Посмотреть синхронизированные работы</a>
-        <a href="/unpayed">Заявлены на онлайн и не оплатили участие</a>
-        <a href="/apply_for_online">Работы, заявленные на онлайн или выступившие очно</a>
-        <a href="/works_participated">Работы, которые уже участвовали очно</a>
-        <a href="/online_participants">Участники онлайна</a>
-        <a href="/online_participants_applications/all">Участники онлайна - заявки</a>
-      </div>
-    </li>
+    <div class="dropped">
+      <a href="/add_works">Загрузить информацию о работах</a>
+      <a href="/view_works">Посмотреть синхронизированные работы</a>
+      <a href="/unpayed">Заявлены на онлайн и не оплатили участие</a>
+      <a href="/apply_for_online"
+        >Работы, заявленные на онлайн или выступившие очно</a
+      >
+      <a href="/works_participated">Работы, которые уже участвовали очно</a>
+      <a href="/online_participants">Участники онлайна</a>
+      <a href="/online_participants_applications/all"
+        >Участники онлайна - заявки</a
+      >
+    </div>
+  </li>
 
-    <li class="drop dropping men">
-        <a href="/applications_2_tour">
-            Загрузить заявки на 2 тур
-        </a>
-    </li>
+  <li class="drop dropping men">
+    <a href="/applications_2_tour"> Загрузить заявки на 2 тур </a>
+  </li>
 
-    <li class="drop dropping men">
-        <a href="/experts/all">
-            Эксперты
-        </a>
-    </li>
+  <li class="drop dropping men">
+    <a href="/experts/all"> Эксперты </a>
+  </li>
 
-    <li class="drop dropping men">
-        <a href="/news_list">
-            Новости
-        </a>
-    </li>
+  <li class="drop dropping men">
+    <a href="/news_list"> Новости </a>
+  </li>
 
-    <li class="drop dropping men">
-        <a href="/search_participant">
-            Найти работу или заявку
-        </a>
-    </li>
+  <li class="drop dropping men">
+    <a href="/search_participant"> Найти работу или заявку </a>
+  </li>
 
-    <li class="drop dropping men">
+  <li class="drop dropping men">
     Рассылка дипломов
-      <div class="dropped">
-        <a href="/add_emails">Добавить email участников</a>
-        <a href="/load_diplomas">Загрузить дипломы</a>
-        <a href="/send_diplomas">Отправить дипломы</a>
-        <a href="/send_left_diplomas">Отправить очные дипломы</a>
-      </div>
-    </li>
+    <div class="dropped">
+      <a href="/add_emails">Добавить email участников</a>
+      <a href="/load_diplomas">Загрузить дипломы</a>
+      <a href="/send_diplomas">Отправить дипломы</a>
+      <a href="/send_left_diplomas">Отправить очные дипломы</a>
+    </div>
+  </li>
 </ul>
 
-<br>
+<br />
 
 <h3>Страницы для сайта Конкурса</h3>
 <ul>
-    <li>
-        <a href="/online_applicants">Заявленные на Дополнительный онлайн-конкурс</a>
-    </li>
-    <li>
-        <a href="/top_100_for_site">Топ-100</a>
-    </li>
-    <li>
-        <a href="/drive_links">Ссылки для загрузки презентаций</a>
-    </li>
+  <li>
+    <a href="/online_applicants">Заявленные на Дополнительный онлайн-конкурс</a>
+  </li>
+  <li>
+    <a href="/top_100_for_site">Топ-100</a>
+  </li>
+  <li>
+    <a href="/drive_links">Ссылки для загрузки презентаций</a>
+  </li>
 </ul>
 
 {% endblock %}

@@ -1,14 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
 
-{% block content %}
-
-<legend><h2><b>Добавить электронные адреса для рассылки дипломов</b></h2></legend>
+<legend>
+  <h2><b>Добавить электронные адреса для рассылки дипломов</b></h2>
+</legend>
 <a href="/download_emails_sample"><p>Скачать образец</p></a>
 {% if success == 'True' %}
-<p>Загружено успешно</p><br>
+<p>Загружено успешно</p>
+<br />
 {% endif %}
 <form method="POST" action="/save_emails" enctype="multipart/form-data">
-  <p><input type="file" name="file"></p>
-  <p><input class="blue" type="submit" value="Загрузить"></p>
+  <p><input type="file" name="file" /></p>
+  <p><input class="blue" type="submit" value="Загрузить" /></p>
 </form>
 {% endblock %}

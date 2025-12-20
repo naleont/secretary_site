@@ -1,116 +1,79 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <h2><b>Анализ рецензии на работу {{ work['work_id'] }}</b></h2>
 <h4><b>"{{ work['work_name'] }}"</b></h4>
-{% if session['type'] in ['admin', 'org', 'manager']
-or (session['supervisor'] == True and work['cat_id'] in session['cat_id']) %}
-    <a href="/pre_analysis/{{ work['work_id'] }}"><button>
-        {% if work['analysis'] == True or pre_ana != None %}
-            Редактировать анализ
-        {% elif work['analysis'] == False %}
-            Заполнить анализ
-        {% endif %}
-    </button></a><br><br>
-{% endif %}
-
-{% if pre_ana != None %}
+{% if session['type'] in ['admin', 'org', 'manager'] or (session['supervisor']
+== True and work['cat_id'] in session['cat_id']) %}
+<a href="/pre_analysis/{{ work['work_id'] }}"
+  ><button>
+    {% if work['analysis'] == True or pre_ana != None %} Редактировать анализ {%
+    elif work['analysis'] == False %} Заполнить анализ {% endif %}
+  </button></a
+><br /><br />
+{% endif %} {% if pre_ana != None %}
 <table frame="void" border="2px" bordercolor="#4962A4">
-    <tr>
-        <td colspan="2">
-            <b>О работе</b>
-        </td>
-    </tr>
-    <tr>
-        <td width="70%">
-            Была бы допущена при нашем рецензировании
-        </td>
-        <td width="30%">
-            {% if pre_ana['good_work'] == True %}
-            Да
-            {% elif pre_ana['good_work'] == False %}
-            Нет
-            {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Соответствует формату Конкурса
-        </td>
-        <td>
-            {{ pre_ana['research'] }}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Поступила с рецензией
-        </td>
-        <td>
-            {% if pre_ana['has_review'] == True %}
-            Да
-            {% elif pre_ana['has_review'] == False and pre_ana['rev_type'] == 'points' %}
-            Только баллы по критериям
-            {% elif pre_ana['has_review'] == False and pre_ana['rev_type'] == None %}
-            Нет
-            {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Допуск работы до 2 тура продавили
-        </td>
-        <td>
-            {% if pre_ana['pushed'] == True %}
-            Да
-            {% elif pre_ana['pushed'] == False or pre_ana['pushed'] == None %}
-            Нет
-            {% endif %}
-        </td>
-    </tr>
+  <tr>
+    <td colspan="2">
+      <b>О работе</b>
+    </td>
+  </tr>
+  <tr>
+    <td width="70%">Была бы допущена при нашем рецензировании</td>
+    <td width="30%">
+      {% if pre_ana['good_work'] == True %} Да {% elif pre_ana['good_work'] ==
+      False %} Нет {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Соответствует формату Конкурса</td>
+    <td>{{ pre_ana['research'] }}</td>
+  </tr>
+  <tr>
+    <td>Поступила с рецензией</td>
+    <td>
+      {% if pre_ana['has_review'] == True %} Да {% elif pre_ana['has_review'] ==
+      False and pre_ana['rev_type'] == 'points' %} Только баллы по критериям {%
+      elif pre_ana['has_review'] == False and pre_ana['rev_type'] == None %} Нет
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Допуск работы до 2 тура продавили</td>
+    <td>
+      {% if pre_ana['pushed'] == True %} Да {% elif pre_ana['pushed'] == False
+      or pre_ana['pushed'] == None %} Нет {% endif %}
+    </td>
+  </tr>
 
-    {% if work_comment != None and work_comment != '' %}
-    <tr>
-        <td colspan="2">
-            <b>Комментарий к работе: </b>
-            {{ work_comment }}
-        </td>
-    </tr>
-    {% endif %}
-
-    {% if pre_ana['has_review'] == True %}
-    {% if work['analysis'] == True or work['analysis'] == 'part' %}
-    <tr>
-        <td colspan="2">
-            <br>
-            <b>О рецензии</b>
-        </td>
-    </tr>
-    {% for key in criteria %}
-    <tr>
-        <td>
-            {{ criteria[key]['name'] }}
-        </td>
-        <td>
-            {% for k in analysis %}
-            {% if k == key %}
-            {{ analysis[k]['val_name'] }}
-            {% endif %}
-            {% endfor %}
-        </td>
-    </tr>
-    {% endfor %}
-    {% endif %}
-
-    {% if rev_comment != None and rev_comment != '' %}
-    <tr>
-        <td colspan="2">
-            <b>Комментарий к рецензии: </b>
-            {{ rev_comment }}
-        </td>
-    </tr>
-    {% endif %}
-
-    {% endif %}
+  {% if work_comment != None and work_comment != '' %}
+  <tr>
+    <td colspan="2">
+      <b>Комментарий к работе: </b>
+      {{ work_comment }}
+    </td>
+  </tr>
+  {% endif %} {% if pre_ana['has_review'] == True %} {% if work['analysis'] ==
+  True or work['analysis'] == 'part' %}
+  <tr>
+    <td colspan="2">
+      <br />
+      <b>О рецензии</b>
+    </td>
+  </tr>
+  {% for key in criteria %}
+  <tr>
+    <td>{{ criteria[key]['name'] }}</td>
+    <td>
+      {% for k in analysis %} {% if k == key %} {{ analysis[k]['val_name'] }} {%
+      endif %} {% endfor %}
+    </td>
+  </tr>
+  {% endfor %} {% endif %} {% if rev_comment != None and rev_comment != '' %}
+  <tr>
+    <td colspan="2">
+      <b>Комментарий к рецензии: </b>
+      {{ rev_comment }}
+    </td>
+  </tr>
+  {% endif %} {% endif %}
 </table>
-{% endif %}
-{% endblock %}
+{% endif %} {% endblock %}

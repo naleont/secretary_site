@@ -1,72 +1,55 @@
-{% if session['type'] not in ['user'] %}
-{% if session['type'] %}
-{% extends 'base.html' %}
-{% else %}
-{% extends 'outer_user_base.html' %}
-{% endif %}
-{% endif %}
-
-{% block content %}
+{% if session['type'] not in ['user'] %} {% if session['type'] %} {% extends
+'base.html' %} {% else %} {% extends 'outer_user_base.html' %} {% endif %} {%
+endif %} {% block content %}
 
 <h2>Работы, заявленные для участия в Дополнительном онлайн-конкурсе</h2>
 
-{% if session['type'] not in ['user'] %}
-{% if session['type'] %}
+{% if session['type'] not in ['user'] %} {% if session['type'] %}
 <a href="/download_applicants"><button>Скачать html</button></a>
-<br>
-{% endif %}
-{% endif %}
+<br />
+{% endif %} {% endif %}
 
-<p>В список выступающих работа будет включена только после оплаты оргвзноса.
-    Если вы оплатили оргвзнос 3 или больше рабочих дня назад, и это не отражено в таблице,
-    пришлите чек оплаты оргвзноса на <a href="info@vernadsky.info" target="_blank">info@vernadsky.info</a>.
-    <br>Если вы подали заявку на участие, но не были включены в список ниже,
-    напишите об этом на <a href="info@vernadsky.info" target="_blank">info@vernadsky.info</a>.</p>
+<p>
+  В список выступающих работа будет включена только после оплаты оргвзноса. Если
+  вы оплатили оргвзнос 3 или больше рабочих дня назад, и это не отражено в
+  таблице, пришлите чек оплаты оргвзноса на
+  <a href="info@vernadsky.info" target="_blank">info@vernadsky.info</a>.
+  <br />Если вы подали заявку на участие, но не были включены в список ниже,
+  напишите об этом на
+  <a href="info@vernadsky.info" target="_blank">info@vernadsky.info</a>.
+</p>
 
-<table frame="void" border="1px" bordercolor="#4962A4" cellpadding="3px" cellspacing="0px">
-    <tr>
-        <td width="6%" align="сenter"><b>
-            Номер работы
-        </b></td>
-        <td width="59%" align="сenter"><b>
-            Название
-        </b></td>
-        <td width="25%" align="сenter"><b>
-            Авторы
-        </b></td>
-        <td width="10%" align="сenter"><b>
-            Оргвзнос
-        </b></td>
-    </tr>
-    {% for cat in cats %}
-    {% if cat['works'] != [] %}
-    <tr>
-        <td align="сenter" colspan="4"><b>
-            {{ cat['name'] }}
-        </b></td>
-    </tr>
-    {% for work in cat['works'] %}
-    <tr>
-        <td align="сenter">
-            {{ work['work_id'] }}
-        </td>
-        <td>
-            {{ work['work_name'] }}
-        </td>
-        <td>
-            {{ work['authors'] }}
-        </td>
-        <td align="сenter">
-            {% if work['payed'] == True %}
-            <span class="green-text">Оплачен</span>
-            {% else %}
-            <span class="alarm">Не оплачен</span>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-    {% endif %}
-    {% endfor %}
+<table
+  frame="void"
+  border="1px"
+  bordercolor="#4962A4"
+  cellpadding="3px"
+  cellspacing="0px"
+>
+  <tr>
+    <td width="6%" align="сenter"><b> Номер работы </b></td>
+    <td width="59%" align="сenter"><b> Название </b></td>
+    <td width="25%" align="сenter"><b> Авторы </b></td>
+    <td width="10%" align="сenter"><b> Оргвзнос </b></td>
+  </tr>
+  {% for cat in cats %} {% if cat['works'] != [] %}
+  <tr>
+    <td align="сenter" colspan="4"><b> {{ cat['name'] }} </b></td>
+  </tr>
+  {% for work in cat['works'] %}
+  <tr>
+    <td align="сenter">{{ work['work_id'] }}</td>
+    <td>{{ work['work_name'] }}</td>
+    <td>{{ work['authors'] }}</td>
+    <td align="сenter">
+      {% if work['payed'] == True %}
+      <span class="green-text">Оплачен</span>
+      {% else %}
+      <span class="alarm">Не оплачен</span>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %} {% endif %} {% endfor %}
 </table>
 
 {% endblock %}

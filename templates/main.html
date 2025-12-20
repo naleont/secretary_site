@@ -1,35 +1,36 @@
-{% extends 'base.html' %}
-
-{% block title %} Команда Конкурса им. В. И. Вернадского {% endblock %}
-
-{% block content %}
-<h2>Сайт команды Конкурса им. В. И. Вернадского</h2><br>
-{% if session['type'] in ['admin', 'org', 'manager'] %}
-{% if without_cat != 0 %}
+{% extends 'base.html' %} {% block title %} Команда Конкурса им. В. И.
+Вернадского {% endblock %} {% block content %}
+<h2>Сайт команды Конкурса им. В. И. Вернадского</h2>
+<br />
+{% if session['type'] in ['admin', 'org', 'manager'] %} {% if without_cat != 0
+%}
 <h4 class="alarm">Работ без секции: {{ without_cat }}</h4>
-{% endif %}
-{% endif %}
-{% if session['application'] == True or session['type'] == 'supervisor' %}
-{% endif %}
-{% if session['supervisor'] == True %}
-      <div align="center">
-            <a href="/analysis_works/{{ session['cat_id'][0] }}"><button class="big-button"><h4>Заполнить анализ рецензий</h4></button></a>
-      </div><br>
+{% endif %} {% endif %} {% if session['application'] == True or session['type']
+== 'supervisor' %} {% endif %} {% if session['supervisor'] == True %}
+<div align="center">
+  <a href="/analysis_works/{{ session['cat_id'][0] }}"
+    ><button class="big-button"><h4>Заполнить анализ рецензий</h4></button></a
+  >
+</div>
+<br />
 {% else %}
-      <div align="center">
-            <a href="/team_application"><button class="big-button"><h4>Стать секретарем секции или волонтером</h4></button></a>
-      </div><br>
+<div align="center">
+  <a href="/team_application"
+    ><button class="big-button">
+      <h4>Стать секретарем секции или волонтером</h4>
+    </button></a
+  >
+</div>
+<br />
 {% endif %}
-<br>
+<br />
 <h3 align="center">Новости</h3>
-<hr>
-{% for key in news %}
-{% if news[key]['publish'] == True and news[key]['access'] in access_list%}
+<hr />
+{% for key in news %} {% if news[key]['publish'] == True and news[key]['access']
+in access_list%}
 <h4 class="small-ident">{{ news[key]['title'] }}</h4>
-<span class="news-date">{{ news[key]['date'] }} {{ news[key]['time'] }}</span><br>
-<span class="news-content">{{ news[key]['content'] }}</span><br>
-<hr>
-{% endif %}
-{% endfor %}
-
-{% endblock %}
+<span class="news-date">{{ news[key]['date'] }} {{ news[key]['time'] }}</span
+><br />
+<span class="news-content">{{ news[key]['content'] }}</span><br />
+<hr />
+{% endif %} {% endfor %} {% endblock %}

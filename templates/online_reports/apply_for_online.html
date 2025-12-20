@@ -1,41 +1,37 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h2>Работы, заявленные на Дополнительный онлайн-конкурс</h2>
 
 <div class="alarm">
-    {% if errors_a != None %}
-    <span>Не удалось добавить работы:</span><br>
-    {% for er in errors_a %}
-    {{ er }}<br>
-    {% endfor %}
-    {% endif %}
+  {% if errors_a != None %}
+  <span>Не удалось добавить работы:</span><br />
+  {% for er in errors_a %} {{ er }}<br />
+  {% endfor %} {% endif %}
 </div>
 <form action="/applied_for_online" method="post">
-    <fieldset>
-        <span class="comment">Номера работ через запятую</span><br><br>
-        <input type="text" name="works" size="70">
-        <input class="button" type="submit" value="Добавить">
-    </fieldset>
-</form><br>
+  <fieldset>
+    <span class="comment">Номера работ через запятую</span><br /><br />
+    <input type="text" name="works" size="70" />
+    <input class="button" type="submit" value="Добавить" />
+  </fieldset>
+</form>
+<br />
 
 <h2>Работы, которые уже участвовали во 2 туре!</h2>
 
 <div class="alarm">
-    {% if errors_b != None %}
-    <span>Не удалось добавить работы:</span><br>
-    {% for er in errors_b %}
-    {{ er }}<br>
-    {% endfor %}
-    {% endif %}
+  {% if errors_b != None %}
+  <span>Не удалось добавить работы:</span><br />
+  {% for er in errors_b %} {{ er }}<br />
+  {% endfor %} {% endif %}
 </div>
 <form action="/participated" method="post">
-    <fieldset>
-        <span class="comment">Номера работ через запятую</span><br><br>
-        <input type="text" name="works" size="70">
-        <input class="button" type="submit" value="Добавить">
-    </fieldset>
-</form><br>
+  <fieldset>
+    <span class="comment">Номера работ через запятую</span><br /><br />
+    <input type="text" name="works" size="70" />
+    <input class="button" type="submit" value="Добавить" />
+  </fieldset>
+</form>
+<br />
 
 {% endblock %}

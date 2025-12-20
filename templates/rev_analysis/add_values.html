@@ -1,14 +1,14 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
 
-{% block content %}
-
-<form action="/adding_values" method = 'POST'>
-    <fieldset>
-        <legend><h2><b>Добавить значения критериев</b></h2></legend>
-            <span>Значения, разделенные табуляциями:</span><br>
-                    Название критерия, название значения критерия, комментарий, вес<br>
-        <textarea cols="120" rows="10" name="data"></textarea><br><br>
-        <input class="button" type="submit" value="Сохранить">
-    </fieldset>
+<form action="/adding_values" method="POST">
+  <fieldset>
+    <legend>
+      <h2><b>Добавить значения критериев</b></h2>
+    </legend>
+    <span>Значения, разделенные табуляциями:</span><br />
+    Название критерия, название значения критерия, комментарий, вес<br />
+    <textarea cols="120" rows="10" name="data"></textarea><br /><br />
+    <input class="button" type="submit" value="Сохранить" />
+  </fieldset>
 </form>
 {% endblock %}

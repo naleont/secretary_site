@@ -1,6 +1,4 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <!--<legend>-->
 <!--  <h2>Назначить даты заседаний секций</h2>-->
@@ -115,19 +113,19 @@
 <!--<br>-->
 
 <script>
-document.write('hihihi');
+  document.write("hihihi");
   const cat_dates = JSON.parse("{{ cat_dates }}");
   document.write(cat_dates);
   console.log(cat_dates.count);
-//   console.log(JSON.parse(cat_dates).map((el) => {
-//     if (!el.endsWith('}')) el = el + '}';
-//     return JSON.parse(el.split("'").join('"'));
-// }))
+  //   console.log(JSON.parse(cat_dates).map((el) => {
+  //     if (!el.endsWith('}')) el = el + '}';
+  //     return JSON.parse(el.split("'").join('"'));
+  // }))
   for (var i = 0; i < cat_dates.length; i++) {
     console.log(cat_dates[i]);
-    document.write(cat_dates[i])
+    document.write(cat_dates[i]);
     // document.write('\n')
-}
+  }
 </script>
 
 {% endblock %}

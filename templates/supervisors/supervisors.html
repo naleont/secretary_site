@@ -1,22 +1,22 @@
-{% extends 'base.html' %}
-
-{% block title %} Русеки {% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %} Русеки {% endblock %} {% block
+content %}
 <table>
-    <tr>
-        <td>
-            <h2>Руководители секций</h2>
-        </td>
-        <td align="right">
-            <a href="/download_supervisors"><button>Скачать список этого года</button></a>
-        </td>
-    </tr>
+  <tr>
+    <td>
+      <h2>Руководители секций</h2>
+    </td>
+    <td align="right">
+      <a href="/download_supervisors"
+        ><button>Скачать список этого года</button></a
+      >
+    </td>
+  </tr>
 </table>
 
 {% if session['type'] == 'admin' %}
-<a href="/edit_supervisor"><button>Добавить русека</button></a><br><br>
-<a href="/add_supervisors"><button>Добавить много русеков</button></a><br><br>
+<a href="/edit_supervisor"><button>Добавить русека</button></a><br /><br />
+<a href="/add_supervisors"><button>Добавить много русеков</button></a
+><br /><br />
 
 <!--<form action="/add_supervisors" method = 'GET'>-->
 <!--    <fieldset>-->
@@ -26,47 +26,47 @@
 <!--    </fieldset>-->
 <!--</form>-->
 
-{% endif %}
-
-{% if session['type'] == 'admin' or session['type'] == 'manager' or session['type'] == 'org' %}
-<a href="mailto:
+{% endif %} {% if session['type'] == 'admin' or session['type'] == 'manager' or
+session['type'] == 'org' %}
+<a
+  href="mailto:
     {% for key in supervisors %}
     {% if supervisors[key]['id'] in relevant %}
     {{ supervisors[key]['email'] }};
     {% endif %}
     {% endfor %}"
-    target="_blank"><button>
-    Написать всем</button></a><br><br>
-{% endif %}
-
-{% if access >= 3 %}
+  target="_blank"
+  ><button>Написать всем</button></a
+><br /><br />
+{% endif %} {% if access >= 3 %}
 <table class="green-table">
-{% for key in supervisors %}
-    <tr bgcolor="#C5E3F3">
-        <td>
-            <a href="/supervisor_profile/{{supervisors[key]['id']}}">{{supervisors[key]['name']}}</a>
-        </td>
-        <td>
-            <a href="mailto:{{supervisors[key]['email']}}">{{supervisors[key]['email']}}</a>
-        </td>
-        <td>
-            <a href="tel:{{supervisors[key]['tel']}}">{{supervisors[key]['tel']}}</a>
-        </td>
-    </tr>
-{% endfor %}
+  {% for key in supervisors %}
+  <tr bgcolor="#C5E3F3">
+    <td>
+      <a href="/supervisor_profile/{{supervisors[key]['id']}}"
+        >{{supervisors[key]['name']}}</a
+      >
+    </td>
+    <td>
+      <a href="mailto:{{supervisors[key]['email']}}"
+        >{{supervisors[key]['email']}}</a
+      >
+    </td>
+    <td>
+      <a href="tel:{{supervisors[key]['tel']}}">{{supervisors[key]['tel']}}</a>
+    </td>
+  </tr>
+  {% endfor %}
 </table>
-{% endif %}
-
-{% if access < 3 %}
+{% endif %} {% if access < 3 %}
 <table frame="void" border="2px" bordercolor="#4962A4">
-{% for key in supervisors %}
-    <tr>
-        <td>
-            {{supervisors[key]['name']}}
-        </td>
-    </tr>
-{% endfor %}
-</table><br><br>
+  {% for key in supervisors %}
+  <tr>
+    <td>{{supervisors[key]['name']}}</td>
+  </tr>
+  {% endfor %}
+</table>
+<br /><br />
 {% endif %}
-<br>
+<br />
 {% endblock %}

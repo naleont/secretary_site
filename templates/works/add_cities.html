@@ -1,12 +1,10 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h2><b>Добавить города</b></h2>
-<form action="/many_cities" method = 'POST'>
-    <fieldset>
-        <textarea cols="120" rows="10" name="text"></textarea><br><br>
-        <input class="button" type="submit" value="Сохранить">
-    </fieldset>
+<form action="/many_cities" method="POST">
+  <fieldset>
+    <textarea cols="120" rows="10" name="text"></textarea><br /><br />
+    <input class="button" type="submit" value="Сохранить" />
+  </fieldset>
 </form>
 {% endblock %}

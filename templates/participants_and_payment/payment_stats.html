@@ -1,16 +1,13 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h2>Статистика оплат</h2>
 
-{% for clause in clauses %}
-Получено денег ({{ clause['name'] }}): {{ clause['sum'] }} р.<br>
+{% for clause in clauses %} Получено денег ({{ clause['name'] }}): {{
+clause['sum'] }} р.<br />
 {% endfor %}
-<br>
+<br />
 
-Оплачено на Дополнительный онлайн-конкурс: {{ online_sum }} р.<br>
-Не оплачено заявившимися на Дополнительный онлайн-конкурс: {{ online_unpayed }} р.<br>
-Уже выступили, но еще не заплатили: {{ reported_unpayed }} р.
-
-{% endblock %}
+Оплачено на Дополнительный онлайн-конкурс: {{ online_sum }} р.<br />
+Не оплачено заявившимися на Дополнительный онлайн-конкурс: {{ online_unpayed
+}} р.<br />
+Уже выступили, но еще не заплатили: {{ reported_unpayed }} р. {% endblock %}

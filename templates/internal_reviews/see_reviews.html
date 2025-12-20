@@ -1,60 +1,65 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<table><tr>
+{% extends 'base.html' %} {% block content %}
+<table>
+  <tr>
     <td>
-        <h2>Таинственный рецензент №{{ reviewer_id }} (Рецензий: {{ rev_no }})</h2>
-        <p>Уже оценено рецензий: {{ read }}</p>
+      <h2>
+        Таинственный рецензент №{{ reviewer_id }} (Рецензий: {{ rev_no }})
+      </h2>
+      <p>Уже оценено рецензий: {{ read }}</p>
     </td>
     <td>
-        {% if read_by == session['user_id'] %}
-        <a href="/assign_reviewer/undo/{{ reviewer_id }}/{{ session['user_id'] }}">
-            <button class="red-button">Заберите!</button></a>
-        {% else %}
-            {% if not read_by %}
-        <a href="/assign_reviewer/do/{{ reviewer_id }}/{{ session['user_id'] }}"><button>Беру!</button></a>
-            {% endif %}
-        {% endif %}
+      {% if read_by == session['user_id'] %}
+      <a
+        href="/assign_reviewer/undo/{{ reviewer_id }}/{{ session['user_id'] }}"
+      >
+        <button class="red-button">Заберите!</button></a
+      >
+      {% else %} {% if not read_by %}
+      <a href="/assign_reviewer/do/{{ reviewer_id }}/{{ session['user_id'] }}"
+        ><button>Беру!</button></a
+      >
+      {% endif %} {% endif %}
     </td>
-</tr></table>
+  </tr>
+</table>
 
 <h4>Комментарий о рецензенте</h4>
 <form action="/reviewer_comment/{{ reviewer_id }}" method="POST">
-    <fieldset>
-        <table>
-            <tr>
-                <td valign="middle">
-                    <textarea cols="100" rows="3" name="text">{% if comment %}{{ comment }}{% endif %}</textarea>
-                </td>
-                <td valign="middle">
-                    <input class="button" type="submit" value="Сохранить">
-                </td>
-            </tr>
-        </table>
-    </fieldset>
+  <fieldset>
+    <table>
+      <tr>
+        <td valign="middle">
+          <textarea cols="100" rows="3" name="text">
+{% if comment %}{{ comment }}{% endif %}</textarea
+          >
+        </td>
+        <td valign="middle">
+          <input class="button" type="submit" value="Сохранить" />
+        </td>
+      </tr>
+    </table>
+  </fieldset>
 </form>
 
 {% for review in reviews %}
 
 <table>
-    <tr>
-        <td>
-            <h4>Рецензия {{ review['id'] }}</h4>
-        </td>
-        <td>
-            {% if review['read'] == True %}
-            <a href="/analysis_form/{{ review['id'] }}/internal"><button class="red-button">
-                Посмотреть, что ж я там написал</button></a>
-            {% else %}
-            <a href="/analysis_form/{{ review['id'] }}/internal"><button>Заполнить анализ</button></a>
-            {% endif %}
-        </td>
-    </tr>
+  <tr>
+    <td>
+      <h4>Рецензия {{ review['id'] }}</h4>
+    </td>
+    <td>
+      {% if review['read'] == True %}
+      <a href="/analysis_form/{{ review['id'] }}/internal"
+        ><button class="red-button">Посмотреть, что ж я там написал</button></a
+      >
+      {% else %}
+      <a href="/analysis_form/{{ review['id'] }}/internal"
+        ><button>Заполнить анализ</button></a
+      >
+      {% endif %}
+    </td>
+  </tr>
 </table>
-{% for line in review['text'] %}
-{{ line }}<br>
-{% endfor %}
-
-{% endfor %}
-
-{% endblock %}
+{% for line in review['text'] %} {{ line }}<br />
+{% endfor %} {% endfor %} {% endblock %}

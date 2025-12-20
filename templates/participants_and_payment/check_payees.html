@@ -1,81 +1,100 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h2>Назначение платежа</h2>
 
-<b>Платеж {{ payment['payment_id'] }}</b><br>
-Дата получения платежа: {{ payment['date'] }}<br>
-Сумма: {{ payment['debit'] }}<br>
-Не распределено: {{ payment['remainder'] }}<br><br>
-Комментарий к платежу: {{ payment['comment'] }}<br><br>
-Плательщик: {{ payment['organisation'] }}<br>
-ИНН: {{ payment['tin'] }}<br>
-БИК: {{ payment['bic'] }}<br>
-Название банка: {{ payment['bank_name'] }}<br>
-Счет плательщика: {{ payment['account'] }}<br>
-Номер платежного документа: {{ payment['order_id'] }}<br><br>
+<b>Платеж {{ payment['payment_id'] }}</b><br />
+Дата получения платежа: {{ payment['date'] }}<br />
+Сумма: {{ payment['debit'] }}<br />
+Не распределено: {{ payment['remainder'] }}<br /><br />
+Комментарий к платежу: {{ payment['comment'] }}<br /><br />
+Плательщик: {{ payment['organisation'] }}<br />
+ИНН: {{ payment['tin'] }}<br />
+БИК: {{ payment['bic'] }}<br />
+Название банка: {{ payment['bank_name'] }}<br />
+Счет плательщика: {{ payment['account'] }}<br />
+Номер платежного документа: {{ payment['order_id'] }}<br /><br />
 
 <b>Заявка {{ appl['id'] }}</b>
-<form action="/set_payment/{{ payment['payment_id'] }}/{{ appl['id'] }}" method = 'POST'>
-    <fieldset>
-        <table>
-            <tr>
-                <td colspan="2">
-                    <b>Работы</b><br>
-                    {% for work in appl['works'] %}
-                    <i>Работа</i> {{ work['work_id'] }} -
-                    {{ work['work_name'] }}<br>
-                    {% if work['reg_tour'] %}
-                    <span class="alarm">{{ work['reg_tour'] }} тур</span><br>
-                    {% endif %}
-                    <i>Авторы</i> {{ work['authors'] }}<br>
-                    <i>Руководитель</i> {{ work['supervisor'] }}<br><br>
-                    {% endfor %}<br>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <b>Участники</b><br>
-                </td>
-            </tr>
-            <tr>
-            {% for participant in appl['participants'] %}
-                <td>
-                    <input type="checkbox" name="{{ participant['id'] }}" id="{{ participant['id'] }}">
-                </td>
-                <td>
-                    <label for="{{ participant['id'] }}">
-                    <br>
-                        {% if participant['payed'] == True %}
-                        <span class="green-text">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
-                              <circle cx="8" cy="8" r="8"/>
-                            </svg>
-                        </span>
-                        {% elif participant['payed'] == False %}
-                        <span class="alarm">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
-                              <circle cx="8" cy="8" r="8"/>
-                            </svg>
-                        </span><br>
-                        {% endif %}
-                        <i>{{ participant['role'] }} {{ participant['id'] }}</i><br>
-                    {{ participant['last_name'] }} {{ participant['first_name'] }} {{ participant['patronymic_name'] }}<br>
-                    Оргвзнос {{ participant['fee'] }}р.,
-                    {% if participant['format'] == 'face-to-face' %}
-                        Очное участие
-                    {% elif participant['format'] == 'online'%}
-                        Дистанционное участие
-                    {% endif %}</label><br>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-        <br>
-        <input class="button" type="submit" value="Назначить платеж выбранным участникам">
-    </fieldset>
+<form
+  action="/set_payment/{{ payment['payment_id'] }}/{{ appl['id'] }}"
+  method="POST"
+>
+  <fieldset>
+    <table>
+      <tr>
+        <td colspan="2">
+          <b>Работы</b><br />
+          {% for work in appl['works'] %}
+          <i>Работа</i> {{ work['work_id'] }} - {{ work['work_name'] }}<br />
+          {% if work['reg_tour'] %}
+          <span class="alarm">{{ work['reg_tour'] }} тур</span><br />
+          {% endif %}
+          <i>Авторы</i> {{ work['authors'] }}<br />
+          <i>Руководитель</i> {{ work['supervisor'] }}<br /><br />
+          {% endfor %}<br />
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2"><b>Участники</b><br /></td>
+      </tr>
+      <tr>
+        {% for participant in appl['participants'] %}
+        <td>
+          <input
+            type="checkbox"
+            name="{{ participant['id'] }}"
+            id="{{ participant['id'] }}"
+          />
+        </td>
+        <td>
+          <label for="{{ participant['id'] }}">
+            <br />
+            {% if participant['payed'] == True %}
+            <span class="green-text">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                fill="currentColor"
+                class="bi bi-circle-fill"
+                viewBox="0 0 16 16"
+              >
+                <circle cx="8" cy="8" r="8" />
+              </svg>
+            </span>
+            {% elif participant['payed'] == False %}
+            <span class="alarm">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                fill="currentColor"
+                class="bi bi-circle-fill"
+                viewBox="0 0 16 16"
+              >
+                <circle cx="8" cy="8" r="8" />
+              </svg> </span
+            ><br />
+            {% endif %}
+            <i>{{ participant['role'] }} {{ participant['id'] }}</i><br />
+            {{ participant['last_name'] }} {{ participant['first_name'] }} {{
+            participant['patronymic_name'] }}<br />
+            Оргвзнос {{ participant['fee'] }}р., {% if participant['format'] ==
+            'face-to-face' %} Очное участие {% elif participant['format'] ==
+            'online'%} Дистанционное участие {% endif %}</label
+          ><br />
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <br />
+    <input
+      class="button"
+      type="submit"
+      value="Назначить платеж выбранным участникам"
+    />
+  </fieldset>
 </form>
-<br>
+<br />
 
 {% endblock %}

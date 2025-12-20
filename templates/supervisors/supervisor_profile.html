@@ -1,23 +1,28 @@
-{% extends 'base.html' %}
-
-{% block title %} Секции {% endblock %}
-
-{% block content %}
-<table><tr>
+{% extends 'base.html' %} {% block title %} Секции {% endblock %} {% block
+content %}
+<table>
+  <tr>
     <td>
-        <h2>Профиль руководителя секции</h2>
+      <h2>Профиль руководителя секции</h2>
     </td>
-{% if session['type'] == 'org' or session['type'] == 'admin' or session['type'] == 'manager' %}
+    {% if session['type'] == 'org' or session['type'] == 'admin' or
+    session['type'] == 'manager' %}
     <td>
-        <a href="/edit_supervisor/{{ supervisor['id'] }}"><button>Редактировать русека</button></a></td>
+      <a href="/edit_supervisor/{{ supervisor['id'] }}"
+        ><button>Редактировать русека</button></a
+      >
+    </td>
     <td>
-        <a href="/confirm_sup_deletion/{{ supervisor['id'] }}"><button class="red-button">Удалить русека</button></a></td>
-{% endif %}
-</tr></table>
-ФИО: {{ supervisor['name'] }}<br>
-{% if access != 'partial' or not access %}
-e-mail: <a href="mailto:{{ supervisor['email'] }}">{{ supervisor['email'] }}</a><br>
-Телефон: <a href="tel:{{ supervisor['tel'] }}">{{ supervisor['tel'] }}</a><br>
-{% endif %}
-Секция: {{ supervisor['categories'] }}<br>
+      <a href="/confirm_sup_deletion/{{ supervisor['id'] }}"
+        ><button class="red-button">Удалить русека</button></a
+      >
+    </td>
+    {% endif %}
+  </tr>
+</table>
+ФИО: {{ supervisor['name'] }}<br />
+{% if access != 'partial' or not access %} e-mail:
+<a href="mailto:{{ supervisor['email'] }}">{{ supervisor['email'] }}</a><br />
+Телефон: <a href="tel:{{ supervisor['tel'] }}">{{ supervisor['tel'] }}</a><br />
+{% endif %} Секция: {{ supervisor['categories'] }}<br />
 {% endblock %}

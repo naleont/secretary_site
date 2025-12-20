@@ -1,21 +1,16 @@
 <table width="100%" class="bigger">
   <tr>
     <td align="left" vertical-align="middle">
-      <div vertical-align="middle">Выводить по
+      <div vertical-align="middle">
+        Выводить по
         <div class="drop">
           <button class="dropping">
-            {% if length == 'all' %}
-            Все
-            {% else %}
-            {{ length }}
-            {% endif %}
+            {% if length == 'all' %} Все {% else %} {{ length }} {% endif %}
           </button>
           <div class="dropped">
-            {% for l in [15, 30, 50, 100, 500] %}
-            {% if l != length %}
+            {% for l in [15, 30, 50, 100, 500] %} {% if l != length %}
             <a href="/{{ link }}/{{ l }}/1">{{ l }}</a>
-            {% endif %}
-            {% endfor %}
+            {% endif %} {% endfor %}
             <a href="/{{ link }}/all/1">Все</a>
           </div>
         </div>
@@ -23,16 +18,14 @@
     </td>
     <td align="right">
       <div class="nice-links">
-        {% if pages > 1 %}
-        {% for i in range(pages) %}
-        {% if i + 1 == page %}
-        <a class="chosen-link" href="/{{ link }}/{{ length }}/{{ i + 1 }}" >{{ i + 1 }}</a>
+        {% if pages > 1 %} {% for i in range(pages) %} {% if i + 1 == page %}
+        <a class="chosen-link" href="/{{ link }}/{{ length }}/{{ i + 1 }}"
+          >{{ i + 1 }}</a
+        >
         {% else %}
-        <a href="/{{ link }}/{{ length }}/{{ i + 1 }}" >{{ i + 1 }}</a>
-        {% endif %}
-        {% if i + 1 != pages %}<span class="delimiter">・</span>{% endif %}
-        {% endfor %}
-        {% endif %}
+        <a href="/{{ link }}/{{ length }}/{{ i + 1 }}">{{ i + 1 }}</a>
+        {% endif %} {% if i + 1 != pages %}<span class="delimiter">・</span>{%
+        endif %} {% endfor %} {% endif %}
       </div>
     </td>
   </tr>

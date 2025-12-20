@@ -1,12 +1,8 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <legend>
   <h2>Назначить даты заседаний секций для онлайн-тура</h2>
-    {% if message != None %}
-    {{ message }}
-    {% endif %}
+  {% if message != None %} {{ message }} {% endif %}
 </legend>
 
 {% if session['type'] in ['org', 'manager', 'admin'] %}
@@ -14,62 +10,59 @@
 <a href="/download_report_dates_excel"><button>Скачать excel</button></a>
 {% endif %}
 
-<form action="/save_report_dates" method = "POST">
+<form action="/save_report_dates" method="POST">
   <fieldset>
-    <span><b>Выберите даты и не забудьте нажать: </b></span><input class="button" type="submit" value="Сохранить"><br><br>
-      <table frame="void" border="2px" bordercolor="#4962A4">
-        <tr>
-          <td><b>
-            Секция
-          </b></td>
-          <td align="center"><b>
-            День 1
-          </b></td>
-          <td align="center"><b>
-            День 2
-          </b></td>
-          <td align="center"><b>
-            День 3
-          </b></td>
-        </tr>
-        {% for cat in cat_dates %}
-        <tr>
-          <td>
-            {{ cat['cat_name'] }}
-          </td>
-          <td align="center" valign="middle">
-            {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
-            <input name="{{ cat['cat_id'] }}_day_1" type="date" value="{{ cat['day_1'] }}">
-            {% else %}
-              {% if cat['day_1'] != None %}
-              {{ cat['d_1'] }}
-              {% endif %}
-            {% endif %}
-          </td>
-          <td align="center" valign="middle">
-            {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
-            <input name="{{ cat['cat_id'] }}_day_2" type="date" value="{{ cat['day_2'] }}">
-            {% else %}
-              {% if cat['day_2'] != None %}
-              {{ cat['d_2'] }}
-              {% endif %}
-            {% endif %}
-          </td>
-          <td align="center" valign="middle">
-            {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org', 'manager', 'admin'] %}
-            <input name="{{ cat['cat_id'] }}_day_3" type="date" value="{{ cat['day_3'] }}">
-            {% else %}
-              {% if cat['day_3'] != None %}
-              {{ cat['d_3'] }}
-              {% endif %}
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
-<input class="button" type="submit" value="Сохранить"><br><br>
+    <span><b>Выберите даты и не забудьте нажать: </b></span
+    ><input class="button" type="submit" value="Сохранить" /><br /><br />
+    <table frame="void" border="2px" bordercolor="#4962A4">
+      <tr>
+        <td><b> Секция </b></td>
+        <td align="center"><b> День 1 </b></td>
+        <td align="center"><b> День 2 </b></td>
+        <td align="center"><b> День 3 </b></td>
+      </tr>
+      {% for cat in cat_dates %}
+      <tr>
+        <td>{{ cat['cat_name'] }}</td>
+        <td align="center" valign="middle">
+          {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org',
+          'manager', 'admin'] %}
+          <input
+            name="{{ cat['cat_id'] }}_day_1"
+            type="date"
+            value="{{ cat['day_1'] }}"
+          />
+          {% else %} {% if cat['day_1'] != None %} {{ cat['d_1'] }} {% endif %}
+          {% endif %}
+        </td>
+        <td align="center" valign="middle">
+          {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org',
+          'manager', 'admin'] %}
+          <input
+            name="{{ cat['cat_id'] }}_day_2"
+            type="date"
+            value="{{ cat['day_2'] }}"
+          />
+          {% else %} {% if cat['day_2'] != None %} {{ cat['d_2'] }} {% endif %}
+          {% endif %}
+        </td>
+        <td align="center" valign="middle">
+          {% if cat['cat_id'] in session['cat_id'] or session['type'] in ['org',
+          'manager', 'admin'] %}
+          <input
+            name="{{ cat['cat_id'] }}_day_3"
+            type="date"
+            value="{{ cat['day_3'] }}"
+          />
+          {% else %} {% if cat['day_3'] != None %} {{ cat['d_3'] }} {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <input class="button" type="submit" value="Сохранить" /><br /><br />
   </fieldset>
 </form>
-<br>
+<br />
 
 {% endblock %}

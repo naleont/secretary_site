@@ -1,52 +1,35 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h2>Список рецензентов (или просто циферки)</h2>
 
 <table frame="void" border="2px" bordercolor="#4962A4">
-    <tr>
-        <td><b>
-            Рецензент
-        </b></td>
-        <td><b>
-            Кто читает
-        </b></td>
-        <td><b>
-            Прочитано
-        </b></td>
-        <td><b>
-            Кто молодец?
-        </b></td>
-    </tr>
-    {% for reviewer in reviewers %}
-    <tr>
-        <td>
-            <a href="/see_reviews/{{ reviewer['id'] }}">
-            Таинственный рецензент №{{ reviewer['id'] }}
-            </a>
-        </td>
-        <td>
-            {% if reviewer['reader'] %}
-            {{ reviewer['reader']['name'] }} {{ reviewer['reader']['l_name'] }}
-            {% endif %}
-        </td>
-        <td align="center">
-            {% if reviewer['analysed'] != 0 %}
-                {{ reviewer['analysed'] }}
-            {% endif %}
-        </td>
-        <td>
-            {% if reviewer['analysed'] != 0 %}
-                {% if reviewer['reader'] %}
-                    {{ reviewer['reader']['name'] }} {{ reviewer['reader']['l_name'] }} молодец!
-                {% else %}
-                    Неизвестный герой
-                {% endif %}
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+  <tr>
+    <td><b> Рецензент </b></td>
+    <td><b> Кто читает </b></td>
+    <td><b> Прочитано </b></td>
+    <td><b> Кто молодец? </b></td>
+  </tr>
+  {% for reviewer in reviewers %}
+  <tr>
+    <td>
+      <a href="/see_reviews/{{ reviewer['id'] }}">
+        Таинственный рецензент №{{ reviewer['id'] }}
+      </a>
+    </td>
+    <td>
+      {% if reviewer['reader'] %} {{ reviewer['reader']['name'] }} {{
+      reviewer['reader']['l_name'] }} {% endif %}
+    </td>
+    <td align="center">
+      {% if reviewer['analysed'] != 0 %} {{ reviewer['analysed'] }} {% endif %}
+    </td>
+    <td>
+      {% if reviewer['analysed'] != 0 %} {% if reviewer['reader'] %} {{
+      reviewer['reader']['name'] }} {{ reviewer['reader']['l_name'] }} молодец!
+      {% else %} Неизвестный герой {% endif %} {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
 </table>
 
 {% endblock %}

@@ -1,53 +1,93 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <!--
 Форма регистрации на сайте.
 Переменная exists сообщает, если пользователь ввел уже зарегистрированный email или телефон.
 Отправка формы вызывает функцию registration_res
 -->
 <div class="alarm">
-    {% if message == 'email' %}
-    <br>Пользователь с таким e-mail уже существует.
-    {% elif message == 'tel' %}
-    <br>Пользователь с таким телефоном уже существует.
-    {% endif %}
+  {% if message == 'email' %}
+  <br />Пользователь с таким e-mail уже существует. {% elif message == 'tel' %}
+  <br />Пользователь с таким телефоном уже существует. {% endif %}
 </div>
 
-<div  class="grid-container">
-  <form action="/registration_res" method = 'POST'>
+<div class="grid-container">
+  <form action="/registration_res" method="POST">
     <fieldset>
-      <legend><h2><b>Регистрация на сайте</b></h2></legend>
-        <table width="800px">
-            <tr><td border-spacing="10px">
-                <span class="required">Контактный e-mail</span><br>
-                    <input size="30" name="email" type="email" placeholder="example@example.com" required><br><br>
-                <span class="required">Номер телефона</span><br>
-                <span class="comment">Можно использовать +, скобки, дефисы</span><br>
-                    <input size="30" name="tel" type="tel" placeholder="+79908378209"
-                           pattern="\+?\d+-?\(?\d+\)?\d+-?\d+-?\d+-?\d+" required><br><br>
-                <span class="required">Пароль</span><br>
-                <span class="comment">От 8 символов, может содержать латинские буквы, цифры и знаки препинания.</span><br>
-                    <input size="30" name="password" type="password"
-                           pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}" required><br><br>
-            </td>
-            <td>
-                <span class="required">Фамилия</span><br>
-                    <input size="30" name="last_name" type="text" placeholder="Иванов"
-                           pattern="[А-ЯЁ][а-яё]+(-?[А-ЯЁ][а-яё]+)?" required><br><br>
-                <span class="required">Имя</span><br>
-                    <input size="30" name="first_name" type="text" placeholder="Иван"
-                           pattern="[А-ЯЁ][а-яё]+(-? ?[А-ЯЁ][а-яё]+)?" required><br><br>
-                <span class="required">Отчество</span><br>
-                    <input size="30" name="patronymic" type="text" placeholder="Иванович"
-                           pattern="[А-ЯЁ][а-яё]+" required><br><br>
-            </td></tr>
+      <legend>
+        <h2><b>Регистрация на сайте</b></h2>
+      </legend>
+      <table width="800px">
+        <tr>
+          <td border-spacing="10px">
+            <span class="required">Контактный e-mail</span><br />
+            <input
+              size="30"
+              name="email"
+              type="email"
+              placeholder="example@example.com"
+              required
+            /><br /><br />
+            <span class="required">Номер телефона</span><br />
+            <span class="comment">Можно использовать +, скобки, дефисы</span
+            ><br />
+            <input
+              size="30"
+              name="tel"
+              type="tel"
+              placeholder="+79908378209"
+              pattern="\+?\d+-?\(?\d+\)?\d+-?\d+-?\d+-?\d+"
+              required
+            /><br /><br />
+            <span class="required">Пароль</span><br />
+            <span class="comment"
+              >От 8 символов, может содержать латинские буквы, цифры и знаки
+              препинания.</span
+            ><br />
+            <input
+              size="30"
+              name="password"
+              type="password"
+              pattern="[A-Za-z0-9\(\)\.\,\?\*\+\-\[\]\{\}\/\\\$:;!%<>@_#]{6,50}"
+              required
+            /><br /><br />
+          </td>
+          <td>
+            <span class="required">Фамилия</span><br />
+            <input
+              size="30"
+              name="last_name"
+              type="text"
+              placeholder="Иванов"
+              pattern="[А-ЯЁ][а-яё]+(-?[А-ЯЁ][а-яё]+)?"
+              required
+            /><br /><br />
+            <span class="required">Имя</span><br />
+            <input
+              size="30"
+              name="first_name"
+              type="text"
+              placeholder="Иван"
+              pattern="[А-ЯЁ][а-яё]+(-? ?[А-ЯЁ][а-яё]+)?"
+              required
+            /><br /><br />
+            <span class="required">Отчество</span><br />
+            <input
+              size="30"
+              name="patronymic"
+              type="text"
+              placeholder="Иванович"
+              pattern="[А-ЯЁ][а-яё]+"
+              required
+            /><br /><br />
+          </td>
+        </tr>
 
-            <tr><td colspan="2">
-
-                <input class="button" type="submit" value="Зарегистрироваться">
-            </td></tr>
-        </table>
+        <tr>
+          <td colspan="2">
+            <input class="button" type="submit" value="Зарегистрироваться" />
+          </td>
+        </tr>
+      </table>
     </fieldset>
   </form>
 </div>

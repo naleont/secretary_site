@@ -1,14 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
 
-{% block content %}
-
-<legend><h2><b>Загрузить дипломы</b></h2></legend>
+<legend>
+  <h2><b>Загрузить дипломы</b></h2>
+</legend>
 <!--  <a href="/save_diplomas_check"><button>Проверить загруженные</button></a>-->
 {% if success == 'True' %}
-<p>Загружено успешно</p><br>
+<p>Загружено успешно</p>
+<br />
 {% endif %}
 <form method="POST" action="/save_diplomas" enctype="multipart/form-data">
-  <p><input type="file" name="diplomas" multiple></p>
-  <p><input class="blue" type="submit" value="Загрузить"></p>
+  <p><input type="file" name="diplomas" multiple /></p>
+  <p><input class="blue" type="submit" value="Загрузить" /></p>
 </form>
 {% endblock %}

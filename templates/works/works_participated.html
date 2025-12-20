@@ -1,45 +1,43 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h2>Работы, которые уже частвовали очно</h2>
 
-<a href="download_offline_participated"><button>Скачать xlsx</button></a><br>
+<a href="download_offline_participated"><button>Скачать xlsx</button></a><br />
 
 <table frame="void" border="2px" bordercolor="#4962A4">
-    <tr>
-        <td><b>
-
-        </b></td>
-        <td align="center"><b>
-            Номер работы
-        </b></td>
-        <td align="center"><b>
-            Авторы
-        </b></td>
-        <td align="center"><b>
-            Название работы
-        </b></td>
-    </tr>
-    {% for work in works %}
-    <tr>
-        <td align="center" valign="middle">
-            <a href="/confirm_delete/из участвовавших работу {{ work['work_id'] }} {{ work['link_name'] }}/{{ work['work_id'] }}/delete_participated_work" class="alarm" valign="middle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-            </svg>
-        </a></td>
-        <td valign="middle">
-            {{ work['work_id'] }}
-        </td>
-        <td valign="middle">
-            {{ work['authors'] }}
-        </td>
-        <td valign="middle">
-            {{ work['work_name']}}
-        </td>
-    </tr>
-    {% endfor %}
+  <tr>
+    <td><b> </b></td>
+    <td align="center"><b> Номер работы </b></td>
+    <td align="center"><b> Авторы </b></td>
+    <td align="center"><b> Название работы </b></td>
+  </tr>
+  {% for work in works %}
+  <tr>
+    <td align="center" valign="middle">
+      <a
+        href="/confirm_delete/из участвовавших работу {{ work['work_id'] }} {{ work['link_name'] }}/{{ work['work_id'] }}/delete_participated_work"
+        class="alarm"
+        valign="middle"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          fill="currentColor"
+          class="bi bi-x"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
+          />
+        </svg>
+      </a>
+    </td>
+    <td valign="middle">{{ work['work_id'] }}</td>
+    <td valign="middle">{{ work['authors'] }}</td>
+    <td valign="middle">{{ work['work_name']}}</td>
+  </tr>
+  {% endfor %}
 </table>
 
 {% endblock %}

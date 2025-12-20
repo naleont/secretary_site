@@ -1,16 +1,16 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block title %} Добавить секции {% endblock %} {%
+block content %}
 
-{% block title %} Добавить секции {% endblock %}
-
-{% block content %}
-
-<form action="/many_sups" method = 'POST'>
-    <legend><h2><b>Добавить русеков</b></h2></legend>
-        <fieldset>
-                <span>Значения, разделенные табуляциями</span><br>
-            Формат: фамилия \t имя \t отчество \t email \t телефон \t инфо_о_русеке без заголовков столбцов<br>
-            <textarea cols="120" rows="10" name="text"></textarea><br><br>
-            <input class="button" type="submit" value="Сохранить">
-        </fieldset>
+<form action="/many_sups" method="POST">
+  <legend>
+    <h2><b>Добавить русеков</b></h2>
+  </legend>
+  <fieldset>
+    <span>Значения, разделенные табуляциями</span><br />
+    Формат: фамилия \t имя \t отчество \t email \t телефон \t инфо_о_русеке без
+    заголовков столбцов<br />
+    <textarea cols="120" rows="10" name="text"></textarea><br /><br />
+    <input class="button" type="submit" value="Сохранить" />
+  </fieldset>
 </form>
 {% endblock %}

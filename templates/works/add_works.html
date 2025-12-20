@@ -1,48 +1,50 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <table>
-    <tr>
-        <td rowspan="3">
-            <h2><b>Добавить работы </b>
-                <a target="_blank" href="https://vernadsky.info/personal_office/requests_2/?report=21">
-                    (Копировать отсюда)</a></h2>
-        </td>
-        <td align="right">
-            <a href="/button_works">
-                <button>Загрузить по кнопке</button>
-            </a>
-        </td>
-    </tr>
-    <tr>
-        <td align="right">
-            <a href="/button_works/en">
-                <button>Загрузить только ЕН</button>
-            </a>
-        </td>
-    </tr>
-    <tr>
-        <td align="right">
-            <a href="/button_works/gum">
-                <button>Загрузить только ГУМ</button>
-            </a>
-        </td>
-    </tr>
+  <tr>
+    <td rowspan="3">
+      <h2>
+        <b>Добавить работы </b>
+        <a
+          target="_blank"
+          href="https://vernadsky.info/personal_office/requests_2/?report=21"
+        >
+          (Копировать отсюда)</a
+        >
+      </h2>
+    </td>
+    <td align="right">
+      <a href="/button_works">
+        <button>Загрузить по кнопке</button>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="right">
+      <a href="/button_works/en">
+        <button>Загрузить только ЕН</button>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="right">
+      <a href="/button_works/gum">
+        <button>Загрузить только ГУМ</button>
+      </a>
+    </td>
+  </tr>
 </table>
 
-
 <p>Работ этого года добавлено: {{ works_no }}</p>
-<form action="/many_works" method = 'POST'>
-    <fieldset>
-        {% if works_added != None %}
-        <span>Добавлено {{ works_added }} работ</span>
-        {% endif %}
-        {% if works_added != None %}
-        <span>Обновлено {{ works_edited }} работ</span>
-        {% endif %}
-        <textarea cols="120" rows="10" name="text"></textarea><br><br>
-        <input class="button" type="submit" value="Сохранить">
-    </fieldset>
+<form action="/many_works" method="POST">
+  <fieldset>
+    {% if works_added != None %}
+    <span>Добавлено {{ works_added }} работ</span>
+    {% endif %} {% if works_added != None %}
+    <span>Обновлено {{ works_edited }} работ</span>
+    {% endif %}
+    <textarea cols="120" rows="10" name="text"></textarea><br /><br />
+    <input class="button" type="submit" value="Сохранить" />
+  </fieldset>
 </form>
 {% endblock %}

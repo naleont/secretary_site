@@ -1,8 +1,5 @@
-{% extends 'base.html' %}
-
-{% block title %} Профиль {% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %} Профиль {% endblock %} {% block
+content %}
 <!--Страница с информацией профиля текущего пользователя.
 Переменные:
 last_name, first_name, patronymic
@@ -20,154 +17,157 @@ year
 -->
 <h2>Профиль</h2>
 {% if message == 'fill_profile_first' %}
-<p class="alarm">Для подачи заявки в команду сначала <a href="/edit_profile">заполните информацию профиля</a>.</p>
+<p class="alarm">
+  Для подачи заявки в команду сначала
+  <a href="/edit_profile">заполните информацию профиля</a>.
+</p>
 {% elif message == 'first_time' %}
-<p class="alarm">Регистрация прошла успешно. Для пользования сайтом подтвердите регистрацию по ссылке из отправленного вам e-mail.</p>
-{% endif %}
-{% if session['application'] != True and not session['profile'] %}
-<p class="alarm">Перед подачей заявки в команду необходимо <a href="/edit_profile">заполнить данные профиля</a>.</p>
-{% endif %}
-
-{% if session['secretary'] == True or session['type'] in ['manager', 'org', 'admin'] %}
+<p class="alarm">
+  Регистрация прошла успешно. Для пользования сайтом подтвердите регистрацию по
+  ссылке из отправленного вам e-mail.
+</p>
+{% endif %} {% if session['application'] != True and not session['profile'] %}
+<p class="alarm">
+  Перед подачей заявки в команду необходимо
+  <a href="/edit_profile">заполнить данные профиля</a>.
+</p>
+{% endif %} {% if session['secretary'] == True or session['type'] in ['manager',
+'org', 'admin'] %}
 <!--<b><a href="https://vk.me/join/Fxb4PJ6/87Crw4RuDDOwK2cPn_doRnU3x8I=" target="_blank">Вступить в беседу секретарей VK</a></b>-->
 {% endif %}
 
 <!--{% if session['type'] == 'team' %}-->
 <!--<a href="" target="_blank">Группа организаторов XXIX Чтений</a>-->
 <!--{% endif %}-->
-<br>
+<br />
 <table class="profile" cellspacing="5px">
-    <tr>
-        <td align="left" valign="bottom" width="35%">
-            {% if session['application'] != True %}
-            <a href="/team_application"><button>Подать заявку в команду<br>(секретари и волонтеры)</button></a>
-            {% else %}
-            <a href="/my_volunteer_tasks"><button>Выбрать волонтерские задачи</button></a>
-            {% endif %}
-        </td><td align="left" valign="bottom">
-            <a href="/my_applications"><button>Мои заявки в команду</button></a>
-        </td><td align="right" valign="bottom">
-            <br>
-            <a href="/change_pwd/change/{{ session['user_id'] }}"><button class="blue">Поменять пароль</button></a>
-            <br>
-        </td>
-    </tr>
-    <tr><td colspan="2"><b><br>Основная информация</b></td></tr>
-    <tr>
-        <td>
-            ФИО
-        </td><td>
-        {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
-        </td>
-        <td rowspan="3" align="right" width="30%">
-            <a href="/edit_user/{{ session['user_id'] }}"><button class="blue">Редактировать основную информацию</button></a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            e-mail
-        </td><td>
-        <a href="mailto:{{ user['email'] }}">{{ user['email'] }}</a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Телефон
-        </td><td>
-        <a href="tel:{{ user['tel'] }}">{{ user['tel'] }}</a>
-        </td>
-    </tr>
-    <tr><td colspan="2"><b><br>Дополнительная информация</b></td></tr>
-    <tr>
-        <td>
-            Дата рождения
-        </td><td>
-        {% if profile['born'] %}
-        {{ profile['born'] }}
-        {% endif %}
-        </td>
-        <td rowspan="8" align="right">
-            <a href="/edit_profile/{{ session['user_id'] }}"><button class="blue">Редактировать дополнительную информацию</button></a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            VK
-        </td><td>
-        {% if profile['vk'] %}
-        <a href="https://vk.com/{{ profile['vk'] }}">vk.com/{{ profile['vk'] }}</a>
-        {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Telegram
-        </td><td>
-        {% if profile['tg'] %}
-        <a href="https://t.me/{{ profile['tg'] }}">@{{ profile['tg'] }}</a>
-        {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Логин на <a href="https://vernadsky.info/">vernadsky.info</a>
-        </td><td>
-        {% if profile['username'] != None %}
-        {{ profile['username'] }}
-        {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Вид деятельности
-        </td><td>
-        {% if profile['occupation'] == 'scholar' %}
-        Школьник
-        {% elif profile['occupation'] == 'student' %}
-        Студент
-        {% elif profile['occupation'] == 'worker' %}
-        Работаю
-        {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Место учебы/работы
-        </td><td>
-        {% if profile['place_of_work'] == 'MSU_School' %}
-        Университетская гимназия МГУ
-        {% elif profile['place_of_work'] == '1553' %}
-        Лицей №1553 им. В. И. Вернадского
-        {% elif profile['place_of_work'] == None %}
-        {% else %}
-        {{ profile['place_of_work'] }}
-        {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Класс/курс
-        </td><td>
-        {% if profile['occupation'] == 'scholar' and profile['grade'] %}
-        {{ profile['grade'] }}
-        {% elif profile['occupation'] == 'student' and profile['year'] %}
-        {{ profile['year'] }}
-        {% endif %}
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Знаю о Чтениях от
-        </td><td>
-        {% if profile['involved'] == 'MSU_School' %}
-        Университетская гимназия МГУ
-        {% elif profile['involved'] == '1553' %}
-        Лицей №1553 им. В. И. Вернадского
-        {% elif profile['involved'] == None %}
-        {% else %}
-        {{ profile['involved'] }}
-        {% endif %}
-        </td>
-    </tr>
-</table><br>
+  <tr>
+    <td align="left" valign="bottom" width="35%">
+      {% if session['application'] != True %}
+      <a href="/team_application"
+        ><button>
+          Подать заявку в команду<br />(секретари и волонтеры)
+        </button></a
+      >
+      {% else %}
+      <a href="/my_volunteer_tasks"
+        ><button>Выбрать волонтерские задачи</button></a
+      >
+      {% endif %}
+    </td>
+    <td align="left" valign="bottom">
+      <a href="/my_applications"><button>Мои заявки в команду</button></a>
+    </td>
+    <td align="right" valign="bottom">
+      <br />
+      <a href="/change_pwd/change/{{ session['user_id'] }}"
+        ><button class="blue">Поменять пароль</button></a
+      >
+      <br />
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b><br />Основная информация</b>
+    </td>
+  </tr>
+  <tr>
+    <td>ФИО</td>
+    <td>
+      {{ user['last_name'] }} {{ user['first_name'] }} {{ user['patronymic'] }}
+    </td>
+    <td rowspan="3" align="right" width="30%">
+      <a href="/edit_user/{{ session['user_id'] }}"
+        ><button class="blue">Редактировать основную информацию</button></a
+      >
+    </td>
+  </tr>
+  <tr>
+    <td>e-mail</td>
+    <td>
+      <a href="mailto:{{ user['email'] }}">{{ user['email'] }}</a>
+    </td>
+  </tr>
+  <tr>
+    <td>Телефон</td>
+    <td>
+      <a href="tel:{{ user['tel'] }}">{{ user['tel'] }}</a>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b><br />Дополнительная информация</b>
+    </td>
+  </tr>
+  <tr>
+    <td>Дата рождения</td>
+    <td>{% if profile['born'] %} {{ profile['born'] }} {% endif %}</td>
+    <td rowspan="8" align="right">
+      <a href="/edit_profile/{{ session['user_id'] }}"
+        ><button class="blue">
+          Редактировать дополнительную информацию
+        </button></a
+      >
+    </td>
+  </tr>
+  <tr>
+    <td>VK</td>
+    <td>
+      {% if profile['vk'] %}
+      <a href="https://vk.com/{{ profile['vk'] }}"
+        >vk.com/{{ profile['vk'] }}</a
+      >
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Telegram</td>
+    <td>
+      {% if profile['tg'] %}
+      <a href="https://t.me/{{ profile['tg'] }}">@{{ profile['tg'] }}</a>
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Логин на <a href="https://vernadsky.info/">vernadsky.info</a></td>
+    <td>
+      {% if profile['username'] != None %} {{ profile['username'] }} {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Вид деятельности</td>
+    <td>
+      {% if profile['occupation'] == 'scholar' %} Школьник {% elif
+      profile['occupation'] == 'student' %} Студент {% elif
+      profile['occupation'] == 'worker' %} Работаю {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Место учебы/работы</td>
+    <td>
+      {% if profile['place_of_work'] == 'MSU_School' %} Университетская гимназия
+      МГУ {% elif profile['place_of_work'] == '1553' %} Лицей №1553 им. В. И.
+      Вернадского {% elif profile['place_of_work'] == None %} {% else %} {{
+      profile['place_of_work'] }} {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Класс/курс</td>
+    <td>
+      {% if profile['occupation'] == 'scholar' and profile['grade'] %} {{
+      profile['grade'] }} {% elif profile['occupation'] == 'student' and
+      profile['year'] %} {{ profile['year'] }} {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>Знаю о Чтениях от</td>
+    <td>
+      {% if profile['involved'] == 'MSU_School' %} Университетская гимназия МГУ
+      {% elif profile['involved'] == '1553' %} Лицей №1553 им. В. И. Вернадского
+      {% elif profile['involved'] == None %} {% else %} {{ profile['involved']
+      }} {% endif %}
+    </td>
+  </tr>
+</table>
+<br />
 {% endblock %}
