@@ -16,6 +16,8 @@ from flask_mail import Mail, Message, Attachment
 import mail_data
 from models import *
 
+# from new_models import *
+
 from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.shared import Inches, Cm
@@ -34,8 +36,8 @@ from gmail_sender import *
 from urllib.parse import unquote
 
 app = Flask(__name__, instance_relative_config=False)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2025.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2025.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2024.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -56,8 +58,8 @@ app.config['MAIL_USE_SSL'] = mail_data.mail['MAIL_USE_SSL']
 mail = Mail(app)
 
 tel_unneeded = '-() '
-curr_year = 2026
-# curr_year = 2025
+# curr_year = 2026
+curr_year = 2025
 # curr_year = 2024
 # curr_year = 2023
 fee = 5900

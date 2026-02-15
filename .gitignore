@@ -42,3 +42,4 @@ static/.DS_Store
 static/files/.DS_Store
 static/files/financial/.DS_Store
 
+new_models.py
