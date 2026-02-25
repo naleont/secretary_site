@@ -2689,6 +2689,8 @@ def remove_oline_secretary(user_id, cat_id):
 @app.route('/category_page/<cat_id>', defaults={'errors': None})
 @app.route('/category_page/<cat_id>/<errors>')
 def category_page(cat_id, errors):
+    if isinstance(errors, str) and '%' in errors:
+        errors = unquote(errors)
     category = one_category(db.session.query(Categories).filter(Categories.cat_id == cat_id).first())
     renew_session()
     need_analysis = check_analysis(cat_id=cat_id)
