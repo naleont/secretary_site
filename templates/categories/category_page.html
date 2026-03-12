@@ -1,130 +1,205 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<table><tr>
-    <td><h2>{{ category['name'] }}</h2></td>
-{% if session['type'] == 'org' or session['type'] == 'admin' or session['type'] == 'manager' %}
-    <td><a href="/edit_category/{{ category['id'] }}"><button>Редактировать секцию</button></a></td>
-{% endif %}
-</tr></table>
+{% extends 'base.html' %} {% block content %}
+<table>
+    <tr>
+        <td><h2>{{ category['name'] }}</h2></td>
+        {% if session['type'] == 'org' or session['type'] == 'admin' or
+        session['type'] == 'manager' %}
+        <td>
+            <a href="/edit_category/{{ category['id'] }}"
+                ><button>Редактировать секцию</button></a
+            >
+        </td>
+        {% endif %}
+    </tr>
+</table>
 
 <table width="100%">
     <tr>
         <td rowspan="6">
-            {{ category['contest'] }}<br>
-            Направление: {{ category['direction'] }}<br>
-            {% if category['tg_channel'] %}
-            Telegram-канал: <a href="https://t.me/{{ category['tg_channel'] }}">@{{ category['tg_channel'] }}</a><br>
-            {% endif %}
-
-            {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
-            Руководитель секции: <a href="/supervisor_profile/{{ category['supervisor_id'] }}">{{ category['supervisor'] }}</a><br>
-            {% else %}
-            Руководитель секции: {{ category['supervisor'] }}
-            {% endif %}
-
-            {% if category['secretary'] %}
-            {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
-            Секретарь: <a href="/user_page/{{ category['secretary_id'] }}">{{ category['secretary'] }}</a><br>
-            {% else %}
-            Секретарь: {{ category['secretary'] }}<br>
-            {% endif %}
-            {% endif %}
-
-            {% if category['online_secretary'] %}
-            {% if session['type'] == 'team' or session['type'] == 'admin' or session['type'] == 'manager' %}
-            Секретарь на Дополнительном онлайн-конкурсе: <a href="/user_page/{{ category['online_secretary_id'] }}">
-            {{ category['online_secretary'] }}</a><br>
-            {% else %}
-            Секретарь: {{ category['online_secretary'] }}<br>
-            {% endif %}
-            {% endif %}
-
-            {% if category['dates'] %}
-            Даты дистанционного заседания секции: {{ category['dates'] }}<br>
-            {% endif %}
-            {% if category['union'] %}
-            Заседание совместно с:<br>
-                <ul class="marked">
+            {{ category['contest'] }}<br />
+            Направление: {{ category['direction'] }}<br />
+            {% if category['tg_channel'] %} Telegram-канал:
+            <a href="https://t.me/{{ category['tg_channel'] }}"
+                >@{{ category['tg_channel'] }}</a
+            ><br />
+            {% endif %} {% if session['type'] == 'team' or session['type'] ==
+            'admin' or session['type'] == 'manager' %} Руководитель секции:
+            <a href="/supervisor_profile/{{ category['supervisor_id'] }}"
+                >{{ category['supervisor'] }}</a
+            ><br />
+            {% else %} Руководитель секции: {{ category['supervisor'] }} {%
+            endif %} {% if category['secretary'] %} {% if session['type'] ==
+            'team' or session['type'] == 'admin' or session['type'] == 'manager'
+            %} Секретарь:
+            <a href="/user_page/{{ category['secretary_id'] }}"
+                >{{ category['secretary'] }}</a
+            ><br />
+            {% else %} Секретарь: {{ category['secretary'] }}<br />
+            {% endif %} {% endif %} {% if category['online_secretary'] %} {% if
+            session['type'] == 'team' or session['type'] == 'admin' or
+            session['type'] == 'manager' %} Секретарь на Дополнительном
+            онлайн-конкурсе:
+            <a href="/user_page/{{ category['online_secretary_id'] }}">
+                {{ category['online_secretary'] }}</a
+            ><br />
+            {% else %} Секретарь: {{ category['online_secretary'] }}<br />
+            {% endif %} {% endif %} {% if category['dates'] %} Даты
+            дистанционного заседания секции: {{ category['dates'] }}<br />
+            {% endif %} {% if category['union'] %} Заседание совместно с:<br />
+            <ul class="marked">
                 {% for uni_cat in category['union'] %}
-                    <li>
-                    {{ uni_cat['short_name'] }}
-                    </li>
+                <li>{{ uni_cat['short_name'] }}</li>
                 {% endfor %}
-                </ul>
+            </ul>
+            {% endif %} {% if category['drive_link'] %}
+            <a href="{{ category['drive_link'] }}" target="_blank"
+                >Папка с презентациями секции</a
+            >
             {% endif %}
-
-            {% if category['drive_link'] %}
-            <a href="{{ category['drive_link'] }}" target="_blank">Папка с презентациями секции</a>
-            {% endif %}
-
         </td>
-        {% if session['type'] in ['admin', 'org', 'manager']
-        or (session['supervisor'] == True and category['id'] in session['cat_id'])
-        or (session['secretary'] == True and category['id'] in session['cat_id'])
-        or (session['online_secretary'] == True and category['id'] in session['cat_id']) %}
-            <td width="auto" valign="middle"><a href="/button_works/{{ category['id'] }}">
+        {% if session['type'] in ['admin', 'org', 'manager'] or
+        (session['supervisor'] == True and category['id'] in session['cat_id'])
+        or (session['secretary'] == True and category['id'] in
+        session['cat_id']) or (session['online_secretary'] == True and
+        category['id'] in session['cat_id']) %}
+        <td width="auto" valign="middle">
+            <a href="/button_works/{{ category['id'] }}">
                 <button>Обновить работы секции</button>
-            </a></td>
+            </a>
+        </td>
     </tr>
     <tr>
-            <td width="auto" valign="middle"><a href="/view_works/{{ category['id'] }}">
+        <td width="auto" valign="middle">
+            <a href="/view_works/{{ category['id'] }}">
                 <button>Синхронизированные работы</button>
-            </a></td>
+            </a>
+        </td>
     </tr>
     <tr>
-            <td width="auto" valign="middle"><a href="/download_reviews/{{ category['id'] }}">
+        <td width="auto" valign="middle">
+            <a href="/download_reviews/{{ category['id'] }}">
                 <button>Рецензии на допущенные работы</button>
-            </a></td>
+            </a>
+        </td>
     </tr>
     <tr>
-            <!-- <td width="auto" valign="middle"><a href="/reports_order/{{ category['id'] }}">
+        <!-- <td width="auto" valign="middle"><a href="/reports_order/{{ category['id'] }}">
                 <button>Порядок выступлений</button>
             </a></td> -->
     </tr>
     <tr>
-            <td width="auto" valign="middle"><a href="/analysis_works/{{ category['id'] }}">
-                <button {% if need_analysis == True %} class="red-button" {% else %} {% endif %}>Анализ рецензий</button>
-            </a></td>
+        <td width="auto" valign="middle">
+            <a href="/analysis_works/{{ category['id'] }}">
+                <button
+                    {%
+                    if
+                    need_analysis=""
+                    ="True"
+                    %}
+                    class="red-button"
+                    {%
+                    else
+                    %}
+                    {%
+                    endif
+                    %}
+                >
+                    Анализ рецензий
+                </button>
+            </a>
+        </td>
         {% endif %}
     </tr>
     <tr>
-<!--            <td width="auto" valign="middle"><a href="/experts/{{ category['id'] }}">-->
-<!--                <button>Эксперты секции</button>-->
-<!--            </a></td>-->
+        <!--            <td width="auto" valign="middle"><a href="/experts/{{ category['id'] }}">-->
+        <!--                <button>Эксперты секции</button>-->
+        <!--            </a></td>-->
     </tr>
 </table>
 
 <h4>Чек-лист по работе секций на I туре</h4>
 <ul class="marked">
-    <li>
+    <!-- <li>
         Рецензирование работ - <i>до 1 марта</i>
-        <span class="comment">(<a target="_blank" href="../../static/files/knowledge_files/direct_for_review_guide.pdf">инструкция по направлению на рецензирование</a>)</span>
+        <span class="comment"
+            >(<a
+                target="_blank"
+                href="../../static/files/knowledge_files/direct_for_review_guide.pdf"
+                >инструкция по направлению на рецензирование</a
+            >)</span
+        >
     </li>
-    <li>
-        Выбор работ для включения в сборник - <i>до 1 марта</i>
-    </li>
+    <li>Выбор работ для включения в сборник - <i>до 1 марта</i></li>
     <li>
         Выбор работ для участия без оргвзноса ("топ-100") - <i>до 1 марта</i>
         <span class="comment">(в форме ниже)</span>
     </li>
     <li>
         Выставление оценок руководителя секции - <i>до 1 марта</i>
-        <span class="comment">(см. в конце <a target="_blank" href="../../static/files/knowledge_files/direct_for_review_guide.pdf">инструкции по направлению на рецензирование</a>)</span>
-    </li>
+        <span class="comment"
+            >(см. в конце
+            <a
+                target="_blank"
+                href="../../static/files/knowledge_files/direct_for_review_guide.pdf"
+                >инструкции по направлению на рецензирование</a
+            >)</span
+        >
+    </li> -->
     <li>
-        <a href="/analysis_works/{{ category['id'] }}">Анализ рецензий региональных туров</a> - <i>до 1 апреля</i>
+        <a href="/analysis_works/{{ category['id'] }}"
+            >Анализ рецензий региональных туров</a
+        >
+        - <i>до 1 апреля</i>
     </li>
 </ul>
 
-<!-- <h4>Чек-лист по подготовке ко II туру</h4>
+<h4>Чек-лист по подготовке ко II туру</h4>
 <ul class="marked">
     <li>
-        Внесение экспертов стендовой сессии - до вечера 9 апреля <a href="https://forms.gle/P3P6uCncLjNrj51a8" target="_blank">через форму</a>.<br>
-        <span class="comment">Проверить внесенных экспертов можно <a href="https://docs.google.com/spreadsheets/d/1J-o7ORIb_Nw6Lz3iQzg0OXHZngpfKTfO8dVrdKTdrz4/edit?usp=sharing" target="_blank">в таблице</a>.</span>
+        Внесение экспертов стендовой сессии - до вечера 9 апреля
+        <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSewFvkuZn5FGG3vbYOfMfAgJHNIJVeFov-HwM2DOiPAMUQ3uQ/viewform?usp=dialog"
+            target="_blank"
+            >через форму</a
+        >.<br />
+        <span class="comment"
+            >Проверить внесенных экспертов можно
+            <a
+                href="https://docs.google.com/spreadsheets/d/1LxvWGrcdcMfExfSKdSOjgWvF26uEyWmf8CXKQ7EqIkI/edit?usp=sharing"
+                target="_blank"
+                >в таблице</a
+            >.</span
+        >
     </li>
-    <li>Если кому-нибудь из экспертов нужно письмо-вызов, можно заказать его <a href="https://forms.gle/8vHwRJRDN3zVJcP9A" target="_blank">в этой форме</a>.</li>
-</ul> -->
+    <li>
+        Если кому-нибудь из экспертов нужно письмо-вызов, можно заказать его
+        <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdTOwYWJFzCTvxjtPew1E6XRNMInXjRVVhqjbPt6UR5LeEh_w/viewform?usp=dialog"
+            target="_blank"
+            >в этой форме</a
+        >.
+    </li>
+    <li>
+        Оставить заявку на печать материалов для работы секции (критерии
+        экспертизы, экспертные листы, списки работ) можно
+        <a
+            target="_blank"
+            href="https://docs.google.com/forms/d/e/1FAIpQLSckxOfyeWZHUQ7PjEwX9OpQjjhqOnKRkdLqSF_Sd5qQKhhTqQ/viewform?usp=dialog"
+        >
+            в этой форме</a
+        >.
+        <span class="comment"
+            >Просим оставлять заявку на печать только если она действительно
+            требуется.</span
+        >
+    </li>
+    <li>
+        Скачать файл с
+        <a href="/download_reviews/{{ category['id'] }}">
+            рецензиями на допущенные работы
+        </a>
+    </li>
+</ul>
 
 <!-- <h4>Чек-лист по подготовке ко Дополнительному онлайн-конкурсу</h4>
 <ul class="marked">
@@ -136,32 +211,48 @@
     </li>
 </ul> -->
 
-
-{% if show_top_100 == True %}
-{% if session['type'] in ['admin', 'org', 'manager']
-or (session['supervisor'] == True and category['id'] in session['cat_id'])
-or (session['secretary'] == True and category['id'] in session['cat_id']) %}
-<h3 id="-a-name-fee-free-a-1-"><a name="fee-free"></a>Работы, участвующие без оргвзноса</h3>
-<p>1-3 лучшие работы от каждой секции получат возможность участвовать во 2 туре Конкурса без оплаты оргвзноса.
-    Добавьте работы ниже, чтобы включить их в список.
-    <b>Работы региональных туров в список не включаются и от оргвзноса не освобождаются</b>.</p>
+{% if show_top_100 == True %} {% if session['type'] in ['admin', 'org',
+'manager'] or (session['supervisor'] == True and category['id'] in
+session['cat_id']) or (session['secretary'] == True and category['id'] in
+session['cat_id']) %}
+<h3 id="-a-name-fee-free-a-1-">
+    <a name="fee-free"></a>Работы, участвующие без оргвзноса
+</h3>
+<p>
+    1-3 лучшие работы от каждой секции получат возможность участвовать во 2 туре
+    Конкурса без оплаты оргвзноса. Добавьте работы ниже, чтобы включить их в
+    список.
+    <b
+        >Работы региональных туров в список не включаются и от оргвзноса не
+        освобождаются</b
+    >.
+</p>
 <div class="alarm">
     {% if errors != None %}
-    <span>Не удалось добавить работы:</span><br>
-    {{ errors }}<br>
+    <span>Не удалось добавить работы:</span><br />
+    {{ errors }}<br />
     {% endif %}
 </div>
-<br>
-<div>Если работа видна на вашей секции на основном сайте (<a href="https://vernadsky.info">vernadsky.info</a>),
-    но возникает ошибка "Работа не найдена", <a href="/button_works/{{ category['id'] }}">обновите работы секции</a>.</div><br>
+<br />
+<div>
+    Если работа видна на вашей секции на основном сайте (<a
+        href="https://vernadsky.info"
+        >vernadsky.info</a
+    >), но возникает ошибка "Работа не найдена",
+    <a href="/button_works/{{ category['id'] }}">обновите работы секции</a>.
+</div>
+<br />
 <form action="/works_for_free/{{ category['id'] }}" method="post">
     <fieldset>
-        <span class="comment">Для добавления работ, с которых не будет взиматься оргвзнос,
-            укажите их номера в поле ниже через запятую</span><br><br>
-        <input type="text" name="works" size="70">
-        <input class="button" type="submit" value="Добавить">
+        <span class="comment"
+            >Для добавления работ, с которых не будет взиматься оргвзнос,
+            укажите их номера в поле ниже через запятую</span
+        ><br /><br />
+        <input type="text" name="works" size="70" />
+        <input class="button" type="submit" value="Добавить" />
     </fieldset>
-</form><br>
+</form>
+<br />
 
 {% if works_no_fee != {} %}
 <table frame="void" border="2px" bordercolor="#4962A4">
@@ -178,16 +269,24 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
     </tr>
     {% for key in works_no_fee %}
     <tr>
-        <td>
-            {{ works_no_fee[key]['work_id'] }}
-        </td>
-        <td>
-            {{ works_no_fee[key]['work_name'] }}
-        </td>
+        <td>{{ works_no_fee[key]['work_id'] }}</td>
+        <td>{{ works_no_fee[key]['work_name'] }}</td>
         <td align="center" vertical-align="bottom">
-            <a href="/remove_no_fee/{{ category['id'] }}/{{ works_no_fee[key]['work_id'] }}" class="alarm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            <a
+                href="/remove_no_fee/{{ category['id'] }}/{{ works_no_fee[key]['work_id'] }}"
+                class="alarm"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    fill="currentColor"
+                    class="bi bi-x"
+                    viewBox="0 0 16 16"
+                >
+                    <path
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
+                    />
                 </svg>
             </a>
         </td>
@@ -214,8 +313,6 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
     const workTable = querySelector(document, '.conditional');
     Promise.all('/')
 </script> -->
-
-
 
 <!--<h3>Работы на I туре</h3>-->
 <!--<table frame="void" border="2px" bordercolor="#4962A4">-->
@@ -244,8 +341,5 @@ or (session['secretary'] == True and category['id'] in session['cat_id']) %}
 <!--    </tr>-->
 <!--    {% endfor %}-->
 <!--</table>-->
-<br>
-{% endif %}
-{% endif %}
-{% endif %}
-{% endblock %}
+<br />
+{% endif %} {% endif %} {% endif %} {% endblock %}
