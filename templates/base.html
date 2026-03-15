@@ -39,7 +39,9 @@
   session['tutor'] == True%}
   <p><a href="/volunteer_applications">Заявки волонтеров</a></p>
   {% endif %}
+  {% if session['application'] == True %}
   <p><a href="/my_volunteer_tasks">Мои волонтерские задачи</a></p>
+  {% endif %}
   <!--</ul>-->
 </div>
 

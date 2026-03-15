@@ -6897,6 +6897,7 @@ def add_classes():
 
 @app.route('/my_volunteer_tasks')
 def my_volunteer_tasks():
+    print(session)
     access = check_access(2)
     if access is not True:
         return access
