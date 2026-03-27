@@ -2385,13 +2385,20 @@ def view_applications():
     lyceum = [a['user_id'] for a in source if a['involved'] == '1553' and a['occupation'] == 'scholar']
     graduates = [a['user_id'] for a in source if a['occupation'] == 'student']
     unseen = [a['user_id'] for a in appl.values() if a['considered'] == 'False']
+    taken = [u['cat_id'] for u in users.values()]
+    taken_flat = []
+    for t in taken:
+        if t:
+            taken_flat.extend(t)
+        else:
+            pass
     for s in source:
         appl[s['user_id']]['occupation'] = s['occupation']
         appl[s['user_id']]['involved'] = s['involved']
         appl[s['user_id']]['grade'] = s['grade']
     return render_template('application management/view_applications.html', applications=appl, year=curr_year,
                            users=users, secretaries=secretaries, volunteers=volunteers, msu_school=msu_school,
-                           lyceum=lyceum, graduates=graduates, unseen=unseen)
+                           lyceum=lyceum, graduates=graduates, unseen=unseen, taken=taken_flat)
 
 
 @app.route('/download_team_contacts')

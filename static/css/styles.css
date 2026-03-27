@@ -17,6 +17,9 @@ body{
     display: flex;
     margin-top: 60px;
 }
+.taken {
+    color: #808080
+}
 
 /* text-formatting */
 .alarm{
