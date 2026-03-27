@@ -2371,12 +2371,12 @@ def application_page():
 
 @app.route('/view_applications')
 def view_applications():
+    renew_session()
     access = check_access(8)
     if access is not True:
         return access
     appl = application_info('year', user=session['user_id'])
     users = all_users()
-    renew_session()
     secretaries = [a['user_id'] for a in appl.values() if a['role'] == 'secretary']
     volunteers = [a['user_id'] for a in appl.values() if a['role'] == 'volunteer']
     source = [{'user_id': u.user_id, 'involved': u.involved, 'occupation': u.occupation, 'grade': u.grade} for u in Profile.query
