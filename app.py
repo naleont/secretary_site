@@ -7170,11 +7170,22 @@ def download_volunteer_applications():
                     if q['start'] + d < e:
                         last_l = k
 
-                line = {'day': days[task['task_date']], 'permitted': v['permitted'],
+                line = {'day': days[task['task_date']], 
+                'permitted': v['permitted'],
                         'name': v['name'] + ' (' + v['class_name'] + ')',
-                        'exit': datetime.datetime.strftime(s, '%d.%m.%Y %H:%M'),
-                        'return': datetime.datetime.strftime(e, '%d.%m.%Y %H:%M'),
-                        'lessons': str(first_l) + ' - ' + str(last_l), 'location': task['location']}
+                        'start': datetime.datetime.strftime(s, '%d.%m.%Y %H:%M'),
+                        'end': datetime.datetime.strftime(e, '%d.%m.%Y %H:%M'),
+                        # 'lessons': str(first_l) + ' - ' + str(last_l), 'location': task['location']
+                        }
+                dnl.append(line)
+            else:
+                line = {'day': days[task['task_date']] + ' ' + datetime.datetime.strftime(task['start_time'], '%d.%m'), 
+                'permitted': v['permitted'],
+                        'name': v['name'] + ' (' + v['class_name'] + ')',
+                        'start': datetime.datetime.strftime(task['start_time'], '%H:%M'),
+                        'end': datetime.datetime.strftime(task['end_time'], '%H:%M')
+                        # 'lessons': '', 'location': task['location']}
+                }
                 dnl.append(line)
 
     df = pd.DataFrame(data=dnl)
