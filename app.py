@@ -35,6 +35,10 @@ from gmail_sender import *
 
 from urllib.parse import unquote
 
+
+    # if isinstance(errors, str) and '%' in errors:
+    #     errors = unquote(errors)
+
 app = Flask(__name__, instance_relative_config=False)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db.db'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///team_db_arch_2025.db'
@@ -4330,6 +4334,10 @@ def top_100_for_site():
 @app.route('/apply_for_online/<errs_a>/<errs_b>')
 def apply_for_online(errs_a, errs_b):
     access = check_access(8)
+    if isinstance(errs_a, str) and '%' in errs_a:
+        errs_a = unquote(errs_a)
+    if isinstance(errs_b, str) and '%' in errs_b:
+        errs_b = unquote(errs_b)
     if access is not True:
         return access
     if errs_b == 'a':
