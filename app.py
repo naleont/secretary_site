@@ -6185,7 +6185,7 @@ def download_payments(p_type):
     if isinstance(p_type, str) and '%' in p_type:
         p_type = unquote(p_type)
     if p_type == 'all':
-        payments = db.session.query(BankStatement).join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id).order_by(BankStatement.date).all()
+        payments = db.session.query(BankStatement).order_by(BankStatement.date).all()
     else:
         payments = db.session.query(BankStatement) \
             .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id) \
@@ -6194,7 +6194,7 @@ def download_payments(p_type):
                   'Номер платежного поручения': p.order_id, 'Дебит': p.debit, 'Кредит': p.credit,
                   'Плательщик': p.organisation, 'ИНН': p.tin, 'БИК': p.bic, 'Банк отправителя': p.bank_name,
                   'Номер счета': p.account, 'Назначение платежа': p.payment_comment,
-                  'Альтернативная оплата': p.alternative, 'Комментарий': p.alternative_comment, 'Тип платежа': p.payment_type} for p in payments]
+                  'Альтернативная оплата': p.alternative, 'Комментарий': p.alternative_comment} for p in payments]
 
     df = pd.DataFrame(data=statement)
     if not os.path.isdir('static/files/generated_files'):
