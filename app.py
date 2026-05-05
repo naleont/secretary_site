@@ -6175,7 +6175,7 @@ def payment_types(length, page):
     .order_by(BankStatement.date.desc()).order_by(BankStatement.order_id.asc()).all()]
     n, data = make_pages(length, payments, page)
     statement = statement_info(data)
-    p_types = set(p['payment_type'] for p in payments)
+    p_types = set(p['payment_type'] for p in statement)
     return render_template('participants_and_payment/payment_types.html', statement=statement, pages=n, page=page,
                            length=length, link='payment_types', p_types=p_types)
 
