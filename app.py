@@ -6185,7 +6185,7 @@ def download_payments(p_type):
     if isinstance(p_type, str) and '%' in p_type:
         p_type = unquote(p_type)
     if p_type == 'all':
-        payments = db.session.query(BankStatement).order_by(BankStatement.date).all()
+        payments = db.session.query(BankStatement).join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id).order_by(BankStatement.date).all()
     else:
         payments = db.session.query(BankStatement) \
             .join(PaymentTypes, BankStatement.payment_id == PaymentTypes.payment_id) \
