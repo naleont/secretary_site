@@ -6194,7 +6194,7 @@ def download_payments(p_type):
                   'Номер платежного поручения': p.order_id, 'Дебит': p.debit, 'Кредит': p.credit,
                   'Плательщик': p.organisation, 'ИНН': p.tin, 'БИК': p.bic, 'Банк отправителя': p.bank_name,
                   'Номер счета': p.account, 'Назначение платежа': p.payment_comment,
-                  'Альтернативная оплата': p.alternative, 'Комментарий': p.alternative_comment} for p in payments]
+                  'Альтернативная оплата': p.alternative, 'Комментарий': p.alternative_comment, 'Тип платежа': p.payment_type} for p in payments]
 
     df = pd.DataFrame(data=statement)
     if not os.path.isdir('static/files/generated_files'):
