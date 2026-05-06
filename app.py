@@ -1432,73 +1432,74 @@ def statement_info(payment_list):
     return statement
 
 
-def document_set():
-    # для рецензий
-    document = Document()
+def document_set(mode):
+    if mode == 'reviews':
+        # для рецензий
+        document = Document()
 
-    # Устанавливаем меньшие поля страницы
-    section = document.sections[0]
-    section.top_margin = Inches(0.5)
-    section.bottom_margin = Inches(0.5)
-    section.left_margin = Inches(0.7)
-    section.right_margin = Inches(0.7)
+        # Устанавливаем меньшие поля страницы
+        section = document.sections[0]
+        section.top_margin = Inches(0.5)
+        section.bottom_margin = Inches(0.5)
+        section.left_margin = Inches(0.7)
+        section.right_margin = Inches(0.7)
 
-    # Настройка стиля для Header (если используется)
-    header_style = document.styles['Header']
-    header_style.font.name = 'Times New Roman'
-    header_style.font.size = Pt(14)
-    header_style.font.bold = True
+        # Настройка стиля для Header (если используется)
+        header_style = document.styles['Header']
+        header_style.font.name = 'Times New Roman'
+        header_style.font.size = Pt(14)
+        header_style.font.bold = True
 
-    # Настройка стиля для заголовка (Heading 1)
-    heading1 = document.styles['Heading 1']
-    heading1.font.name = 'Times New Roman'
-    heading1.font.size = Pt(14)
-    heading1.font.bold = True
-    heading1.font.color.rgb = RGBColor(0, 0, 0)
-    heading1.paragraph_format.space_before = Pt(6)         # Интервал перед абзацем
-    heading1.paragraph_format.space_after = Pt(6)          # Интервал после абзаца
-    heading1.paragraph_format.first_line_indent = Inches(0.3)  # Отступ первой строки
+        # Настройка стиля для заголовка (Heading 1)
+        heading1 = document.styles['Heading 1']
+        heading1.font.name = 'Times New Roman'
+        heading1.font.size = Pt(14)
+        heading1.font.bold = True
+        heading1.font.color.rgb = RGBColor(0, 0, 0)
+        heading1.paragraph_format.space_before = Pt(6)         # Интервал перед абзацем
+        heading1.paragraph_format.space_after = Pt(6)          # Интервал после абзаца
+        heading1.paragraph_format.first_line_indent = Inches(0.3)  # Отступ первой строки
 
-    # Настройка стиля для основного текста (Normal)
-    normal_style = document.styles['Normal']
-    normal_style.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    normal_style.font.name = 'Times New Roman'
-    normal_style.font.size = Pt(12)
-    normal_style.font.bold = False
-    normal_style.font.color.rgb = RGBColor(0, 0, 0)
-    normal_style.paragraph_format.space_before = Pt(3)      # Меньший интервал перед абзацем
-    normal_style.paragraph_format.space_after = Pt(3)       # Меньший интервал после абзаца
-    normal_style.paragraph_format.first_line_indent = Inches(0.3)  # Отступ первой строки
+        # Настройка стиля для основного текста (Normal)
+        normal_style = document.styles['Normal']
+        normal_style.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        normal_style.font.name = 'Times New Roman'
+        normal_style.font.size = Pt(12)
+        normal_style.font.bold = False
+        normal_style.font.color.rgb = RGBColor(0, 0, 0)
+        normal_style.paragraph_format.space_before = Pt(3)      # Меньший интервал перед абзацем
+        normal_style.paragraph_format.space_after = Pt(3)       # Меньший интервал после абзаца
+        normal_style.paragraph_format.first_line_indent = Inches(0.3)  # Отступ первой строки
+    elif mode == 'timetable':
+        # для расписания секций
+        document = Document()
 
-    # для расписания секций
-    # document = Document()
+        style = document.styles['Header']
+        style.font.name = 'Calibri Light'
+        style.font.size = Pt(16)
+        style.font.bold = True
 
-    # style = document.styles['Header']
-    # style.font.name = 'Calibri Light'
-    # style.font.size = Pt(16)
-    # style.font.bold = True
+        style = document.styles['Heading 1']
+        style.font.name = 'Calibri Light'
+        style.font.size = Pt(16)
+        style.font.color.rgb = RGBColor(0, 0, 0)
+        style.paragraph_format.space_before = Pt(12)
+        style.paragraph_format.space_after = Pt(12)
+        style.paragraph_format.left_indent = Pt(0)
 
-    # style = document.styles['Heading 1']
-    # style.font.name = 'Calibri Light'
-    # style.font.size = Pt(16)
-    # style.font.color.rgb = RGBColor(0, 0, 0)
-    # style.paragraph_format.space_before = Pt(12)
-    # style.paragraph_format.space_after = Pt(12)
-    # style.paragraph_format.left_indent = Pt(0)
+        style = document.styles['Normal']
+        style.font.name = 'Calibri Light'
+        style.font.size = Pt(14)
+        style.font.color.rgb = RGBColor(0, 0, 0)
+        style.paragraph_format.space_before = Pt(6)
+        style.paragraph_format.space_after = Pt(6)
+        style.paragraph_format.left_indent = Pt(30)
 
-    # style = document.styles['Normal']
-    # style.font.name = 'Calibri Light'
-    # style.font.size = Pt(14)
-    # style.font.color.rgb = RGBColor(0, 0, 0)
-    # style.paragraph_format.space_before = Pt(6)
-    # style.paragraph_format.space_after = Pt(6)
-    # style.paragraph_format.left_indent = Pt(30)
-
-    # # style = document.styles['Normal']
-    # # style.font.name = 'Calibri Light'
-    # # style.font.size = Pt(14)
-    # # style.font.color.rgb = RGBColor(0, 0, 0)
-    # # style.paragraph_format.left_indent = Pt(36)
+        # style = document.styles['Normal']
+        # style.font.name = 'Calibri Light'
+        # style.font.size = Pt(14)
+        # style.font.color.rgb = RGBColor(0, 0, 0)
+        # style.paragraph_format.left_indent = Pt(36)
 
     return document
 
@@ -5110,7 +5111,7 @@ def download_schedule(cat_id):
     path = 'static/files/generated_files/schedules/' + str(curr_year) + '/' + 'Расписание ' \
            + ', '.join([c['short_name'] for c in categories]) + '.docx'
 
-    document = document_set()
+    document = document_set('timetable')
 
     if union is True:
         a = 'Расписание заседания секций'
@@ -5164,7 +5165,7 @@ def download_reviews(cat_id):
                             .filter(WorkCategories.cat_id == cat).filter(WorkStatuses.status_id >= 6).all()]
                 
         path = 'static/files/generated_files/reviews/' + str(curr_year) + '/' + 'Рецензии ' + cats[cat] + '.docx'
-        document = document_set()
+        document = document_set('reviews')
 
         for work in cat_works:
             section = document.sections[0]
